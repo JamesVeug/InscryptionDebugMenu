@@ -132,7 +132,9 @@ internal class InputButtons_Axis
 	}
 }
 
-[HarmonyPatch]
+/*
+ NOTE: Need to fix this. It does block but it spams sounds at the same time. Need to find out why
+ [HarmonyPatch]
 internal class InteractionCursor_RaycastForInteractable
 {
     static Type InteractionCursor = Type.GetType("DiskCardGame.InteractionCursor, Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null");
@@ -192,4 +194,4 @@ internal class InteractionCursor_RaycastForInteractable
     {
 	    return AllActs.blockAllInput;
     }
-}
+}*/
