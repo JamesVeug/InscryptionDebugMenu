@@ -27,7 +27,7 @@ public class Act1 : BaseAct
 		if (RunState.Run.currentNodeId > 0 && Singleton<MapNodeManager>.m_Instance != null)
 		{
 			MapNode nodeWithId = Singleton<MapNodeManager>.Instance.GetNodeWithId(RunState.Run.currentNodeId);
-			GUIHelper.Label("Current Node: " + RunState.Run.currentNodeId + " = " + nodeWithId, 80);
+			GUIHelper.Label("Current Node: " + RunState.Run.currentNodeId + " = " + nodeWithId, 120);
 			
 		}
 		

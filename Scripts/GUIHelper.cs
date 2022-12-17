@@ -33,13 +33,17 @@ public static class GUIHelper
 	/// <returns>Returns true if the button was pressed</returns>
 	public static bool Button(string text)
 	{
-		return GUI.Button(new Rect(X, Y += 40f, Width, 40f), text);
+		float y = Y;
+		Y += 40f;
+		return GUI.Button(new Rect(X, y, Width, 40f), text);
 	}
 	
 	/// <returns>Returns True if the value changed</returns>
 	public static bool Toggle(string text, ref bool value)
 	{
-		bool toggle = GUI.Toggle(new Rect(X, Y += 40f, Width, 40f), value, text);
+		float y = Y;
+		Y += 40f;
+		bool toggle = GUI.Toggle(new Rect(X, y, Width, 40f), value, text);
 		if (toggle != value)
 		{
 			value = toggle;
@@ -48,14 +52,18 @@ public static class GUIHelper
 		return false;
 	}
 
-	public static void Label(string text, float? height)
+	public static void Label(string text, float? height = null)
 	{
 		float h = height.HasValue ? height.Value : 40;
-		GUI.Label(new Rect(X, Y += h, Width, h), text);
+		float y = Y;
+		Y += h;
+		GUI.Label(new Rect(X, y, Width, h), text);
 	}
 
 	public static void LabelHeader(string text)
 	{
-		GUI.Label(new Rect(X, Y += 40f, Width, 40f), text, LabelHeaderStyle);
+		float y = Y;
+		Y += 40f;
+		GUI.Label(new Rect(X, y, Width, 40f), text, LabelHeaderStyle);
 	}
 }
