@@ -1,5 +1,6 @@
 ﻿using BepInEx.Logging;
 using DebugMenu.Scripts.Acts;
+using DebugMenu.Scripts.Popups;
 using UnityEngine;
 
 namespace DebugMenu.Scripts.All;
@@ -8,7 +9,7 @@ public class AllActs : BaseAct
 {
 	public static bool blockAllInput = false;
 	
-	public AllActs(ManualLogSource logger) : base(logger)
+	public AllActs(DebugWindow window) : base(window)
 	{
 	}
 
@@ -19,19 +20,24 @@ public class AllActs : BaseAct
 	
 	public override void OnGUI()
 	{
-		GUIHelper.Toggle("Block all Input", ref blockAllInput);
+		Window.Toggle("Block all Input", ref blockAllInput);
+
+		if (Window.Button("Show Game Info"))
+		{
+			Plugin.Instance.ToggleWindow<GameInfoPopup>();
+		}
 		
-		if (GUIHelper.Button("0.1x"))
+		if (Window.Button("0.1x"))
 		{
 			Log("Minimum Time Scale");
 			SetTimeScale(0.1f);
 		}
-		if (GUIHelper.Button("1x"))
+		if (Window.Button("1x"))
 		{
 			Log("Minimum Time Scale");
 			SetTimeScale(1f);
 		}
-		if (GUIHelper.Button("5x"))
+		if (Window.Button("5x"))
 		{
 			Log("Minimum Time Scale");
 			SetTimeScale(5f);

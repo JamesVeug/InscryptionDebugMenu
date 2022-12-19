@@ -1,11 +1,11 @@
 ﻿using BepInEx.Logging;
 using DebugMenu.Scripts.Acts;
 
-namespace DebugMenu.Scripts.Grimora;
+namespace DebugMenu.Scripts.Act3;
 
-public class ActGrimora : BaseAct
+public class Act3 : BaseAct
 {
-	public ActGrimora(ManualLogSource logger) : base(logger)
+	public Act3(DebugWindow window) : base(window)
 	{
 	}
 
@@ -16,8 +16,8 @@ public class ActGrimora : BaseAct
 	
 	public override void OnGUI()
 	{
-		GUIHelper.LabelHeader("Grimora Act");
-		GUIHelper.Label("Support not started");
+		Window.LabelHeader("Act 3");
+		Window.Label("Support not started");
 	}
 
 	public override void OnGUIRestart()

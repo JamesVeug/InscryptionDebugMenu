@@ -11,7 +11,7 @@ public class Act1 : BaseAct
 	public static bool isNodeDebugModeActive = false;
 	public static bool activateAllMapNodesActive = false;
 	
-	public Act1(ManualLogSource logger) : base(logger)
+	public Act1(DebugWindow window) : base(window)
 	{
 	}
 
@@ -22,25 +22,25 @@ public class Act1 : BaseAct
 
 	public override void OnGUI()
 	{
-		GUIHelper.LabelHeader("Act 1");
+		Window.LabelHeader("Act 1");
 
 		if (RunState.Run.currentNodeId > 0 && Singleton<MapNodeManager>.m_Instance != null)
 		{
 			MapNode nodeWithId = Singleton<MapNodeManager>.Instance.GetNodeWithId(RunState.Run.currentNodeId);
-			GUIHelper.Label("Current Node: " + RunState.Run.currentNodeId + " = " + nodeWithId, 120);
+			Window.Label("Current Node: " + RunState.Run.currentNodeId + " = " + nodeWithId, 120);
 			
 		}
 		
-		if (GUIHelper.Button("Replenish Flames"))
+		if (Window.Button("Replenish Flames"))
 		{
 			RunState.Run.playerLives = RunState.Run.maxPlayerLives;
 		}
-		if (GUIHelper.Button("Add 5 Teeth"))
+		if (Window.Button("Add 5 Teeth"))
 		{
 			RunState.Run.currency += 5;
 		}
 		
-		GUIHelper.StartNewColumn();
+		Window.StartNewColumn();
 		OnGUICurrentNode();
 	}
 
@@ -52,7 +52,7 @@ public class Act1 : BaseAct
 			return;
 		}
 
-		GUIHelper.LabelHeader(gameFlowManager.CurrentGameState.ToString());
+		Window.LabelHeader(gameFlowManager.CurrentGameState.ToString());
 		switch (gameFlowManager.CurrentGameState)
 		{
 			case GameState.CardBattle:
@@ -71,15 +71,15 @@ public class Act1 : BaseAct
 		}
 	}
 
-	private static void OnGUICardBattle()
+	private void OnGUICardBattle()
 	{
-		if (GUIHelper.Button("Auto win battle"))
+		if (Window.Button("Auto win battle"))
 		{
 			LifeManager lifeManager = Singleton<LifeManager>.Instance;
 			int lifeLeft = Mathf.Abs(lifeManager.Balance - 5);
 			Plugin.Instance.StartCoroutine(lifeManager.ShowDamageSequence(lifeLeft, lifeLeft, false, 0.125f, null, 0f, false));
 		}
-		if (GUIHelper.Button("Auto lose battle"))
+		if (Window.Button("Auto lose battle"))
 		{
 			LifeManager lifeManager = Singleton<LifeManager>.Instance;
 			int lifeLeft = Mathf.Abs(lifeManager.Balance - 5);
@@ -89,7 +89,7 @@ public class Act1 : BaseAct
 
 	public override void OnGUIRestart()
 	{
-		if (GUIHelper.Button("Restart"))
+		if (Window.Button("Restart"))
 		{
 			Restart();
 		}
@@ -97,7 +97,7 @@ public class Act1 : BaseAct
 
 	public override void OnGUIReload()
 	{
-		if (GUIHelper.Button("Reload"))
+		if (Window.Button("Reload"))
 		{
 			Reload();
 		}
@@ -105,8 +105,8 @@ public class Act1 : BaseAct
 
 	private void OnGUIMap()
 	{
-		GUIHelper.Toggle("Skip next node", ref isNodeDebugModeActive);
-		if (GUIHelper.Toggle("Activate all Map nodes", ref activateAllMapNodesActive))
+		Window.Toggle("Skip next node", ref isNodeDebugModeActive);
+		if (Window.Toggle("Activate all Map nodes", ref activateAllMapNodesActive))
 		{
 			MapNode node = Singleton<MapNodeManager>.Instance.ActiveNode;
 			Singleton<MapNodeManager>.Instance.SetActiveNode(node);

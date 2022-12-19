@@ -8,6 +8,7 @@ using DebugMenu.Scripts.Acts;
 using DebugMenu.Scripts.All;
 using DebugMenu.Scripts.Grimora;
 using DebugMenu.Scripts.Magnificus;
+using DebugMenu.Scripts.Popups;
 using HarmonyLib;
 using UnityEngine;
 
@@ -26,17 +27,9 @@ namespace DebugMenu
 	    
 	    public static string PluginDirectory;
 	    public static float StartingFixedDeltaTime;
+
+	    public static List<BaseWindow> AllWindows = new List<BaseWindow>();
 	    
-	    private bool modUIOpen = true;
-
-	    private BaseAct CurrentAct = null;
-
-	    private AllActs allActs;
-	    private Act1 act1;
-	    private Act2 act2;
-	    private Act3 act3;
-	    private ActGrimora actGrimora;
-	    private ActMagnificus actMagnificus;
 
         private void Awake()
         {
@@ -45,78 +38,48 @@ namespace DebugMenu
 	        Log = Logger;
 	        StartingFixedDeltaTime = Time.fixedDeltaTime;
 	        
-	        allActs = new AllActs(Logger);
-	        act1 = new Act1(Logger);
-	        act2 = new Act2(Logger);
-	        act3 = new Act3(Logger);
-	        actGrimora = new ActGrimora(Logger);
-	        actMagnificus = new ActMagnificus(Logger);
             PluginDirectory = this.Info.Location.Replace("DebugMenu.dll", "");
 
             new Harmony(PluginGuid).PatchAll();
+
+            if (AllWindows.Count == 0)
+            {
+	            ToggleWindow<DebugWindow>();
+            }
 
             Logger.LogInfo($"Loaded {PluginName}!");	        
         }
 
         private void Update()
         {
-	        if (SaveManager.SaveFile.IsPart1)
+	        for (int i = 0; i < AllWindows.Count; i++)
 	        {
-		        // Leshy
-		        CurrentAct = act1;
-	        }
-	        else if (SaveManager.SaveFile.IsPart2)
-	        {
-		        // GDC
-		        CurrentAct = act2;
-	        }
-	        else if (SaveManager.SaveFile.IsPart3)
-	        {
-		        // PO3
-		        CurrentAct = act3;
-	        }
-	        else if (SaveManager.SaveFile.IsGrimora)
-	        {
-		        // Grimora
-		        CurrentAct = actGrimora;
-	        }
-	        else if (SaveManager.SaveFile.IsMagnificus)
-	        {
-		        // Magnificus
-		        CurrentAct = actMagnificus;
-	        }
-	        else
-	        {
-		        // In main menu maybe???
-		        CurrentAct = null;
-	        }
-
-	        if (CurrentAct != null)
-	        {
-		        CurrentAct.Update();
+		        AllWindows[i].Update();
 	        }
         }
 
         private void OnGUI()
         {
-	        GUIHelper.Reset();
-	        
-	        GUIHelper.Toggle("Show Debug Menu", ref modUIOpen);
-	        if (!modUIOpen) 
-		        return;
-	        
-	        allActs.OnGUI();
-	        if (CurrentAct != null)
+	        for (int i = 0; i < AllWindows.Count; i++)
 	        {
-		        CurrentAct.OnGUIReload();
-		        CurrentAct.OnGUIRestart();
+		        AllWindows[i].OnWindowGUI();
 	        }
-	        
-	        GUIHelper.StartNewColumn();
-	        if (CurrentAct != null)
+        }
+
+        public void ToggleWindow<T>() where T : BaseWindow, new()
+        {
+	        for (int i = 0; i < AllWindows.Count; i++)
 	        {
-		        CurrentAct.OnGUI();
+		        BaseWindow window = AllWindows[i];
+		        if (window.GetType() == typeof(T))
+		        {
+			        AllWindows.RemoveAt(i);
+			        return;
+		        }
 	        }
+
+	        T t = new T();
+	        AllWindows.Add(t);
         }
     }
 }

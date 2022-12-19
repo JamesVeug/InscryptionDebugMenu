@@ -1,11 +1,12 @@
 ﻿using BepInEx.Logging;
 using DebugMenu.Scripts.Acts;
+using UnityEngine;
 
-namespace DebugMenu.Scripts.Act3;
+namespace DebugMenu.Scripts.Act2;
 
-public class Act3 : BaseAct
+public class Act2 : BaseAct
 {
-	public Act3(ManualLogSource logger) : base(logger)
+	public Act2(DebugWindow window) : base(window)
 	{
 	}
 
@@ -16,8 +17,8 @@ public class Act3 : BaseAct
 	
 	public override void OnGUI()
 	{
-		GUIHelper.LabelHeader("Act 3");
-		GUIHelper.Label("Support not started");
+		Window.LabelHeader("Act 2");
+		Window.Label("Support not started");
 	}
 
 	public override void OnGUIRestart()

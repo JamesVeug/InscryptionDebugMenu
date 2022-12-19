@@ -6,10 +6,12 @@ namespace DebugMenu.Scripts.Acts;
 public abstract class BaseAct
 {
 	protected readonly ManualLogSource Logger;
+	protected readonly DebugWindow Window;
 
-	public BaseAct(ManualLogSource logger)
+	public BaseAct(DebugWindow window)
 	{
-		Logger = logger;
+		Window = window;
+		Logger = Plugin.Log;
 	}
 
 	public abstract void Update();
