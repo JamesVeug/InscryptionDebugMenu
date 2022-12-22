@@ -31,7 +31,7 @@ public class Act1 : BaseAct
 			
 		}
 		
-		if (Window.Button("Replenish Flames"))
+		if (Window.Button("Replenish Candles"))
 		{
 			RunState.Run.playerLives = RunState.Run.maxPlayerLives;
 		}
