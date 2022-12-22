@@ -11,8 +11,12 @@ public class GameInfoPopup : BaseWindow
 	public override void OnGUI()
 	{
 		base.OnGUI();
-		Plugin.Log.LogInfo("GameInfoPopup");
 
+		if (Button("Show Resource Bank"))
+		{
+			Plugin.Instance.ToggleWindow<ResourceBankPopup>();
+		}
+		
 		int sceneCount = SceneManager.sceneCount;		
 		LabelHeader($"Scenes {sceneCount}");
 		Scene activeScene = SceneManager.GetActiveScene();
