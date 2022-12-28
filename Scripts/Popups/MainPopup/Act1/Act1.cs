@@ -115,6 +115,18 @@ public class Act1 : BaseAct
 			int lifeLeft = Mathf.Abs(lifeManager.Balance - 5);
 			Plugin.Instance.StartCoroutine(lifeManager.ShowDamageSequence(lifeLeft, lifeLeft, true, 0.125f, null, 0f, false));
 		}
+		
+		if (Window.Button("Deal 2 Damage"))
+		{
+			LifeManager lifeManager = Singleton<LifeManager>.Instance;
+			Plugin.Instance.StartCoroutine(lifeManager.ShowDamageSequence(2, 2, false, 0.125f, null, 0f, false));
+		}
+		
+		if (Window.Button("Take 2 Damage"))
+		{
+			LifeManager lifeManager = Singleton<LifeManager>.Instance;
+			Plugin.Instance.StartCoroutine(lifeManager.ShowDamageSequence(2, 2, true, 0.125f, null, 0f, false));
+		}
 	}
 
 	public override void OnGUIRestart()

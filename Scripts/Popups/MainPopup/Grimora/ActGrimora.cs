@@ -8,8 +8,10 @@ namespace DebugMenu.Scripts.Grimora;
 
 public class ActGrimora : BaseAct
 {
+	private MapSequence mapSequence;
 	public ActGrimora(DebugWindow window) : base(window)
 	{
+		mapSequence = new MapSequence(this);
 	}
 
 	public override void Update()
@@ -54,7 +56,7 @@ public class ActGrimora : BaseAct
 				break;
 			case GameState.Map:
 				// Show map related buttons
-				OnGUIMap();
+				mapSequence.OnGUI();
 				break;
 			case GameState.FirstPerson3D:
 				break;
@@ -116,11 +118,18 @@ public class ActGrimora : BaseAct
 			int lifeLeft = Mathf.Abs(lifeManager.Balance - 5);
 			Plugin.Instance.StartCoroutine(lifeManager.ShowDamageSequence(lifeLeft, lifeLeft, true, 0.125f, null, 0f, false));
 		}
-	}
-
-	private void OnGUIMap()
-	{
-		// TODO:
+		
+		if (Window.Button("Deal 2 Damage"))
+		{
+			LifeManager lifeManager = Singleton<LifeManager>.Instance;
+			Plugin.Instance.StartCoroutine(lifeManager.ShowDamageSequence(2, 2, false, 0.125f, null, 0f, false));
+		}
+		
+		if (Window.Button("Take 2 Damage"))
+		{
+			LifeManager lifeManager = Singleton<LifeManager>.Instance;
+			Plugin.Instance.StartCoroutine(lifeManager.ShowDamageSequence(2, 2, true, 0.125f, null, 0f, false));
+		}
 	}
 
 	public override void OnGUIRestart()
