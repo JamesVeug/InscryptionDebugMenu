@@ -1,6 +1,7 @@
 ﻿using BepInEx.Logging;
 using DebugMenu.Scripts.Acts;
 using DebugMenu.Scripts.Popups;
+using InscryptionAPI.Regions;
 using UnityEngine;
 
 namespace DebugMenu.Scripts.All;
@@ -8,6 +9,9 @@ namespace DebugMenu.Scripts.All;
 public class AllActs : BaseAct
 {
 	public static bool blockAllInput = false;
+	
+	public static bool RegionOverride = false;
+	public static string RegionNameOverride = "";  
 	
 	public AllActs(DebugWindow window) : base(window)
 	{
@@ -42,6 +46,17 @@ public class AllActs : BaseAct
 			Log("Minimum Time Scale");
 			SetTimeScale(5f);
 		}
+
+		ButtonListPopup.OnGUI(Window, RegionNameOverride, RegionNameList(), (a)=>RegionNameOverride = a);
+		if (Window.Toggle("Toggle Map Override", ref RegionOverride))
+		{
+			
+		}
+	}
+
+	private List<string> RegionNameList()
+	{
+		return RegionManager.AllRegionsCopy.ConvertAll((a) => a.name).ToList();
 	}
 
 	private void SetTimeScale(float speed)

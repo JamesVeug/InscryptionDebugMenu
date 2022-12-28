@@ -8,8 +8,9 @@ public abstract class DrawableGUI
 	
 	private float X = 0;
 	private float Y = 0;
-	private float ColumnWidth = 200;
-	private float ColumnPadding = 10;
+	protected float ColumnWidth = 200;
+	protected float RowHeight = 40;
+	protected float ColumnPadding = 10;
 	private int Columns = 1;
 	
 	private GUIStyle LabelHeaderStyle = GUIStyle.none;
@@ -41,16 +42,16 @@ public abstract class DrawableGUI
 	public virtual bool Button(string text)
 	{
 		float y = Y;
-		Y += 40f;
-		return GUI.Button(new Rect(X, y, ColumnWidth, 40f), text);
+		Y += RowHeight;
+		return GUI.Button(new Rect(X, y, ColumnWidth, RowHeight), text);
 	}
 	
 	/// <returns>Returns True if the value changed</returns>
 	public virtual bool Toggle(string text, ref bool value)
 	{
 		float y = Y;
-		Y += 40f;
-		bool toggle = GUI.Toggle(new Rect(X, y, ColumnWidth, 40f), value, text);
+		Y += RowHeight;
+		bool toggle = GUI.Toggle(new Rect(X, y, ColumnWidth, RowHeight), value, text);
 		if (toggle != value)
 		{
 			value = toggle;
@@ -61,7 +62,7 @@ public abstract class DrawableGUI
 
 	public virtual void Label(string text, float? height = null)
 	{
-		float h = height.HasValue ? height.Value : 40;
+		float h = height.HasValue ? height.Value : RowHeight;
 		float y = Y;
 		Y += h;
 		GUI.Label(new Rect(X, y, ColumnWidth, h), text);
@@ -70,7 +71,7 @@ public abstract class DrawableGUI
 	public virtual void LabelHeader(string text)
 	{
 		float y = Y;
-		Y += 40f;
-		GUI.Label(new Rect(X, y, ColumnWidth, 40f), text, LabelHeaderStyle);
+		Y += RowHeight;
+		GUI.Label(new Rect(X, y, ColumnWidth, RowHeight), text, LabelHeaderStyle);
 	}
 }

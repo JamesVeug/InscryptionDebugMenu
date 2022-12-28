@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using DiskCardGame;
+using UnityEngine;
 using UnityEngine.SceneManagement;
 
 namespace DebugMenu.Scripts.Popups;
@@ -11,6 +12,8 @@ public class GameInfoPopup : BaseWindow
 	public override void OnGUI()
 	{
 		base.OnGUI();
+
+		Label("Seed: " + SaveManager.SaveFile.randomSeed);
 
 		if (Button("Show Resource Bank"))
 		{

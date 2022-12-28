@@ -4,9 +4,10 @@ using System.Reflection.Emit;
 using DebugMenu.Scripts.All;
 using DiskCardGame;
 using HarmonyLib;
+using InscryptionAPI.Regions;
 using UnityEngine;
 
-namespace DebugMenu.Scripts.SpeedTweeks;
+namespace DebugMenu.Scripts.Act1;
 
 [HarmonyPatch(typeof(DisclaimerScreen), "BetaScreensSequence")]
 internal class Skip_Disclaimer
@@ -31,8 +32,8 @@ internal class SaveCardList
 	[HarmonyPrefix]
 	private static bool SaveCardListPrefix(List<CardInfo> starterDeck)
 	{
-		Act1.Act1.lastUsedStarterDeck = starterDeck;
-		Plugin.Log.LogInfo("New Starter Deck! With " + Act1.Act1.lastUsedStarterDeck.Count + " Cards!");
+		Act1.lastUsedStarterDeck = starterDeck;
+		Plugin.Log.LogInfo("New Starter Deck! With " + Act1.lastUsedStarterDeck.Count + " Cards!");
 		return true;
 	}
 
@@ -59,7 +60,7 @@ internal class MoveToNode_Debug
 		___transitioningGridY = newNode.Data.gridY;
 		Singleton<ViewManager>.Instance.Controller.LockState = ViewLockState.Locked;
 		yield return PlayerMarker.Instance.MoveToPoint(newNode.transform.position);
-		if (Act1.Act1.isNodeDebugModeActive)
+		if (Act1.SkipNextNode)
 		{
 			__instance.MovingNodes = false;
 			RunState.Run.currentNodeId = newNode.nodeId;
@@ -82,7 +83,7 @@ internal class MapNode_SetActive
 	[HarmonyPostfix]
 	private static bool Prefix(MapNode __instance, ref bool active)
 	{
-		if (Act1.Act1.activateAllMapNodesActive)
+		if (Act1.ActivateAllMapNodesActive)
 		{
 			active = true;
 		}
@@ -129,6 +130,29 @@ internal class InputButtons_Axis
 		{
 			__result = 0.0f;
 		}
+	}
+}
+
+[HarmonyPatch(typeof(RegionManager), nameof(RegionManager.GetRandomRegionFromTier), new Type[]{typeof(int)})]
+internal class RegionManager_GetRandomRegionFromTier
+{
+	[HarmonyPostfix]
+	private static bool Prefix(ref RegionData __result)
+	{
+		if (AllActs.RegionOverride)
+		{
+			RegionData data = RegionManager.AllRegionsCopy.Find((a) => a.name == AllActs.RegionNameOverride);
+			if (data == null)
+			{
+				Plugin.Log.LogInfo("Could not override region. Not found using name '" + AllActs.RegionNameOverride + "'");
+			}
+			else
+			{
+				__result = data;
+				return false;
+			}
+		}
+		return true;
 	}
 }
 

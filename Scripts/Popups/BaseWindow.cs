@@ -7,7 +7,7 @@ public abstract class BaseWindow : DrawableGUI
 	public abstract string PopupName { get; } 
 	public abstract Vector2 Size { get; } 
 	
-	private Rect windowRect = new Rect(20f, 20f, 512f, 512f);
+	protected Rect windowRect = new Rect(20f, 20f, 512f, 512f);
 	protected bool isOpen = true;
 
 	~BaseWindow()

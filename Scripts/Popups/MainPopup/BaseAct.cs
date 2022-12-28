@@ -5,8 +5,8 @@ namespace DebugMenu.Scripts.Acts;
 
 public abstract class BaseAct
 {
-	protected readonly ManualLogSource Logger;
-	protected readonly DebugWindow Window;
+	public readonly ManualLogSource Logger;
+	public readonly DebugWindow Window;
 
 	public BaseAct(DebugWindow window)
 	{

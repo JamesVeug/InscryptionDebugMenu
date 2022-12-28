@@ -66,7 +66,7 @@ namespace DebugMenu
 	        }
         }
 
-        public void ToggleWindow<T>() where T : BaseWindow, new()
+        public T ToggleWindow<T>() where T : BaseWindow, new()
         {
 	        for (int i = 0; i < AllWindows.Count; i++)
 	        {
@@ -74,12 +74,13 @@ namespace DebugMenu
 		        if (window.GetType() == typeof(T))
 		        {
 			        AllWindows.RemoveAt(i);
-			        return;
+			        return null;
 		        }
 	        }
 
 	        T t = new T();
 	        AllWindows.Add(t);
+	        return t;
         }
     }
 }

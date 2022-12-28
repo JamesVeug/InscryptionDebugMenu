@@ -1,5 +1,6 @@
 ﻿using BepInEx.Logging;
 using DebugMenu.Scripts.Acts;
+using DebugMenu.Scripts.Utils;
 using DiskCardGame;
 using UnityEngine;
 
@@ -8,11 +9,14 @@ namespace DebugMenu.Scripts.Act1;
 public class Act1 : BaseAct
 {
 	public static List<CardInfo> lastUsedStarterDeck = null;
-	public static bool isNodeDebugModeActive = false;
-	public static bool activateAllMapNodesActive = false;
+	public static bool SkipNextNode = false;
+	public static bool ActivateAllMapNodesActive = false;
+
+	private MapSequence m_mapSequence;
 	
 	public Act1(DebugWindow window) : base(window)
 	{
+		m_mapSequence = new MapSequence(this);
 	}
 
 	public override void Update()
@@ -28,7 +32,6 @@ public class Act1 : BaseAct
 		{
 			MapNode nodeWithId = Singleton<MapNodeManager>.Instance.GetNodeWithId(RunState.Run.currentNodeId);
 			Window.Label("Current Node: " + RunState.Run.currentNodeId + " = " + nodeWithId, 120);
-			
 		}
 		
 		if (Window.Button("Replenish Candles"))
@@ -38,6 +41,10 @@ public class Act1 : BaseAct
 		if (Window.Button("Add 5 Teeth"))
 		{
 			RunState.Run.currency += 5;
+		}
+		if (Window.Button("Remove 5 Teeth"))
+		{
+			RunState.Run.currency = Mathf.Max(0, RunState.Run.currency - 5);
 		}
 		
 		Window.StartNewColumn();
@@ -65,9 +72,32 @@ public class Act1 : BaseAct
 			case GameState.FirstPerson3D:
 				break;
 			case GameState.SpecialCardSequence:
+				SpecialNodeData nodeWithId = Helpers.LastSpecialNodeData;
+				Type nodeType = nodeWithId.GetType();
+				if (nodeType == typeof(CardChoicesNodeData))
+				{
+					OnGUICardChoiceNodeSequence();
+				}
+				else
+				{
+					Window.Label("Unhandled node type");
+					Window.Label(nodeType.FullName);
+				}
 				break;
 			default:
-				throw new ArgumentOutOfRangeException();
+				Window.Label("Unhandled GameFlowState:");
+				Window.Label(gameFlowManager.CurrentGameState.ToString());
+				break;
+		}
+	}
+	
+	private void OnGUICardChoiceNodeSequence()
+	{
+		CardSingleChoicesSequencer sequencer = Singleton<SpecialNodeHandler>.Instance.cardChoiceSequencer;
+		Window.Label("Sequencer: " + sequencer, 80);
+		if (Window.Button("Reroll choices"))
+		{
+			sequencer.OnRerollChoices();
 		}
 	}
 
@@ -105,12 +135,7 @@ public class Act1 : BaseAct
 
 	private void OnGUIMap()
 	{
-		Window.Toggle("Skip next node", ref isNodeDebugModeActive);
-		if (Window.Toggle("Activate all Map nodes", ref activateAllMapNodesActive))
-		{
-			MapNode node = Singleton<MapNodeManager>.Instance.ActiveNode;
-			Singleton<MapNodeManager>.Instance.SetActiveNode(node);
-		}
+		m_mapSequence.OnGUI();
 	}
 
 	private void Restart()
