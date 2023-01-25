@@ -156,6 +156,17 @@ internal class RegionManager_GetRandomRegionFromTier
 	}
 }
 
+[HarmonyPatch(typeof(MapNodeManager), nameof(MapNodeManager.GetNodeWithId), new Type[]{typeof(int)})]
+internal class MapNodeManager_GetNodeWithId
+{
+	[HarmonyPrefix]
+	private static bool MoveToNodePrefix(MapNodeManager __instance, ref MapNode __result, int id)
+	{
+		__result = __instance.nodes.Find((MapNode x) => x != null && x.nodeId == id);
+		return false;
+	}
+}
+
 /*
  NOTE: Need to fix this. It does block but it spams sounds at the same time. Need to find out why
  [HarmonyPatch]

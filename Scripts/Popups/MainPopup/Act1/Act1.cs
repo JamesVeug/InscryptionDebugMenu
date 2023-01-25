@@ -26,11 +26,17 @@ public class Act1 : BaseAct
 
 	public override void OnGUI()
 	{
+		MapNodeManager mapNodeManager = Singleton<MapNodeManager>.m_Instance;
+		if (mapNodeManager == null || mapNodeManager.nodes == null || RunState.Run == null)
+		{
+			return;
+		}
+		
 		Window.LabelHeader("Act 1");
 
-		if (RunState.Run.currentNodeId > 0 && Singleton<MapNodeManager>.m_Instance != null)
+		if (RunState.Run.currentNodeId > 0)
 		{
-			MapNode nodeWithId = Singleton<MapNodeManager>.Instance.GetNodeWithId(RunState.Run.currentNodeId);
+			MapNode nodeWithId = mapNodeManager.GetNodeWithId(RunState.Run.currentNodeId);
 			Window.Label("Current Node: " + RunState.Run.currentNodeId + " = " + nodeWithId, 120);
 		}
 		

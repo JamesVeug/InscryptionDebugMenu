@@ -62,9 +62,10 @@ public class ResourceBankPopup : BaseWindow
 			Label(text);
 			resourceBankInfo += text + "\n";
 
-			if (row * 40 > Size.y)
+			if (row > 10)
 			{
 				StartNewColumn();
+				row = 0;
 			}
 
 			row++;
