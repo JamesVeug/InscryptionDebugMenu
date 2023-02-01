@@ -1,7 +1,9 @@
 ﻿using BepInEx.Logging;
 using DebugMenu.Scripts.Acts;
+using DebugMenu.Scripts.Popups;
 using DebugMenu.Scripts.Utils;
 using DiskCardGame;
+using InscryptionAPI.Items;
 using UnityEngine;
 
 namespace DebugMenu.Scripts.Act1;
@@ -52,9 +54,69 @@ public class Act1 : BaseAct
 		{
 			RunState.Run.currency = Mathf.Max(0, RunState.Run.currency - 5);
 		}
+
+		DrawItemsGUI();
 		
 		Window.StartNewColumn();
 		OnGUICurrentNode();
+	}
+
+	private void DrawItemsGUI()
+	{
+		List<ConsumableItemData> datas = ItemsUtil.AllConsumables;
+		List<string> names = datas.Select((a)=>a.rulebookName).ToList();
+		names.Insert(0, "None");
+		
+		List<string> values = datas.Select((a)=>a.name).ToList();
+		values.Insert(0, null);
+		
+		List<string> items = new List<string>(RunState.Run.consumables);
+		while (items.Count < RunState.Run.MaxConsumables)
+		{
+			items.Add(null);
+		}
+
+		for (int i = 0; i < items.Count; i++)
+		{
+			string consumable = items[i];
+			ConsumableItemData itemData = ItemsUtil.GetConsumableByName(consumable);
+			string itemname = itemData != null ? itemData.rulebookName : consumable == null ? "None" : consumable;
+			int currentIndex = i;
+			ButtonListPopup.OnGUI(Window, itemname, names, (a) =>
+			{
+				List<string> currentItems = RunState.Run.consumables;
+				string value = values[a];
+
+				if (value == null)
+				{
+					ItemsManager.Instance.RemoveItemFromSaveData(consumable);
+					Plugin.Log.LogInfo("Item removed: " + value);
+				}
+				else
+				{
+					if (currentIndex >= currentItems.Count)
+					{
+						currentItems.Add(value);
+						Plugin.Log.LogInfo("Item added: " + value);
+					}
+					else
+					{
+						currentItems[currentIndex] = value;
+						Plugin.Log.LogInfo("Item changed: " + value);
+					}
+				}
+				
+				foreach (ConsumableItemSlot slot in Singleton<ItemsManager>.Instance.consumableSlots)
+				{
+					if (slot.Item)
+					{
+						slot.DestroyItem();
+					}
+				}
+
+				Singleton<ItemsManager>.Instance.UpdateItems(true);
+			});
+		}
 	}
 
 	private void OnGUICurrentNode()

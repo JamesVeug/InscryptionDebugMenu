@@ -47,7 +47,8 @@ public class AllActs : BaseAct
 			SetTimeScale(5f);
 		}
 
-		ButtonListPopup.OnGUI(Window, RegionNameOverride, RegionNameList(), (a)=>RegionNameOverride = a);
+		List<string> regionNameList = RegionNameList();
+		ButtonListPopup.OnGUI(Window, RegionNameOverride, regionNameList, (a)=>RegionNameOverride = regionNameList[a]);
 		if (Window.Toggle("Toggle Map Override", ref RegionOverride))
 		{
 			
