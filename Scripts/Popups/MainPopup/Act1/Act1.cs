@@ -171,6 +171,12 @@ public class Act1 : BaseAct
 
 	private void OnGUICardBattle()
 	{
+		MapNode nodeWithId =  Singleton<MapNodeManager>.m_Instance.GetNodeWithId(RunState.Run.currentNodeId);
+		if (nodeWithId.Data is CardBattleNodeData cardBattleNodeData)
+		{
+			Window.Label($"Difficulty: {cardBattleNodeData.difficulty} + {RunState.Run.DifficultyModifier}");
+		}
+		
 		if (Window.Button("Auto win battle"))
 		{
 			LifeManager lifeManager = Singleton<LifeManager>.Instance;
