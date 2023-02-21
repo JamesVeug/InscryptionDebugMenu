@@ -20,6 +20,7 @@ public class DebugWindow : BaseWindow
 	private Act3.Act3 act3;
 	private ActGrimora actGrimora;
 	private ActMagnificus actMagnificus;
+	private Vector2 position;
 
 	public DebugWindow() : base()
 	{
@@ -73,6 +74,10 @@ public class DebugWindow : BaseWindow
 
 	public override void OnGUI()
 	{
+		Rect scrollableAreaSize = new Rect(new Vector2(0, 0), new Vector2(TotalWidth, Height));
+		Rect scrollViewSize = new Rect(new Vector2(0, 0), Size - new Vector2(10, 25));
+		position = GUI.BeginScrollView(scrollViewSize, position, scrollableAreaSize);
+		
 		base.OnGUI();
 	        
 		allActs.OnGUI();
@@ -87,5 +92,8 @@ public class DebugWindow : BaseWindow
 		{
 			CurrentAct.OnGUI();
 		}
+
+
+		GUI.EndScrollView();
 	}
 }

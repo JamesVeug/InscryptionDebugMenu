@@ -7,7 +7,7 @@ namespace DebugMenu.Scripts.Popups;
 public class ButtonListPopup : BaseWindow
 {
 	public override string PopupName => popupNameOverride;
-	public override Vector2 Size => new Vector2(600, 600);
+	public override Vector2 Size => new Vector2(630, 600);
 
 	private List<string> buttonNames = new List<string>();
 	private string popupNameOverride = "Button List";
@@ -19,11 +19,11 @@ public class ButtonListPopup : BaseWindow
 		base.OnGUI();
 
 		int namesCount = buttonNames.Count; // 20
-		int height = Mathf.Max(Mathf.FloorToInt(Size.y / RowHeight) - 1, 1); // 600 / 40 = 15 
-		int width = Mathf.CeilToInt((float)namesCount / height); // 20 / 15 = 4
-		Rect rect = new Rect(new Vector2(0, 0), new Vector2(width *  ColumnWidth, Size.y));
-		Rect view = new Rect(new Vector2(0, 0), Size - new Vector2(50, 100));
-		position = GUI.BeginScrollView(rect, position, view);
+		int rows = Mathf.Max(Mathf.FloorToInt(Size.y / RowHeight) - 1, 1); // 600 / 40 = 15 
+		int columns = Mathf.CeilToInt((float)namesCount / rows); // 20 / 15 = 4
+		Rect scrollableAreaSize = new Rect(new Vector2(0, 0), new Vector2(columns *  ColumnWidth + (columns - 1) * 10, rows * RowHeight));
+		Rect scrollViewSize = new Rect(new Vector2(0, 0), Size - new Vector2(10, 25));
+		position = GUI.BeginScrollView(scrollViewSize, position, scrollableAreaSize);
 		
 		int j = 0;
 		for (int i = 0; i < namesCount; i++)
@@ -36,7 +36,7 @@ public class ButtonListPopup : BaseWindow
 			}
 
 			j++;
-			if (j * RowHeight >= Size.y)
+			if (j >= rows)
 			{
 				StartNewColumn();
 				j = 0;

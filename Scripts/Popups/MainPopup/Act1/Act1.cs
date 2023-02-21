@@ -35,7 +35,7 @@ public class Act1 : BaseAct
 		}
 		
 		Window.LabelHeader("Act 1");
-
+		
 		if (RunState.Run.currentNodeId > 0)
 		{
 			MapNode nodeWithId = mapNodeManager.GetNodeWithId(RunState.Run.currentNodeId);
@@ -55,6 +55,7 @@ public class Act1 : BaseAct
 			RunState.Run.currency = Mathf.Max(0, RunState.Run.currency - 5);
 		}
 
+		Window.LabelHeader("Items");
 		DrawItemsGUI();
 		
 		Window.StartNewColumn();
@@ -90,19 +91,16 @@ public class Act1 : BaseAct
 				if (value == null)
 				{
 					ItemsManager.Instance.RemoveItemFromSaveData(consumable);
-					Plugin.Log.LogInfo("Item removed: " + value);
 				}
 				else
 				{
 					if (currentIndex >= currentItems.Count)
 					{
 						currentItems.Add(value);
-						Plugin.Log.LogInfo("Item added: " + value);
 					}
 					else
 					{
 						currentItems[currentIndex] = value;
-						Plugin.Log.LogInfo("Item changed: " + value);
 					}
 				}
 				

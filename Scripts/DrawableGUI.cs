@@ -5,6 +5,7 @@ namespace DebugMenu.Scripts;
 public abstract class DrawableGUI
 {
 	public float TotalWidth => Columns * ColumnWidth + ((Columns - 1) * ColumnPadding);
+	public float Height => MaxHeight;
 	
 	private float X = 0;
 	private float Y = 0;
@@ -12,6 +13,7 @@ public abstract class DrawableGUI
 	protected float RowHeight = 40;
 	protected float ColumnPadding = 10;
 	private int Columns = 1;
+	private float MaxHeight = 1;
 	
 	private GUIStyle LabelHeaderStyle = GUIStyle.none;
 
@@ -29,6 +31,7 @@ public abstract class DrawableGUI
 	{
 		X = ColumnPadding;
 		Y = 10;
+		MaxHeight = 0;
 	}
 
 	public virtual void StartNewColumn()
@@ -43,6 +46,7 @@ public abstract class DrawableGUI
 	{
 		float y = Y;
 		Y += RowHeight;
+		MaxHeight = Mathf.Max(MaxHeight, Y);
 		return GUI.Button(new Rect(X, y, ColumnWidth, RowHeight), text);
 	}
 	
@@ -51,6 +55,7 @@ public abstract class DrawableGUI
 	{
 		float y = Y;
 		Y += RowHeight;
+		MaxHeight = Mathf.Max(MaxHeight, Y);
 		bool toggle = GUI.Toggle(new Rect(X, y, ColumnWidth, RowHeight), value, text);
 		if (toggle != value)
 		{
@@ -65,6 +70,7 @@ public abstract class DrawableGUI
 		float h = height.HasValue ? height.Value : RowHeight;
 		float y = Y;
 		Y += h;
+		MaxHeight = Mathf.Max(MaxHeight, Y);
 		GUI.Label(new Rect(X, y, ColumnWidth, h), text);
 	}
 
@@ -72,6 +78,7 @@ public abstract class DrawableGUI
 	{
 		float y = Y;
 		Y += RowHeight;
+		MaxHeight = Mathf.Max(MaxHeight, Y);
 		GUI.Label(new Rect(X, y, ColumnWidth, RowHeight), text, LabelHeaderStyle);
 	}
 }
