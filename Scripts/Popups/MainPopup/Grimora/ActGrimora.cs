@@ -40,6 +40,11 @@ public class ActGrimora : BaseAct
 		OnGUICurrentNode();
 	}
 
+	public override void OnGUIMinimal()
+	{
+		OnGUICurrentNode();
+	}
+
 	private void OnGUICurrentNode()
 	{
 		GameFlowManager gameFlowManager = Singleton<GameFlowManager>.m_Instance;

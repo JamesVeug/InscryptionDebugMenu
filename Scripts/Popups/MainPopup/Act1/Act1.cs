@@ -62,6 +62,11 @@ public class Act1 : BaseAct
 		OnGUICurrentNode();
 	}
 
+	public override void OnGUIMinimal()
+	{
+		OnGUICurrentNode();
+	}
+
 	private void DrawItemsGUI()
 	{
 		List<ConsumableItemData> datas = ItemsUtil.AllConsumables;

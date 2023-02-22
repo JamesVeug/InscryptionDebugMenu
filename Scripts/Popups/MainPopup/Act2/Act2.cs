@@ -21,6 +21,11 @@ public class Act2 : BaseAct
 		Window.Label("Support not started");
 	}
 
+	public override void OnGUIMinimal()
+	{
+		OnGUI();
+	}
+
 	public override void OnGUIRestart()
 	{
 		// TODO:

@@ -17,6 +17,7 @@ public abstract class BaseAct
 	public abstract void Update();
 	
 	public abstract void OnGUI();
+	public abstract void OnGUIMinimal();
 	
 	public abstract void OnGUIReload();
 	public abstract void OnGUIRestart();

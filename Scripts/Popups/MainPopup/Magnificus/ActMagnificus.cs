@@ -20,6 +20,11 @@ public class ActMagnificus : BaseAct
 		Window.Label("Support not started");
 	}
 
+	public override void OnGUIMinimal()
+	{
+		OnGUI();
+	}
+
 	public override void OnGUIRestart()
 	{
 		// TODO:

@@ -55,6 +55,11 @@ public class AllActs : BaseAct
 		}
 	}
 
+	public override void OnGUIMinimal()
+	{
+		
+	}
+
 	private List<string> RegionNameList()
 	{
 		return RegionManager.AllRegionsCopy.ConvertAll((a) => a.name).ToList();

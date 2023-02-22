@@ -5,7 +5,8 @@ namespace DebugMenu.Scripts.Popups;
 public abstract class BaseWindow : DrawableGUI
 {
 	public abstract string PopupName { get; } 
-	public abstract Vector2 Size { get; } 
+	public abstract Vector2 Size { get; }
+	public virtual bool ClosableWindow => true; 
 	
 	protected Rect windowRect = new Rect(20f, 20f, 512f, 512f);
 	protected bool isOpen = true;
@@ -29,15 +30,51 @@ public abstract class BaseWindow : DrawableGUI
 	protected void OnWindowDraw(int windowID)
 	{
 		GUI.DragWindow(new Rect(25f, 0f, Size.x, 20f));
+		if (ClosableWindow)
+		{
+			if (!OnClosableWindowDraw())
+			{
+				return;
+			}
+		}
+		else
+		{
+			if (!OnToggleWindowDraw())
+			{
+				return;
+			}
+		}
+		windowRect.Set(windowRect.x, windowRect.y, Size.x, Size.y);
+		BeginDrawingGUI();
+	}
+
+	protected virtual void BeginDrawingGUI()
+	{
+		GUILayout.BeginArea(new Rect(5f, 25f, windowRect.width - 10f, windowRect.height));
+		OnGUI();
+		GUILayout.EndArea();
+	}
+
+	protected virtual bool OnToggleWindowDraw()
+	{
 		isOpen = GUI.Toggle(new Rect(5f, 0f, 20f, 20f), isOpen, "");
 		if (!isOpen)
 		{
 			windowRect.Set(windowRect.x, windowRect.y, 120, 60);
-			return;
+			return false;
 		}
-		windowRect.Set(windowRect.x, windowRect.y, Size.x, Size.y);
-		GUILayout.BeginArea(new Rect(5f, 25f, windowRect.width - 10f, windowRect.height));
-		OnGUI();
-		GUILayout.EndArea();
+
+		return true;
+	}
+
+	protected bool OnClosableWindowDraw()
+	{
+		if (GUI.Button(new Rect(5f, 0f, 100f, 20f), "Close"))
+		{
+			Plugin.AllWindows.Remove(this);
+			return false;
+		}
+
+		return true;
 	}
 }

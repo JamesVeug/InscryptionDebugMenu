@@ -4,14 +4,16 @@ namespace DebugMenu.Scripts;
 
 public abstract class DrawableGUI
 {
+	private const float TopOffset = 20;
+	
 	public float TotalWidth => Columns * ColumnWidth + ((Columns - 1) * ColumnPadding);
-	public float Height => MaxHeight;
+	public float Height => MaxHeight + RowHeight;
 	
 	private float X = 0;
 	private float Y = 0;
 	protected float ColumnWidth = 200;
 	protected float RowHeight = 40;
-	protected float ColumnPadding = 10;
+	protected float ColumnPadding = 5;
 	private int Columns = 1;
 	private float MaxHeight = 1;
 	
@@ -30,14 +32,15 @@ public abstract class DrawableGUI
 	public virtual void Reset()
 	{
 		X = ColumnPadding;
-		Y = 10;
+		Y = TopOffset;
 		MaxHeight = 0;
+		Columns = 0;
 	}
 
 	public virtual void StartNewColumn()
 	{
 		X += ColumnWidth + ColumnPadding;
-		Y = 10;
+		Y = TopOffset;
 		Columns++;
 	}
 	
