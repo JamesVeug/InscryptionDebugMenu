@@ -133,11 +133,11 @@ internal class InputButtons_Axis
 	}
 }
 
-[HarmonyPatch(typeof(RegionManager), nameof(RegionManager.GetRandomRegionFromTier), new Type[]{typeof(int)})]
+[HarmonyPatch(typeof(RegionManager), nameof(RegionManager.GetAllRegionsForMapGeneration))]
 internal class RegionManager_GetRandomRegionFromTier
 {
 	[HarmonyPostfix]
-	private static bool Prefix(ref RegionData __result)
+	private static bool Prefix(ref List<RegionData> __result)
 	{
 		if (AllActs.RegionOverride)
 		{
@@ -148,7 +148,8 @@ internal class RegionManager_GetRandomRegionFromTier
 			}
 			else
 			{
-				__result = data;
+				__result = new List<RegionData>();
+				__result.Add(data);
 				return false;
 			}
 		}
