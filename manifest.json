@@ -1,10 +1,10 @@
 {
     "name": "DebugMenu",
-    "version_number": "0.3.1",
+    "version_number": "0.4.0",
     "website_url": "https://github.com/JamesVeug/InscryptionDebugMenu",
     "description": "Adds an in-game menu that helps you skip the game or see more info",
     "dependencies": [
         "BepInEx-BepInExPack_Inscryption-5.4.1902",
-        "API_dev-API-2.7.0"
+        "API_dev-API-2.11.0"
     ]
 }

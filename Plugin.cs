@@ -1,13 +1,6 @@
 using BepInEx;
 using BepInEx.Logging;
-using DebugMenu.Scripts;
-using DebugMenu.Scripts.Act1;
-using DebugMenu.Scripts.Act2;
-using DebugMenu.Scripts.Act3;
 using DebugMenu.Scripts.Acts;
-using DebugMenu.Scripts.All;
-using DebugMenu.Scripts.Grimora;
-using DebugMenu.Scripts.Magnificus;
 using DebugMenu.Scripts.Popups;
 using HarmonyLib;
 using UnityEngine;
@@ -20,7 +13,7 @@ namespace DebugMenu
     {
 	    public const string PluginGuid = "jamesgames.inscryption.debugmenu";
 	    public const string PluginName = "Debug Menu";
-	    public const string PluginVersion = "0.3.1.0";
+	    public const string PluginVersion = "0.4.0.0";
 
 	    public static Plugin Instance;
 	    public static ManualLogSource Log;

@@ -10,7 +10,7 @@ If you want more of other acts feel free to make changes to the repo and do a pu
 
 This mod uses a lot of code from SpeedTweaks and extends on it greatly.
 
-Talk to @James on the inscryption discord for more info
+Talk to @James on the inscryption modding discord for more info
 
 ## Thanks To:
 - Peaiece for Speed Tweaks
