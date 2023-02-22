@@ -69,7 +69,7 @@ public abstract class BaseWindow : DrawableGUI
 
 	protected bool OnClosableWindowDraw()
 	{
-		if (GUI.Button(new Rect(5f, 0f, 100f, 20f), "Close"))
+		if (GUI.Button(new Rect(5f, 0f, 20f, 20f), "X"))
 		{
 			Plugin.AllWindows.Remove(this);
 			return false;
