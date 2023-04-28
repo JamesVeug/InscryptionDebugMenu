@@ -18,6 +18,7 @@ public abstract class DrawableGUI
 	private float MaxHeight = 1;
 	
 	private GUIStyle LabelHeaderStyle = GUIStyle.none;
+	private GUIStyle ButtonStyle = GUIStyle.none;
 
 	public virtual void OnGUI()
 	{
@@ -26,6 +27,8 @@ public abstract class DrawableGUI
 		LabelHeaderStyle.alignment = TextAnchor.MiddleCenter;
 		LabelHeaderStyle.fontStyle = FontStyle.Bold;
 
+		ButtonStyle = new GUIStyle(GUI.skin.button);
+		ButtonStyle.wordWrap = true;
 		Reset();
 	}
 	
@@ -45,12 +48,13 @@ public abstract class DrawableGUI
 	}
 	
 	/// <returns>Returns true if the button was pressed</returns>
-	public virtual bool Button(string text)
+	public virtual bool Button(string text, float? height = null)
 	{
+		float h = height.HasValue ? height.Value : RowHeight;
 		float y = Y;
-		Y += RowHeight;
+		Y += h;
 		MaxHeight = Mathf.Max(MaxHeight, Y);
-		return GUI.Button(new Rect(X, y, ColumnWidth, RowHeight), text);
+		return GUI.Button(new Rect(X, y, ColumnWidth, h), text, ButtonStyle);
 	}
 	
 	/// <returns>Returns True if the value changed</returns>

@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using DebugMenu.Scripts.Utils;
+using UnityEngine;
 using UnityEngine.SceneManagement;
 using Object = UnityEngine.Object;
 
@@ -11,6 +12,7 @@ public class ResourceBankPopup : BaseWindow
 
 	private Vector2 scrollPosition;
 	private string resourceBankInfo;
+	private string filterText;
 
 	public ResourceBankPopup()
 	{
@@ -24,24 +26,33 @@ public class ResourceBankPopup : BaseWindow
 		ResourceBank resourceBank = ResourceBank.instance;
 		if (resourceBank == null)
 		{
-			Label($"null");
+			Label($"null resourceBank");
 			return;
 		}
 
-		if (Button("Copy To Clipboard"))
+		if (Button("Copy All To Clipboard"))
 		{
 			GUIUtility.systemCopyBuffer = resourceBankInfo;
 		}
+		
+		Label("Filter", RowHeight / 2);
+		filterText = TextField(filterText, RowHeight / 2);
 
+		Label(""); // padding
+		
 		resourceBankInfo = "";
 		int resourcesCount = resourceBank.resources.Count;
 		int row = 0;
 		for (int i = 0; i < resourcesCount; i++)
 		{
 			ResourceBank.Resource resource = resourceBank.resources[i];
-			string resourcePath = $"{i} " + resource.path;
-			Label(resourcePath);
-			resourceBankInfo += resourcePath + "\n";
+			string path = resource.path;
+			if (!string.IsNullOrEmpty(filterText) && !path.ContainsText(filterText, false))
+			{
+				continue;
+			}
+
+			string resourcePath = path + "\n";
 
 			string assetString = null;
 			Object resourceAsset = resource.asset;
@@ -49,18 +60,21 @@ public class ResourceBankPopup : BaseWindow
 			{
 				assetString = "null";
 			}
-			else if (resourceAsset is GameObject resourceAssetGO)
+			else if (resourceAsset is GameObject)
 			{
-				assetString = $"GO({resourceAssetGO.name})";
+				assetString = $"GameObject";
 			}
 			else
 			{
 				assetString = $"{resourceAsset.GetType()}";
 			}
 
-			string text = $"{i} " + assetString;
-			Label(text);
-			resourceBankInfo += text + "\n";
+			resourcePath += assetString;
+			if (Button(resourcePath, 60))
+			{
+				GUIUtility.systemCopyBuffer = resourcePath;
+			}
+			resourceBankInfo += "\n" + resourcePath + "\n";
 
 			if (row > 10)
 			{
