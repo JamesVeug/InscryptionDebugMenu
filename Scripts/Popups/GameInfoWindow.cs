@@ -9,10 +9,17 @@ public class GameInfoPopup : BaseWindow
 	public override string PopupName => "Game Info";
 	public override Vector2 Size => new Vector2(200, 500);
 
+	public float updateInterval = 0.5F;
+ 
+	private float lastInterval;
+	private int frames = 0;
+	private int fps;
+
 	public override void OnGUI()
 	{
 		base.OnGUI();
 
+		Label("FPS: " + fps);
 		Label("Seed: " + SaveManager.SaveFile.randomSeed);
 
 		if (Button("Show Resource Bank"))
@@ -35,6 +42,20 @@ public class GameInfoPopup : BaseWindow
 			{
 				Label($"{i} {scene.name}");
 			}
+		}
+	}
+
+	public override void Update()
+	{
+		base.Update();
+		++frames;
+ 
+		float timeNow = Time.realtimeSinceStartup;
+		if (timeNow > lastInterval + updateInterval)
+		{
+			fps = (int)(frames / (timeNow - lastInterval));
+			frames = 0;
+			lastInterval = timeNow;
 		}
 	}
 }
