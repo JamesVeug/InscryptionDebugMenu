@@ -125,7 +125,7 @@ public class Act1 : BaseAct
 		values.Add(null); // Option to set the item to null (Don't have an item in this slot) 
 		for (int i = 0; i < allConsumables.Count; i++)
 		{
-			names.Add(allConsumables[i].rulebookName);
+			names.Add(allConsumables[i].rulebookName + "\n(" + allConsumables[i].name + ")");
 			values.Add(allConsumables[i].name);
 		}
 
