@@ -81,7 +81,7 @@ public class Act1 : BaseAct
 			ConsumableItemData itemData = ItemsUtil.GetConsumableByName(consumable);
 			string itemname = itemData != null ? itemData.rulebookName : consumable == null ? "None" : consumable;
 			int currentIndex = i;
-			ButtonListPopup.OnGUI(Window, itemname, GetListsOfAllItems, (chosenIndex, chosenValue) =>
+			ButtonListPopup.OnGUI(Window, itemname, "Change Item " + (i+1), GetListsOfAllItems, (chosenIndex, chosenValue) =>
 			{
 				List<string> currentItems = RunState.Run.consumables;
 
