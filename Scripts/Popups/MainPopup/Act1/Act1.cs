@@ -1,9 +1,7 @@
-﻿using BepInEx.Logging;
-using DebugMenu.Scripts.Acts;
+﻿using DebugMenu.Scripts.Acts;
 using DebugMenu.Scripts.Popups;
 using DebugMenu.Scripts.Utils;
 using DiskCardGame;
-using InscryptionAPI.Items;
 using UnityEngine;
 
 namespace DebugMenu.Scripts.Act1;
@@ -69,49 +67,48 @@ public class Act1 : BaseAct
 
 	private void DrawItemsGUI()
 	{
-		List<string> items = new List<string>(RunState.Run.consumables);
-		while (items.Count < RunState.Run.MaxConsumables)
-		{
-			items.Add(null);
-		}
+		List<string> items = RunState.Run.consumables;
 
-		for (int i = 0; i < items.Count; i++)
+		for (int i = 0; i < RunState.Run.MaxConsumables; i++)
 		{
-			string consumable = items[i];
+			string consumable = i >= items.Count ? null : items[i];
 			ConsumableItemData itemData = ItemsUtil.GetConsumableByName(consumable);
-			string itemname = itemData != null ? itemData.rulebookName : consumable == null ? "None" : consumable;
-			int currentIndex = i;
-			ButtonListPopup.OnGUI(Window, itemname, "Change Item " + (i+1), GetListsOfAllItems, (chosenIndex, chosenValue) =>
-			{
-				List<string> currentItems = RunState.Run.consumables;
-
-				if (chosenValue == null)
-				{
-					ItemsManager.Instance.RemoveItemFromSaveData(consumable);
-				}
-				else
-				{
-					if (currentIndex >= currentItems.Count)
-					{
-						currentItems.Add(chosenValue);
-					}
-					else
-					{
-						currentItems[currentIndex] = chosenValue;
-					}
-				}
-				
-				foreach (ConsumableItemSlot slot in Singleton<ItemsManager>.Instance.consumableSlots)
-				{
-					if (slot.Item)
-					{
-						slot.DestroyItem();
-					}
-				}
-
-				Singleton<ItemsManager>.Instance.UpdateItems(true);
-			});
+			string itemName = itemData != null ? itemData.rulebookName : consumable == null ? "None" : consumable;
+			ButtonListPopup.OnGUI(Window, itemName, "Change Item " + (i+1), GetListsOfAllItems, OnChoseButtonCallback, i.ToString());
 		}
+	}
+
+	private static void OnChoseButtonCallback(int chosenIndex, string chosenValue, string inventoryIndex)
+	{
+		List<string> currentItems = RunState.Run.consumables;
+		int index = int.Parse(inventoryIndex);
+		string selectedItem = index >= RunState.Run.consumables.Count ? null : RunState.Run.consumables[index];
+
+		if (chosenValue == null)
+		{
+			ItemsManager.Instance.RemoveItemFromSaveData(selectedItem);
+		}
+		else
+		{
+			if (index >= currentItems.Count)
+			{
+				currentItems.Add(chosenValue);
+			}
+			else
+			{
+				currentItems[index] = chosenValue;
+			}
+		}
+
+		foreach (ConsumableItemSlot slot in Singleton<ItemsManager>.Instance.consumableSlots)
+		{
+			if (slot.Item)
+			{
+				slot.DestroyItem();
+			}
+		}
+
+		Singleton<ItemsManager>.Instance.UpdateItems(true);
 	}
 
 	private Tuple<List<string>, List<string>> GetListsOfAllItems()

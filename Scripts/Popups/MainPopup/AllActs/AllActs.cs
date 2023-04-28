@@ -47,7 +47,7 @@ public class AllActs : BaseAct
 			SetTimeScale(5f);
 		}
 
-		ButtonListPopup.OnGUI(Window, RegionNameOverride, "Override Region", RegionNameList, static (index, value)=>
+		ButtonListPopup.OnGUI(Window, RegionNameOverride, "Override Region", RegionNameList, static (_, value, _)=>
 		{
 			RegionNameOverride = value;
 		});

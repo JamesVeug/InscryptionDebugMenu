@@ -15,8 +15,9 @@ public class ButtonListPopup : BaseWindow
 	private List<string> buttonNames = new List<string>();
 	private List<string> buttonValues = new List<string>();
 	private string popupNameOverride = "Button List";
-	private Action<int, string> callback;
+	private Action<int, string, string> callback;
 	private Vector2 position;
+	private string metaData;
 
 	public override void OnGUI()
 	{
@@ -52,7 +53,7 @@ public class ButtonListPopup : BaseWindow
 			
 			if (Button(buttonName))
 			{
-				callback(i, buttonValue);
+				callback(i, buttonValue, metaData);
 				Plugin.Instance.ToggleWindow<ButtonListPopup>();
 			}
 
@@ -67,7 +68,7 @@ public class ButtonListPopup : BaseWindow
 		GUI.EndScrollView();
 	}
 	
-	public static void OnGUI(DrawableGUI gui, string buttonText, string headerText, Func<Tuple<List<string>, List<string>>> GetDataCallback, Action<int, string> OnChoseButtonCallback)
+	public static void OnGUI(DrawableGUI gui, string buttonText, string headerText, Func<Tuple<List<string>, List<string>>> GetDataCallback, Action<int, string, string> OnChoseButtonCallback, string metaData=null)
 	{
 		if (gui.Button(buttonText))
 		{
@@ -82,6 +83,7 @@ public class ButtonListPopup : BaseWindow
 			buttonListPopup.buttonValues = data.Item2;
 			buttonListPopup.header = headerText;
 			buttonListPopup.filterText = "";
+			buttonListPopup.metaData = metaData;
 		}
 	}
 }
