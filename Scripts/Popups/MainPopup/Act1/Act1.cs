@@ -13,7 +13,7 @@ public class Act1 : BaseAct
 	public static bool ActivateAllMapNodesActive = false;
 
 	private MapSequence m_mapSequence;
-	
+
 	public Act1(DebugWindow window) : base(window)
 	{
 		m_mapSequence = new MapSequence(this);
@@ -72,8 +72,8 @@ public class Act1 : BaseAct
 		for (int i = 0; i < RunState.Run.MaxConsumables; i++)
 		{
 			string consumable = i >= items.Count ? null : items[i];
-			ConsumableItemData itemData = ItemsUtil.GetConsumableByName(consumable);
-			string itemName = itemData != null ? itemData.rulebookName : consumable == null ? "None" : consumable;
+			string itemRulebookName = Helpers.GetConsumableByName(consumable);
+			string itemName = itemRulebookName != null ? itemRulebookName : consumable == null ? "None" : consumable;
 			ButtonListPopup.OnGUI(Window, itemName, "Change Item " + (i+1), GetListsOfAllItems, OnChoseButtonCallback, i.ToString());
 		}
 	}
