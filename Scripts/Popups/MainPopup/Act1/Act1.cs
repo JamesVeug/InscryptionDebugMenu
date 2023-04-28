@@ -69,13 +69,6 @@ public class Act1 : BaseAct
 
 	private void DrawItemsGUI()
 	{
-		List<ConsumableItemData> datas = ItemsUtil.AllConsumables;
-		List<string> names = datas.Select((a)=>a.rulebookName).ToList();
-		names.Insert(0, "None");
-		
-		List<string> values = datas.Select((a)=>a.name).ToList();
-		values.Insert(0, null);
-		
 		List<string> items = new List<string>(RunState.Run.consumables);
 		while (items.Count < RunState.Run.MaxConsumables)
 		{
@@ -88,12 +81,11 @@ public class Act1 : BaseAct
 			ConsumableItemData itemData = ItemsUtil.GetConsumableByName(consumable);
 			string itemname = itemData != null ? itemData.rulebookName : consumable == null ? "None" : consumable;
 			int currentIndex = i;
-			ButtonListPopup.OnGUI(Window, itemname, names, (a) =>
+			ButtonListPopup.OnGUI(Window, itemname, GetListsOfAllItems, (chosenIndex, chosenValue) =>
 			{
 				List<string> currentItems = RunState.Run.consumables;
-				string value = values[a];
 
-				if (value == null)
+				if (chosenValue == null)
 				{
 					ItemsManager.Instance.RemoveItemFromSaveData(consumable);
 				}
@@ -101,11 +93,11 @@ public class Act1 : BaseAct
 				{
 					if (currentIndex >= currentItems.Count)
 					{
-						currentItems.Add(value);
+						currentItems.Add(chosenValue);
 					}
 					else
 					{
-						currentItems[currentIndex] = value;
+						currentItems[currentIndex] = chosenValue;
 					}
 				}
 				
@@ -120,6 +112,24 @@ public class Act1 : BaseAct
 				Singleton<ItemsManager>.Instance.UpdateItems(true);
 			});
 		}
+	}
+
+	private Tuple<List<string>, List<string>> GetListsOfAllItems()
+	{
+		List<ConsumableItemData> allConsumables = ItemsUtil.AllConsumables;
+
+		List<string> names = new List<string>(allConsumables.Count);
+		List<string> values = new List<string>(allConsumables.Count);
+		
+		names.Add("None"); // Option to set the item to null (Don't have an item in this slot)
+		values.Add(null); // Option to set the item to null (Don't have an item in this slot) 
+		for (int i = 0; i < allConsumables.Count; i++)
+		{
+			names.Add(allConsumables[i].rulebookName);
+			values.Add(allConsumables[i].name);
+		}
+
+		return new Tuple<List<string>, List<string>>(names, values);
 	}
 
 	private void OnGUICurrentNode()

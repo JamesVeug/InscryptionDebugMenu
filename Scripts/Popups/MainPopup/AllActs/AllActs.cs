@@ -47,12 +47,11 @@ public class AllActs : BaseAct
 			SetTimeScale(5f);
 		}
 
-		List<string> regionNameList = RegionNameList();
-		ButtonListPopup.OnGUI(Window, RegionNameOverride, regionNameList, (a)=>RegionNameOverride = regionNameList[a]);
-		if (Window.Toggle("Toggle Map Override", ref RegionOverride))
+		ButtonListPopup.OnGUI(Window, RegionNameOverride, RegionNameList, static (index, value)=>
 		{
-			
-		}
+			RegionNameOverride = value;
+		});
+		Window.Toggle("Toggle Map Override", ref RegionOverride);
 	}
 
 	public override void OnGUIMinimal()
@@ -60,9 +59,10 @@ public class AllActs : BaseAct
 		
 	}
 
-	private List<string> RegionNameList()
+	private Tuple<List<string>, List<string>> RegionNameList()
 	{
-		return RegionManager.AllRegionsCopy.ConvertAll((a) => a.name).ToList();
+		List<string> regionsNames = RegionManager.AllRegionsCopy.ConvertAll((a) => a.name).ToList();
+		return new Tuple<List<string>, List<string>>(regionsNames, regionsNames);
 	}
 
 	private void SetTimeScale(float speed)
