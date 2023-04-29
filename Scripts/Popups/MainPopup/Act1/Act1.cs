@@ -199,6 +199,44 @@ public class Act1 : BaseAct
 			int lifeLeft = Mathf.Abs(lifeManager.Balance - 5);
 			Plugin.Instance.StartCoroutine(lifeManager.ShowDamageSequence(lifeLeft, lifeLeft, true, 0.125f, null, 0f, false));
 		}
+
+		Window.Padding();
+			
+		if (Window.Button("Draw Card"))
+		{
+			Part1CardDrawPiles part1CardDrawPiles = (Singleton<CardDrawPiles>.Instance as Part1CardDrawPiles);
+			if (part1CardDrawPiles)
+			{
+				if (part1CardDrawPiles.Deck.cards.Count > 0)
+				{
+					part1CardDrawPiles.pile.Draw();
+					Plugin.Instance.StartCoroutine(part1CardDrawPiles.DrawCardFromDeck());
+				}
+			}
+			else
+			{
+				Plugin.Log.LogError("Could not draw card. Can't find CardDrawPiles!");
+			}
+		}
+		
+		if (Window.Button("Draw Squirrel"))
+		{
+			Part1CardDrawPiles part1CardDrawPiles = (Singleton<CardDrawPiles>.Instance as Part1CardDrawPiles);
+			if (part1CardDrawPiles)
+			{
+				if (part1CardDrawPiles.SideDeck.cards.Count > 0)
+				{
+					part1CardDrawPiles.SidePile.Draw();
+					Plugin.Instance.StartCoroutine(part1CardDrawPiles.DrawFromSidePile());
+				}
+			}
+			else
+			{
+				Plugin.Log.LogError("Could not draw squirrel. Can't find CardDrawPiles!");
+			}
+		}
+		
+		Window.Padding();
 		
 		if (Window.Button("Deal 2 Damage"))
 		{

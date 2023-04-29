@@ -97,4 +97,13 @@ public abstract class DrawableGUI
 		MaxHeight = Mathf.Max(MaxHeight, Y);
 		return GUI.TextField(new Rect(X, y, ColumnWidth, h), text);
 	}
+
+	public virtual void Padding(float? height = null)
+	{
+		float h = height.HasValue ? height.Value : RowHeight;
+		float y = Y;
+		Y += h;
+		MaxHeight = Mathf.Max(MaxHeight, Y);
+		GUI.Label(new Rect(X, y, ColumnWidth, h), "");
+	}
 }
