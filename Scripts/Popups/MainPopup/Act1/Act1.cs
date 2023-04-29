@@ -44,6 +44,10 @@ public class Act1 : BaseAct
 		{
 			RunState.Run.playerLives = RunState.Run.maxPlayerLives;
 		}
+		
+		Window.Padding();
+		
+		Window.Label("Currency: " + RunState.Run.currency);
 		if (Window.Button("Add 5 Teeth"))
 		{
 			RunState.Run.currency += 5;
