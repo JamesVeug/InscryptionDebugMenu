@@ -139,12 +139,12 @@ internal class RegionManager_GetRandomRegionFromTier
 	[HarmonyPostfix]
 	private static bool Prefix(ref List<RegionData> __result)
 	{
-		if (AllActs.RegionOverride)
+		if (MapSequence.RegionOverride)
 		{
-			RegionData data = RegionManager.AllRegionsCopy.Find((a) => a.name == AllActs.RegionNameOverride);
+			RegionData data = RegionManager.AllRegionsCopy.Find((a) => a.name == MapSequence.RegionNameOverride);
 			if (data == null)
 			{
-				Plugin.Log.LogInfo("Could not override region. Not found using name '" + AllActs.RegionNameOverride + "'");
+				Plugin.Log.LogInfo("Could not override region. Not found using name '" + MapSequence.RegionNameOverride + "'");
 			}
 			else
 			{
