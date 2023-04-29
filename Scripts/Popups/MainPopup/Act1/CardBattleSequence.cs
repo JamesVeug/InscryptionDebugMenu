@@ -73,6 +73,23 @@ public class CardBattleSequence
 				Plugin.Log.LogError("Could not draw side deck. Can't find CardDrawPiles!");
 			}
 		}
+
+		Window.Padding();
+		
+		if (Window.Button("+5 bones"))
+		{
+			Plugin.Instance.StartCoroutine(Singleton<ResourcesManager>.Instance.AddBones(5));
+		}
+		
+		if (Window.Button("-5 bones"))
+		{
+			int bones = 5;
+			if (Singleton<ResourcesManager>.Instance.PlayerBones < 5)
+			{
+				bones = Singleton<ResourcesManager>.Instance.PlayerBones;
+			}
+			Plugin.Instance.StartCoroutine(Singleton<ResourcesManager>.Instance.SpendBones(bones));
+		}
 		
 		Window.Padding();
 		
