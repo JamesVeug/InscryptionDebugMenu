@@ -4,14 +4,14 @@ using DebugMenu.Scripts.Acts;
 using DiskCardGame;
 using UnityEngine;
 
-namespace DebugMenu.Scripts.Act3;
+namespace DebugMenu.Scripts.Act1;
 
 public class CardBattleSequence
 {
-	private readonly Act3 Act;
+	private readonly Act1 Act;
 	private readonly DebugWindow Window;
 
-	public CardBattleSequence(Act3 act)
+	public CardBattleSequence(Act1 act)
 	{
 		this.Act = act;
 		this.Window = act.Window;
@@ -19,13 +19,7 @@ public class CardBattleSequence
 
 	public void OnGUI()
 	{
-		MapNodeManager mapNodeManager = Singleton<MapNodeManager>.m_Instance;
-		if (mapNodeManager == null)
-		{
-			return;
-		}
-		
-		MapNode nodeWithId =  mapNodeManager.GetNodeWithId(RunState.Run.currentNodeId);
+		MapNode nodeWithId =  Singleton<MapNodeManager>.m_Instance.GetNodeWithId(RunState.Run.currentNodeId);
 		if (nodeWithId.Data is CardBattleNodeData cardBattleNodeData)
 		{
 			Window.Label($"Difficulty: {cardBattleNodeData.difficulty} + {RunState.Run.DifficultyModifier}");
@@ -48,7 +42,7 @@ public class CardBattleSequence
 			
 		if (Window.Button("Draw Card"))
 		{
-			Part3CardDrawPiles part1CardDrawPiles = (Singleton<CardDrawPiles>.Instance as Part3CardDrawPiles);
+			Part1CardDrawPiles part1CardDrawPiles = (Singleton<CardDrawPiles>.Instance as Part1CardDrawPiles);
 			if (part1CardDrawPiles)
 			{
 				if (part1CardDrawPiles.Deck.cards.Count > 0)
@@ -65,7 +59,7 @@ public class CardBattleSequence
 		
 		if (Window.Button("Draw Side Deck"))
 		{
-			Part3CardDrawPiles part1CardDrawPiles = (Singleton<CardDrawPiles>.Instance as Part3CardDrawPiles);
+			Part1CardDrawPiles part1CardDrawPiles = (Singleton<CardDrawPiles>.Instance as Part1CardDrawPiles);
 			if (part1CardDrawPiles)
 			{
 				if (part1CardDrawPiles.SideDeck.cards.Count > 0)

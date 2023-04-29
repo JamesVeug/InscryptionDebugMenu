@@ -13,10 +13,12 @@ public class Act1 : BaseAct
 	public static bool ActivateAllMapNodesActive = false;
 
 	private MapSequence m_mapSequence;
+	private CardBattleSequence m_cardBattleSequence;
 
 	public Act1(DebugWindow window) : base(window)
 	{
 		m_mapSequence = new MapSequence(this);
+		m_cardBattleSequence = new CardBattleSequence(this);
 	}
 
 	public override void Update()
@@ -80,7 +82,7 @@ public class Act1 : BaseAct
 		switch (gameFlowManager.CurrentGameState)
 		{
 			case GameState.CardBattle:
-				OnGUICardBattle();
+				m_cardBattleSequence.OnGUI();
 				break;
 			case GameState.Map:
 				// Show map related buttons
@@ -115,78 +117,6 @@ public class Act1 : BaseAct
 		if (Window.Button("Reroll choices"))
 		{
 			sequencer.OnRerollChoices();
-		}
-	}
-
-	private void OnGUICardBattle()
-	{
-		MapNode nodeWithId =  Singleton<MapNodeManager>.m_Instance.GetNodeWithId(RunState.Run.currentNodeId);
-		if (nodeWithId.Data is CardBattleNodeData cardBattleNodeData)
-		{
-			Window.Label($"Difficulty: {cardBattleNodeData.difficulty} + {RunState.Run.DifficultyModifier}");
-		}
-		
-		if (Window.Button("Auto win battle"))
-		{
-			LifeManager lifeManager = Singleton<LifeManager>.Instance;
-			int lifeLeft = Mathf.Abs(lifeManager.Balance - 5);
-			Plugin.Instance.StartCoroutine(lifeManager.ShowDamageSequence(lifeLeft, lifeLeft, false, 0.125f, null, 0f, false));
-		}
-		if (Window.Button("Auto lose battle"))
-		{
-			LifeManager lifeManager = Singleton<LifeManager>.Instance;
-			int lifeLeft = Mathf.Abs(lifeManager.Balance - 5);
-			Plugin.Instance.StartCoroutine(lifeManager.ShowDamageSequence(lifeLeft, lifeLeft, true, 0.125f, null, 0f, false));
-		}
-
-		Window.Padding();
-			
-		if (Window.Button("Draw Card"))
-		{
-			Part1CardDrawPiles part1CardDrawPiles = (Singleton<CardDrawPiles>.Instance as Part1CardDrawPiles);
-			if (part1CardDrawPiles)
-			{
-				if (part1CardDrawPiles.Deck.cards.Count > 0)
-				{
-					part1CardDrawPiles.pile.Draw();
-					Plugin.Instance.StartCoroutine(part1CardDrawPiles.DrawCardFromDeck());
-				}
-			}
-			else
-			{
-				Plugin.Log.LogError("Could not draw card. Can't find CardDrawPiles!");
-			}
-		}
-		
-		if (Window.Button("Draw Squirrel"))
-		{
-			Part1CardDrawPiles part1CardDrawPiles = (Singleton<CardDrawPiles>.Instance as Part1CardDrawPiles);
-			if (part1CardDrawPiles)
-			{
-				if (part1CardDrawPiles.SideDeck.cards.Count > 0)
-				{
-					part1CardDrawPiles.SidePile.Draw();
-					Plugin.Instance.StartCoroutine(part1CardDrawPiles.DrawFromSidePile());
-				}
-			}
-			else
-			{
-				Plugin.Log.LogError("Could not draw squirrel. Can't find CardDrawPiles!");
-			}
-		}
-		
-		Window.Padding();
-		
-		if (Window.Button("Deal 2 Damage"))
-		{
-			LifeManager lifeManager = Singleton<LifeManager>.Instance;
-			Plugin.Instance.StartCoroutine(lifeManager.ShowDamageSequence(2, 2, false, 0.125f, null, 0f, false));
-		}
-		
-		if (Window.Button("Take 2 Damage"))
-		{
-			LifeManager lifeManager = Singleton<LifeManager>.Instance;
-			Plugin.Instance.StartCoroutine(lifeManager.ShowDamageSequence(2, 2, true, 0.125f, null, 0f, false));
 		}
 	}
 
