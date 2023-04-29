@@ -53,7 +53,6 @@ public class Act1 : BaseAct
 			RunState.Run.currency = Mathf.Max(0, RunState.Run.currency - 5);
 		}
 
-		Window.LabelHeader("Items");
 		DrawItemsGUI();
 		
 		Window.StartNewColumn();
@@ -63,70 +62,6 @@ public class Act1 : BaseAct
 	public override void OnGUIMinimal()
 	{
 		OnGUICurrentNode();
-	}
-
-	private void DrawItemsGUI()
-	{
-		List<string> items = RunState.Run.consumables;
-
-		for (int i = 0; i < RunState.Run.MaxConsumables; i++)
-		{
-			string consumable = i >= items.Count ? null : items[i];
-			string itemRulebookName = Helpers.GetConsumableByName(consumable);
-			string itemName = itemRulebookName != null ? itemRulebookName : consumable == null ? "None" : consumable;
-			ButtonListPopup.OnGUI(Window, itemName, "Change Item " + (i+1), GetListsOfAllItems, OnChoseButtonCallback, i.ToString());
-		}
-	}
-
-	private static void OnChoseButtonCallback(int chosenIndex, string chosenValue, string inventoryIndex)
-	{
-		List<string> currentItems = RunState.Run.consumables;
-		int index = int.Parse(inventoryIndex);
-		string selectedItem = index >= RunState.Run.consumables.Count ? null : RunState.Run.consumables[index];
-
-		if (chosenValue == null)
-		{
-			ItemsManager.Instance.RemoveItemFromSaveData(selectedItem);
-		}
-		else
-		{
-			if (index >= currentItems.Count)
-			{
-				currentItems.Add(chosenValue);
-			}
-			else
-			{
-				currentItems[index] = chosenValue;
-			}
-		}
-
-		foreach (ConsumableItemSlot slot in Singleton<ItemsManager>.Instance.consumableSlots)
-		{
-			if (slot.Item)
-			{
-				slot.DestroyItem();
-			}
-		}
-
-		Singleton<ItemsManager>.Instance.UpdateItems(true);
-	}
-
-	private Tuple<List<string>, List<string>> GetListsOfAllItems()
-	{
-		List<ConsumableItemData> allConsumables = ItemsUtil.AllConsumables;
-
-		List<string> names = new List<string>(allConsumables.Count);
-		List<string> values = new List<string>(allConsumables.Count);
-		
-		names.Add("None"); // Option to set the item to null (Don't have an item in this slot)
-		values.Add(null); // Option to set the item to null (Don't have an item in this slot) 
-		for (int i = 0; i < allConsumables.Count; i++)
-		{
-			names.Add(allConsumables[i].rulebookName + "\n(" + allConsumables[i].name + ")");
-			values.Add(allConsumables[i].name);
-		}
-
-		return new Tuple<List<string>, List<string>>(names, values);
 	}
 
 	private void OnGUICurrentNode()

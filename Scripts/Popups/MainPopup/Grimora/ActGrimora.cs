@@ -21,20 +21,15 @@ public class ActGrimora : BaseAct
 
 	public override void OnGUI()
 	{
-		Window.LabelHeader("Grimora Act");;
-		
-		Window.Label("Inventory: ");
-		foreach (string consumable in RunState.Run.consumables)
-		{
-			Window.Label("-" + consumable);
-		}
+		Window.LabelHeader("Grimora Act");
 
 		if (RunState.Run.currentNodeId > 0 && Singleton<MapNodeManager>.m_Instance != null)
 		{
 			MapNode nodeWithId = Singleton<MapNodeManager>.Instance.GetNodeWithId(RunState.Run.currentNodeId);
 			Window.Label("Current Node: " + RunState.Run.currentNodeId + " = " + nodeWithId, 120);
-			
 		}
+		
+		DrawItemsGUI();
 		
 		Window.StartNewColumn();
 		OnGUICurrentNode();
