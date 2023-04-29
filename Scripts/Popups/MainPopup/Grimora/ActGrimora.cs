@@ -8,10 +8,13 @@ namespace DebugMenu.Scripts.Grimora;
 
 public class ActGrimora : BaseAct
 {
-	private MapSequence mapSequence;
+	private MapSequence m_mapSequence;
+	private CardBattleSequence m_cardBattleSequence;
+	
 	public ActGrimora(DebugWindow window) : base(window)
 	{
-		mapSequence = new MapSequence(this);
+		m_mapSequence = new MapSequence(this);
+		m_cardBattleSequence = new CardBattleSequence(this);
 	}
 
 	public override void Update()
@@ -52,11 +55,11 @@ public class ActGrimora : BaseAct
 		switch (gameFlowManager.CurrentGameState)
 		{
 			case GameState.CardBattle:
-				OnGUICardBattle();
+				m_cardBattleSequence.OnGUI();
 				break;
 			case GameState.Map:
 				// Show map related buttons
-				mapSequence.OnGUI();
+				m_mapSequence.OnGUI();
 				break;
 			case GameState.FirstPerson3D:
 				break;
@@ -97,39 +100,6 @@ public class ActGrimora : BaseAct
 	private void OnGUIElectricChairNodeSequence()
 	{
 		Window.Label("TODO:");
-	}
-
-	private void OnGUICardBattle()
-	{
-		TurnManager turnManager = Singleton<TurnManager>.Instance;
-		Window.Label("Opponent: " + turnManager.opponent);
-		Window.Label("Difficulty: " + turnManager.opponent.Difficulty);
-		Window.Label("Blueprint: " + turnManager.opponent.Blueprint.name);
-		
-		if (Window.Button("Auto win battle"))
-		{
-			LifeManager lifeManager = Singleton<LifeManager>.Instance;
-			int lifeLeft = Mathf.Abs(lifeManager.Balance - 5);
-			Plugin.Instance.StartCoroutine(lifeManager.ShowDamageSequence(lifeLeft, lifeLeft, false, 0.125f, null, 0f, false));
-		}
-		if (Window.Button("Auto lose battle"))
-		{
-			LifeManager lifeManager = Singleton<LifeManager>.Instance;
-			int lifeLeft = Mathf.Abs(lifeManager.Balance - 5);
-			Plugin.Instance.StartCoroutine(lifeManager.ShowDamageSequence(lifeLeft, lifeLeft, true, 0.125f, null, 0f, false));
-		}
-		
-		if (Window.Button("Deal 2 Damage"))
-		{
-			LifeManager lifeManager = Singleton<LifeManager>.Instance;
-			Plugin.Instance.StartCoroutine(lifeManager.ShowDamageSequence(2, 2, false, 0.125f, null, 0f, false));
-		}
-		
-		if (Window.Button("Take 2 Damage"))
-		{
-			LifeManager lifeManager = Singleton<LifeManager>.Instance;
-			Plugin.Instance.StartCoroutine(lifeManager.ShowDamageSequence(2, 2, true, 0.125f, null, 0f, false));
-		}
 	}
 
 	public override void OnGUIRestart()
