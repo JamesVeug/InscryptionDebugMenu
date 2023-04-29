@@ -46,7 +46,10 @@ public class AllActs : BaseAct
 			Log("Minimum Time Scale");
 			SetTimeScale(5f);
 		}
+		
+		Window.Padding();
 
+		Window.Label("Override Region");
 		ButtonListPopup.OnGUI(Window, RegionNameOverride, "Override Region", RegionNameList, static (_, value, _)=>
 		{
 			RegionNameOverride = value;
