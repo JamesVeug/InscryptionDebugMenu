@@ -24,5 +24,7 @@ public class MapSequence
 			MapNode node = Singleton<MapNodeManager>.Instance.ActiveNode;
 			Singleton<MapNodeManager>.Instance.SetActiveNode(node);
 		}
+		
+		Act.DrawSequencesGUI();
 	}
 }

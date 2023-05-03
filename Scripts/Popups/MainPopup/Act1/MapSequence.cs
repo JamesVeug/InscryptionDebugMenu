@@ -1,7 +1,9 @@
 ﻿using System.Collections;
+using System.Reflection;
 using BepInEx.Logging;
 using DebugMenu.Scripts.Acts;
 using DebugMenu.Scripts.Popups;
+using DebugMenu.Scripts.Utils;
 using DiskCardGame;
 using InscryptionAPI.Regions;
 using UnityEngine;
@@ -13,8 +15,8 @@ public class MapSequence
 	public static bool RegionOverride = false;
 	public static string RegionNameOverride = "";  
 	
-	private readonly Act1 Act;
-	private readonly DebugWindow Window;
+	private readonly Act1 Act = null;
+	private readonly DebugWindow Window = null;
 
 	public MapSequence(Act1 act)
 	{
@@ -31,10 +33,7 @@ public class MapSequence
 			Singleton<MapNodeManager>.Instance.SetActiveNode(node);
 		}
 
-		if (Window.Button("Rare Card Sequence"))
-		{
-			Plugin.Instance.StartCoroutine(RareCardSequence());
-		}
+		Act.DrawSequencesGUI();
 		
 		Window.Padding();
 

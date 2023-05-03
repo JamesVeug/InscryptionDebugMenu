@@ -5,6 +5,18 @@ namespace DebugMenu.Scripts;
 public abstract class DrawableGUI
 {
 	private const float TopOffset = 20;
+
+	public struct ButtonDisabledData
+	{
+		public bool Disabled;
+		public string Reason;
+
+		public ButtonDisabledData(string reason)
+		{
+			Disabled = true;
+			Reason = reason;
+		}
+	}
 	
 	public float TotalWidth => Columns * ColumnWidth + ((Columns - 1) * ColumnPadding);
 	public float Height => MaxHeight + RowHeight;
@@ -16,9 +28,12 @@ public abstract class DrawableGUI
 	protected float ColumnPadding = 5;
 	private int Columns = 1;
 	private float MaxHeight = 1;
-	
+
+	private Dictionary<string, string> m_buttonGroups = new Dictionary<string, string>();
+
 	private GUIStyle LabelHeaderStyle = GUIStyle.none;
 	private GUIStyle ButtonStyle = GUIStyle.none;
+	private GUIStyle ButtonDisabledStyle = GUIStyle.none;
 
 	public virtual void OnGUI()
 	{
@@ -29,6 +44,17 @@ public abstract class DrawableGUI
 
 		ButtonStyle = new GUIStyle(GUI.skin.button);
 		ButtonStyle.wordWrap = true;
+		
+		ButtonDisabledStyle = new GUIStyle(ButtonStyle);
+		ButtonDisabledStyle.fontStyle = FontStyle.Bold;
+		ButtonDisabledStyle.normal.background = ButtonDisabledStyle.active.background;
+		ButtonDisabledStyle.hover.background = ButtonDisabledStyle.active.background;
+		ButtonDisabledStyle.onNormal.background = ButtonDisabledStyle.active.background;
+		ButtonDisabledStyle.onHover.background = ButtonDisabledStyle.active.background;
+		ButtonDisabledStyle.onActive.background = ButtonDisabledStyle.active.background;
+		ButtonDisabledStyle.onFocused.background = ButtonDisabledStyle.active.background;
+		ButtonDisabledStyle.normal.textColor = Color.black;
+
 		Reset();
 	}
 	
@@ -46,15 +72,49 @@ public abstract class DrawableGUI
 		Y = TopOffset;
 		Columns++;
 	}
-	
+
 	/// <returns>Returns true if the button was pressed</returns>
-	public virtual bool Button(string text, float? height = null)
+	public virtual bool Button(string text, float? height = null, string buttonGroup = null, Func<ButtonDisabledData> disabled = null)
 	{
 		float h = height.HasValue ? height.Value : RowHeight;
 		float y = Y;
 		Y += h;
 		MaxHeight = Mathf.Max(MaxHeight, Y);
-		return GUI.Button(new Rect(X, y, ColumnWidth, h), text, ButtonStyle);
+
+		GUIStyle style = ButtonStyle;
+		bool wasPressed = false;
+		
+		ButtonDisabledData disabledData = disabled?.Invoke() ?? new ButtonDisabledData();
+		bool isDisabled = disabledData.Disabled;
+		if (isDisabled)
+		{
+			GUI.Label(new Rect(X, y, ColumnWidth, h), text + "\n(" + disabledData.Reason + ")", ButtonDisabledStyle);
+		}
+		else if (buttonGroup == null)
+		{
+			wasPressed = GUI.Button(new Rect(X, y, ColumnWidth, h), text, ButtonStyle);
+		}
+		else
+		{
+			if (!m_buttonGroups.TryGetValue(buttonGroup, out string selectedButton))
+			{
+				m_buttonGroups[buttonGroup] = text;
+			}
+
+			if (selectedButton == text)
+			{
+				style = ButtonDisabledStyle;
+			}
+
+			wasPressed = GUI.Button(new Rect(X, y, ColumnWidth, h), text, style);
+			if (wasPressed)
+			{
+				m_buttonGroups[buttonGroup] = text;
+			}
+		}
+
+
+		return wasPressed;
 	}
 	
 	/// <returns>Returns True if the value changed</returns>
@@ -96,6 +156,20 @@ public abstract class DrawableGUI
 		Y += h;
 		MaxHeight = Mathf.Max(MaxHeight, Y);
 		return GUI.TextField(new Rect(X, y, ColumnWidth, h), text);
+	}
+
+	public virtual int IntField(int text, float? height = null)
+	{
+		float h = height.HasValue ? height.Value : RowHeight;
+		float y = Y;
+		Y += h;
+		MaxHeight = Mathf.Max(MaxHeight, Y);
+
+		string textField = GUI.TextField(new Rect(X, y, ColumnWidth, h), text.ToString());
+		if (!int.TryParse(textField, out int result)) 
+			return text;
+		
+		return result;
 	}
 
 	public virtual void Padding(float? height = null)

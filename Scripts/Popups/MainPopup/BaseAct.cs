@@ -1,7 +1,10 @@
 ﻿using BepInEx.Logging;
+using DebugMenu.Scripts.Act1;
 using DebugMenu.Scripts.Popups;
+using DebugMenu.Scripts.Sequences;
 using DebugMenu.Scripts.Utils;
 using DiskCardGame;
+using InscryptionAPI.Encounters;
 using UnityEngine;
 
 namespace DebugMenu.Scripts.Acts;
@@ -10,7 +13,7 @@ public abstract class BaseAct
 {
 	public readonly ManualLogSource Logger;
 	public readonly DebugWindow Window;
-
+	
 	public BaseAct(DebugWindow window)
 	{
 		Window = window;
@@ -100,6 +103,35 @@ public abstract class BaseAct
 		{
 			names.Add(allConsumables[i].rulebookName + "\n(" + allConsumables[i].name + ")");
 			values.Add(allConsumables[i].name);
+		}
+
+		return new Tuple<List<string>, List<string>>(names, values);
+	}
+	
+	public void DrawSequencesGUI()
+	{
+		ButtonListPopup.OnGUI(Window, "Trigger Sequence", "Trigger Sequence", GetListsOfSequences, OnChoseSequenceButtonCallback);
+	}
+
+	public static void OnChoseSequenceButtonCallback(int chosenIndex, string chosenValue, string metaData)
+	{
+		if (chosenIndex < 0 || chosenIndex >= Helpers.Sequences.Count)
+		{
+			return;
+		}
+
+		BaseTriggerSequences sequence = Helpers.Sequences[chosenIndex];
+		sequence.Sequence();
+	}
+
+	private Tuple<List<string>, List<string>> GetListsOfSequences()
+	{
+		List<string> names = new List<string>(Helpers.Sequences.Count);
+		List<string> values = new List<string>(Helpers.Sequences.Count);
+		for (int i = 0; i < Helpers.Sequences.Count; i++)
+		{
+			names.Add(Helpers.Sequences[i].ButtonName);
+			values.Add(Helpers.Sequences[i].ButtonName);
 		}
 
 		return new Tuple<List<string>, List<string>>(names, values);
