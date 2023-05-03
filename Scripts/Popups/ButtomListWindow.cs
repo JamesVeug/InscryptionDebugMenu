@@ -23,19 +23,19 @@ public class ButtonListPopup : BaseWindow
 	{
 		base.OnGUI();
 		
+		int namesCount = buttonNames.Count; // 20
+		int rows = Mathf.Max(Mathf.FloorToInt(Size.y / RowHeight) - 2, 1); // 600 / 40 = 15 
+		int columns = Mathf.CeilToInt((float)namesCount / rows) + 1; // 20 / 15 = 4
+		Rect scrollableAreaSize = new Rect(new Vector2(0, 0), new Vector2(columns *  ColumnWidth + (columns - 1) * 10, rows * RowHeight));
+		Rect scrollViewSize = new Rect(new Vector2(0, 0), Size - new Vector2(10, 25));
+		position = GUI.BeginScrollView(scrollViewSize, position, scrollableAreaSize);
+		
 		LabelHeader(header);
 
 		Label("Filter", RowHeight / 2);
 		filterText = TextField(filterText, RowHeight / 2);
 
 		StartNewColumn();
-
-		int namesCount = buttonNames.Count; // 20
-		int rows = Mathf.Max(Mathf.FloorToInt(Size.y / RowHeight) - 1, 1); // 600 / 40 = 15 
-		int columns = Mathf.CeilToInt((float)namesCount / rows) + 1; // 20 / 15 = 4
-		Rect scrollableAreaSize = new Rect(new Vector2(0, 0), new Vector2(columns *  ColumnWidth + (columns - 1) * 10, rows * RowHeight));
-		Rect scrollViewSize = new Rect(new Vector2(0, 0), Size - new Vector2(10, 25));
-		position = GUI.BeginScrollView(scrollViewSize, position, scrollableAreaSize);
 		
 		int j = 0;
 		for (int i = 0; i < namesCount; i++)
