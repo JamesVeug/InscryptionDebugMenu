@@ -120,7 +120,7 @@ public abstract class BaseAct
 			return;
 		}
 
-		BaseTriggerSequences sequence = Helpers.Sequences[chosenIndex];
+		ABaseTriggerSequences sequence = Helpers.Sequences[chosenIndex];
 		sequence.Sequence();
 	}
 

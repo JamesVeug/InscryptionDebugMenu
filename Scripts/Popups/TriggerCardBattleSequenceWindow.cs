@@ -162,6 +162,8 @@ public class TriggerCardBattleSequenceWindow : BaseWindow
 		bossBattleNodeData.difficulty = difficulty;
 		Singleton<GameFlowManager>.Instance.TransitionToGameState(GameState.CardBattle, bossBattleNodeData);
 
+		EncounterTotemTopOverride = Tribe.None;
+		EncounterTotemBottomOverride = Ability.None;
 		Plugin.Instance.ToggleWindow<TriggerCardBattleSequenceWindow>();
 	}
 

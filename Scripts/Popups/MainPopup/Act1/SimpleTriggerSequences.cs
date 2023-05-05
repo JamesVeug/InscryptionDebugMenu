@@ -1,16 +1,43 @@
 ﻿using System.Collections;
 using DebugMenu.Scripts.Popups;
 using DiskCardGame;
+using InscryptionAPI.Nodes;
 
 namespace DebugMenu.Scripts.Sequences;
 
-public abstract class BaseTriggerSequences
+public interface IModdedSequence
+{
+	public string ModGUID { get; }
+}
+
+public abstract class ABaseTriggerSequences
 {
 	public abstract string ButtonName { get; }
 	public abstract void Sequence();
 }
 
-public abstract class SimpleTriggerSequences : BaseTriggerSequences
+/// <summary>
+/// Custom sequences added by mods using the API
+/// </summary>
+public class APIModdedSequence : ABaseTriggerSequences, IModdedSequence
+{
+	public override string ButtonName => $"{CustomNodeData.name}\n({ModGUID})";
+	public string ModGUID => CustomNodeData.guid;
+
+	public NewNodeManager.FullNode CustomNodeData;
+
+	public override void Sequence()
+	{
+		CustomSpecialNodeData nodeData = new CustomSpecialNodeData(CustomNodeData);
+		Singleton<GameFlowManager>.Instance.TransitionToGameState(GameState.SpecialCardSequence, nodeData);
+	}
+
+}
+
+/// <summary>
+/// Sequences by the vanilla game
+/// </summary>
+public abstract class SimpleTriggerSequences : ABaseTriggerSequences
 {
 	public abstract NodeData NodeData { get; }
 	public abstract Type NodeDataType { get; }
@@ -28,6 +55,26 @@ public abstract class SimpleTriggerSequences : BaseTriggerSequences
 	}
 }
 
+/// <summary>
+/// Sequences that were added by mods but are not using the API
+/// </summary>
+public class ModdedStubSequence : StubSequence, IModdedSequence
+{
+	public override string ButtonName
+	{
+		get
+		{
+			Plugin.Log.LogInfo("ModdedStubSequence " + type + " " + ModGUID);
+			return $"{base.ButtonName}\n({ModGUID})";
+		}
+	}
+
+	public string ModGUID { get; set; }
+}
+
+/// <summary>
+/// All other Sequences tha are a simple "Create node and trigger"
+/// </summary>
 public class StubSequence : SimpleTriggerSequences
 {
 	public override string ButtonName

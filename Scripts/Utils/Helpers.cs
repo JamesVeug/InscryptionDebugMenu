@@ -1,17 +1,14 @@
 ﻿using System.Reflection;
-using DebugMenu.Scripts.Act1;
+using System.Text;
 using DebugMenu.Scripts.Popups;
-using DebugMenu.Scripts.Sequences;
 using DiskCardGame;
 using InscryptionAPI.Card;
 using InscryptionAPI.Encounters;
 
 namespace DebugMenu.Scripts.Utils;
 
-public static class Helpers
+public static partial class Helpers
 {
-	public readonly static List<BaseTriggerSequences> Sequences = null;
-	
 	public static SpecialNodeData LastSpecialNodeData;
 	
 	private static Dictionary<string, string> m_itemNameToRulebookName = null;
@@ -19,65 +16,6 @@ public static class Helpers
 	private static Action<Opponent.Type> m_selectedOpponentType = null;
 	private static Action<Tribe> m_selectedTribe;
 	private static Action<Ability> m_selectedAbility;
-
-	static Helpers()
-	{
-		Sequences = new List<BaseTriggerSequences>();
-		
-		// get all types that override ForceTriggerSequences
-		foreach (Type type in Assembly.GetAssembly(typeof(BaseTriggerSequences)).GetTypes())
-		{
-			if (type.IsAbstract)
-			{
-				continue;
-			}
-			if (type.IsSubclassOf(typeof(BaseTriggerSequences)) && type != typeof(StubSequence))
-			{
-				BaseTriggerSequences sequence = (BaseTriggerSequences)Activator.CreateInstance(type);
-				Sequences.Add(sequence);
-			}
-		}
-		
-		// get all types that override SpecialNodeData
-		foreach (Type type in Assembly.GetAssembly(typeof(NodeData)).GetTypes())
-		{
-			if (type.IsAbstract)
-			{
-				continue;
-			}
-			
-			if (type.IsSubclassOf(typeof(NodeData)))
-			{
-				bool overrideFound = false;
-				foreach (BaseTriggerSequences sequence in Sequences)
-				{
-					if (sequence is not SimpleTriggerSequences simpleTriggerSequences)
-					{
-						continue;
-					}
-					
-					if (simpleTriggerSequences.NodeDataType == type)
-					{
-						overrideFound = true;
-						break;
-					}
-				}
-
-				if (!overrideFound)
-				{
-					StubSequence sequence = new StubSequence();
-					sequence.type = type;
-					sequence.gameState = type.IsAssignableFrom(typeof(CardBattleNodeData)) ? GameState.CardBattle : GameState.SpecialCardSequence;
-					Sequences.Add(sequence);
-				}
-			}
-		}
-		
-		Sequences.Sort(static (a, b) =>
-		{
-			return String.Compare(a.ButtonName, b.ButtonName, StringComparison.Ordinal);
-		});
-	}
 
 	public static bool ContainsText(this string text, string substring, bool caseSensitive = true)
 	{
@@ -275,5 +213,46 @@ public static class Helpers
 		}
 
 		return new Tuple<List<string>, List<string>>(names, values);
+	}
+
+	public static string DumpAllInfoAsJSONUsingReflection(object o)
+	{
+		if (o == null)
+		{
+			return "null";
+		}
+
+		Dictionary<string, string> data = new Dictionary<string, string>();
+
+		Type type = o.GetType();
+		foreach (FieldInfo field in type.GetFields())
+		{
+			data[field.Name] = SerializeData(field.GetValue(o));
+		}
+		foreach (PropertyInfo property in type.GetProperties())
+		{
+			if (property.CanRead)
+			{
+				data[property.Name] = SerializeData(property.GetValue(o));
+			}
+		}
+
+		return SaveManager.ToJSON(data);
+	}
+
+	private static string SerializeData(object o)
+	{
+		if (o == null)
+		{
+			return "null";
+		}
+		
+		// if o is of type primitive then return the value
+		if (o.GetType().IsPrimitive || o is string)
+		{
+			return o.ToString();
+		}
+		
+		return SaveManager.ToJSON(o);
 	}
 }

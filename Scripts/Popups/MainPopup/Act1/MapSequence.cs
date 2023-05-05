@@ -45,12 +45,6 @@ public class MapSequence
 		Window.Toggle("Toggle Map Override", ref RegionOverride);
 	}
 
-	private IEnumerator RareCardSequence()
-	{
-		Singleton<GameFlowManager>.Instance.TransitionToGameState(GameState.SpecialCardSequence, new ChooseRareCardNodeData());
-		yield return null;
-	}
-
 	private Tuple<List<string>, List<string>> RegionNameList()
 	{
 		List<string> regionsNames = RegionManager.AllRegionsCopy.ConvertAll((a) => a.name).ToList();
