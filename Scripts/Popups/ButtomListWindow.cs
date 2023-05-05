@@ -35,6 +35,8 @@ public class ButtonListPopup : BaseWindow
 		Label("Filter", RowHeight / 2);
 		filterText = TextField(filterText, RowHeight / 2);
 
+		DrawExtraTools();
+
 		StartNewColumn();
 		
 		int j = 0;
@@ -50,6 +52,9 @@ public class ButtonListPopup : BaseWindow
 					continue;
 				}
 			}
+			
+			if(!IsFiltered(buttonName, buttonValue))
+				continue;
 			
 			if (Button(buttonName))
 			{
@@ -67,7 +72,17 @@ public class ButtonListPopup : BaseWindow
 		
 		GUI.EndScrollView();
 	}
-	
+
+	public virtual bool IsFiltered(string buttonName, string buttonValue)
+	{
+		return true;
+	}
+
+	public virtual void DrawExtraTools()
+	{
+		
+	}
+
 	public static void OnGUI(DrawableGUI gui, string buttonText, string headerText, Func<Tuple<List<string>, List<string>>> GetDataCallback, Action<int, string, string> OnChoseButtonCallback, string metaData=null)
 	{
 		if (gui.Button(buttonText))
