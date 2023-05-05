@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.6.0
+
+### All Acts
+- Added button to trigger any sequence (Card battles, gain totem... etc)
+
 ## 0.5.0
 
 ### Act 1
