@@ -25,8 +25,8 @@ public class TriggerCardBattleSequenceWindow : BaseWindow
 		set => m_selectedBattleType = value;
 	}
 	
-	public static Tribe EncounterTotemTopOverride = Tribe.Bird;
-	public static Ability EncounterTotemBottomOverride = Ability.DrawCopy;
+	public static Tribe EncounterTotemTopOverride = Tribe.None;
+	public static Ability EncounterTotemBottomOverride = Ability.None;
 
 	private BattleType m_selectedBattleType = BattleType.CardBattle;
 	private Tribe m_totemTop = Tribe.None;
@@ -162,8 +162,6 @@ public class TriggerCardBattleSequenceWindow : BaseWindow
 		bossBattleNodeData.difficulty = difficulty;
 		Singleton<GameFlowManager>.Instance.TransitionToGameState(GameState.CardBattle, bossBattleNodeData);
 
-		EncounterTotemTopOverride = Tribe.None;
-		EncounterTotemBottomOverride = Ability.None;
 		Plugin.Instance.ToggleWindow<TriggerCardBattleSequenceWindow>();
 	}
 
@@ -222,6 +220,10 @@ internal class TriggerCardBattleSequenceWindow_Patches
 		{
 			totemItemData.bottom.effectParams.ability = TriggerCardBattleSequenceWindow.EncounterTotemBottomOverride;
 		}
+		
+		InscryptionAPI.InscryptionAPIPlugin.Logger.LogInfo($"Overriding totem data: {totemItemData.top.prerequisites.tribe} {totemItemData.bottom.effectParams.ability}");
+		TriggerCardBattleSequenceWindow.EncounterTotemTopOverride = Tribe.None;
+		TriggerCardBattleSequenceWindow.EncounterTotemBottomOverride = Ability.None;
 		return totemItemData;
 	}
 }
