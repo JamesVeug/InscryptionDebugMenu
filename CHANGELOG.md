@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.6.1
+
+### General
+- Fixed act 1 totem fights always triggering Bird+Fecundity
+
 ## 0.6.0
 
 ### All Acts
