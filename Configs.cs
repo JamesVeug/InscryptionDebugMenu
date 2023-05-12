@@ -14,7 +14,7 @@ public static class Configs
 		}
 	}
 
-	public static ConfigEntry<bool> m_disableDialogue = Bind("General", "DisableDialogue", false, "Should all dialogue be disabled?");
+	public static ConfigEntry<bool> m_disableDialogue = Bind("General", "Disable Dialogue", false, "Should all dialogue be disabled?");
 	
 	private static ConfigEntry<T> Bind<T>(string section, string key, T defaultValue, string description)
 	{
