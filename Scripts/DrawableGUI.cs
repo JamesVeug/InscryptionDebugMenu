@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using BepInEx.Configuration;
+using UnityEngine;
 
 namespace DebugMenu.Scripts;
 
@@ -127,6 +128,21 @@ public abstract class DrawableGUI
 		if (toggle != value)
 		{
 			value = toggle;
+			return true;
+		}
+		return false;
+	}
+	
+	public virtual bool Toggle(string text, ref ConfigEntry<bool> value)
+	{
+		float y = Y;
+		Y += RowHeight;
+		MaxHeight = Mathf.Max(MaxHeight, Y);
+		bool b = value.Value;
+		bool toggle = GUI.Toggle(new Rect(X, y, ColumnWidth, RowHeight), b, text);
+		if (toggle != b)
+		{
+			value.Value = toggle;
 			return true;
 		}
 		return false;

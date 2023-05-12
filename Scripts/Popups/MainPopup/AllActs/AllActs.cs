@@ -20,6 +20,7 @@ public class AllActs : BaseAct
 	public override void OnGUI()
 	{
 		Window.Toggle("Block all Input", ref blockAllInput);
+		Window.Toggle("Disable all Dialogue", ref Configs.m_disableDialogue);
 
 		if (Window.Button("Show Game Info"))
 		{

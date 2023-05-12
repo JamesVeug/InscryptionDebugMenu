@@ -168,6 +168,49 @@ internal class MapNodeManager_GetNodeWithId
 	}
 }
 
+
+[HarmonyPatch]
+internal class DisableDialogue_IEnumerator_Patch
+{
+	public static IEnumerable<MethodBase> TargetMethods()
+	{
+		yield return AccessTools.Method(typeof(TextDisplayer), nameof(TextDisplayer.PlayDialogueEvent));
+		yield return AccessTools.Method(typeof(TextDisplayer), nameof(TextDisplayer.ShowUntilInput));
+		yield return AccessTools.Method(typeof(TextDisplayer), nameof(TextDisplayer.ShowThenClear));
+		yield return AccessTools.Method(typeof(CardSingleChoicesSequencer), nameof(CardSingleChoicesSequencer.TutorialTextSequence));
+		yield return AccessTools.Method(typeof(GainConsumablesSequencer), nameof(GainConsumablesSequencer.LearnObjectSequence));
+	}
+	
+	private static IEnumerator Postfix(IEnumerator enumerator)
+	{
+		if (Configs.DisableAllInput)
+		{
+			yield break;
+		}
+
+		yield return enumerator;
+	}
+}
+
+[HarmonyPatch]
+internal class DisableDialogue_Patch
+{
+	public static IEnumerable<MethodBase> TargetMethods()
+	{
+		yield return AccessTools.Method(typeof(TextDisplayer), nameof(TextDisplayer.ShowMessage));
+	}
+	
+	private static bool Prefix()
+	{
+		if (Configs.DisableAllInput)
+		{
+			return false;
+		}
+
+		return true;
+	}
+}
+
 /*
  NOTE: Need to fix this. It does block but it spams sounds at the same time. Need to find out why
  [HarmonyPatch]
