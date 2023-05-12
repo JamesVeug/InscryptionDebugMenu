@@ -1,14 +1,25 @@
 # Changelog
 
+## 0.7.0
+
+### All Acts
+- Added disable dialogue button (Saves through configs)
+
+### Act 2
+- Basic support to skip through card battles
+
+
 ## 0.6.1
 
 ### General
 - Fixed act 1 totem fights always triggering Bird+Fecundity
 
+
 ## 0.6.0
 
 ### All Acts
 - Added button to trigger any sequence (Card battles, gain totem... etc)
+
 
 ## 0.5.0
 
@@ -28,7 +39,6 @@
 - Button to draw card during battles
 - Button to draw side deck card during battles
 - Buttons to add/remove bones during battles
-
 
 ### Misc
 - Added FPS counter in Game info popup
