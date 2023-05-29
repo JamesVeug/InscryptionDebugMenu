@@ -20,17 +20,24 @@ public class CardBattleSequence
 
 	public void OnGUI()
 	{
-		if (Window.Button("Auto win battle"))
+
+		using (Window.HorizontalScope(2))
 		{
-			PixelLifeManager lifeManager = Singleton<PixelLifeManager>.Instance;
-			int lifeLeft = Mathf.Abs(lifeManager.Balance - 5);
-			Plugin.Instance.StartCoroutine(lifeManager.ShowDamageSequence(lifeLeft, lifeLeft, false, 0.125f, null, 0f, false));
-		}
-		if (Window.Button("Auto lose battle"))
-		{
-			PixelLifeManager lifeManager = Singleton<PixelLifeManager>.Instance;
-			int lifeLeft = Mathf.Abs(lifeManager.Balance - 5);
-			Plugin.Instance.StartCoroutine(lifeManager.ShowDamageSequence(lifeLeft, lifeLeft, true, 0.125f, null, 0f, false));
+			if (Window.Button("Auto win battle"))
+			{
+				PixelLifeManager lifeManager = Singleton<PixelLifeManager>.Instance;
+				int lifeLeft = Mathf.Abs(lifeManager.Balance - 5);
+				Plugin.Instance.StartCoroutine(lifeManager.ShowDamageSequence(lifeLeft, lifeLeft, false, 0.125f, null,
+					0f, false));
+			}
+
+			if (Window.Button("Auto lose battle"))
+			{
+				PixelLifeManager lifeManager = Singleton<PixelLifeManager>.Instance;
+				int lifeLeft = Mathf.Abs(lifeManager.Balance - 5);
+				Plugin.Instance.StartCoroutine(lifeManager.ShowDamageSequence(lifeLeft, lifeLeft, true, 0.125f, null,
+					0f, false));
+			}
 		}
 
 		Window.Padding();
@@ -52,35 +59,77 @@ public class CardBattleSequence
 			}
 		}
 
-		Window.Padding();
-		
-		if (Window.Button("+5 bones"))
+		using (Window.HorizontalScope(3))
 		{
-			Plugin.Instance.StartCoroutine(Singleton<PixelResourcesManager>.Instance.AddBones(5));
-		}
-		
-		if (Window.Button("-5 bones"))
-		{
-			int bones = 5;
-			if (Singleton<PixelResourcesManager>.Instance.PlayerBones < 5)
+			Window.Label("Bones:\n" + Singleton<ResourcesManager>.Instance.PlayerBones);
+			
+			if (Window.Button("+5 bones"))
 			{
-				bones = Singleton<PixelResourcesManager>.Instance.PlayerBones;
+				Plugin.Instance.StartCoroutine(Singleton<PixelResourcesManager>.Instance.AddBones(5));
 			}
-			Plugin.Instance.StartCoroutine(Singleton<PixelResourcesManager>.Instance.SpendBones(bones));
+
+			if (Window.Button("-5 bones"))
+			{
+				int bones = 5;
+				if (Singleton<PixelResourcesManager>.Instance.PlayerBones < 5)
+				{
+					bones = Singleton<PixelResourcesManager>.Instance.PlayerBones;
+				}
+
+				Plugin.Instance.StartCoroutine(Singleton<PixelResourcesManager>.Instance.SpendBones(bones));
+			}
 		}
-		
-		Window.Padding();
-		
-		if (Window.Button("Deal 2 Damage"))
+
+		using (Window.HorizontalScope(3))
 		{
-			PixelLifeManager lifeManager = Singleton<PixelLifeManager>.Instance;
-			Plugin.Instance.StartCoroutine(lifeManager.ShowDamageSequence(2, 2, false, 0.125f, null, 0f, false));
+			Window.Label("Scales:\n" + Singleton<PixelLifeManager>.Instance.Balance);
+			
+			if (Window.Button("Deal 2"))
+			{
+				PixelLifeManager lifeManager = Singleton<PixelLifeManager>.Instance;
+				Plugin.Instance.StartCoroutine(lifeManager.ShowDamageSequence(2, 2, false, 0.125f, null, 0f, false));
+			}
+
+			if (Window.Button("Take 2"))
+			{
+				PixelLifeManager lifeManager = Singleton<PixelLifeManager>.Instance;
+				Plugin.Instance.StartCoroutine(lifeManager.ShowDamageSequence(2, 2, true, 0.125f, null, 0f, false));
+			}
 		}
-		
-		if (Window.Button("Take 2 Damage"))
+
+		using (Window.HorizontalScope(4))
 		{
-			PixelLifeManager lifeManager = Singleton<PixelLifeManager>.Instance;
-			Plugin.Instance.StartCoroutine(lifeManager.ShowDamageSequence(2, 2, true, 0.125f, null, 0f, false));
+			Window.Label($"Energy: \n{ResourcesManager.Instance.PlayerEnergy}\\{ResourcesManager.Instance.PlayerMaxEnergy}");
+
+			if (Window.Button("-1"))
+			{
+				ResourcesManager.Instance.StartCoroutine(ResourcesManager.Instance.SpendEnergy(1));
+			}
+
+			if (Window.Button("+1"))
+			{
+				ResourcesManager.Instance.StartCoroutine(ResourcesManager.Instance.AddEnergy(1));
+			}
+
+			if (Window.Button("Fill"))
+			{
+				ResourcesManager.Instance.StartCoroutine(ResourcesManager.Instance.RefreshEnergy());
+			}
+		}
+
+		using (Window.HorizontalScope(4))
+		{
+			Window.Label("Max Energy");
+
+			if (Window.Button("-1"))
+			{
+				ResourcesManager.Instance.StartCoroutine(ResourcesManager.Instance.AddMaxEnergy(-1));
+			}
+
+			if (Window.Button("+1"))
+			{
+				ResourcesManager.Instance.StartCoroutine(ResourcesManager.Instance.AddMaxEnergy(1));
+			}
 		}
 	}
 }

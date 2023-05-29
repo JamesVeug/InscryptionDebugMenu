@@ -116,5 +116,49 @@ public class CardBattleSequence
 				Plugin.Instance.StartCoroutine(lifeManager.ShowDamageSequence(2, 2, true, 0.125f, null, 0f, false));
 			}
 		}
+		
+		using (Window.HorizontalScope(4))
+		{
+			Window.Label($"Energy: \n{ResourcesManager.Instance.PlayerEnergy}\\{ResourcesManager.Instance.PlayerMaxEnergy}");
+
+			if (Window.Button("-1"))
+			{
+				ResourcesManager.Instance.StartCoroutine(ResourcesManager.Instance.SpendEnergy(1));
+			}
+
+			if (Window.Button("+1"))
+			{
+				ResourcesManager.Instance.StartCoroutine(ResourcesManager.Instance.AddEnergy(1));
+			}
+
+			if (Window.Button("Fill"))
+			{
+				ResourcesManager.Instance.StartCoroutine(ResourcesManager.Instance.RefreshEnergy());
+			}
+		}
+
+		using (Window.HorizontalScope(4))
+		{
+			Window.Label("Max Energy");
+
+			if (Window.Button("-1"))
+			{
+				ResourcesManager.Instance.StartCoroutine(ResourcesManager.Instance.AddMaxEnergy(-1));
+			}
+
+			if (Window.Button("+1"))
+			{
+				ResourcesManager.Instance.StartCoroutine(ResourcesManager.Instance.AddMaxEnergy(1));
+			}
+
+			if (Window.Button("MAX"))
+			{
+				for (int i = ResourcesManager.Instance.PlayerMaxEnergy; i < 6; i++)
+				{
+					Singleton<ResourceDrone>.Instance.OpenCell(i);
+				}
+				ResourcesManager.Instance.StartCoroutine(ResourcesManager.Instance.AddMaxEnergy(6));
+			}
+		}
 	}
 }

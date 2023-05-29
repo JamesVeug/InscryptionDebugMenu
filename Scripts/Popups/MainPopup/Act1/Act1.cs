@@ -46,9 +46,9 @@ public class Act1 : BaseAct
 		{
 			RunState.Run.playerLives = RunState.Run.maxPlayerLives;
 		}
-		
-		Window.Padding();
 
+		Window.Padding();
+			
 		using (Window.HorizontalScope(3))
 		{
 			Window.Label("Currency: \n" + RunState.Run.currency);
@@ -62,7 +62,7 @@ public class Act1 : BaseAct
 				RunState.Run.currency = Mathf.Max(0, RunState.Run.currency - 5);
 			}
 		}
-
+		
 		DrawItemsGUI();
 		
 		Window.StartNewColumn();

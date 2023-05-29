@@ -50,54 +50,102 @@ public class CardBattleSequence
 			}
 		}
 
-		Window.Padding();
+		using (Window.HorizontalScope(2))
+		{
+			if (Window.Button("Draw Card"))
+			{
+				Part3CardDrawPiles part1CardDrawPiles = (Singleton<CardDrawPiles>.Instance as Part3CardDrawPiles);
+				if (part1CardDrawPiles)
+				{
+					if (part1CardDrawPiles.Deck.cards.Count > 0)
+					{
+						part1CardDrawPiles.pile.Draw();
+						Plugin.Instance.StartCoroutine(part1CardDrawPiles.DrawCardFromDeck());
+					}
+				}
+				else
+				{
+					Plugin.Log.LogError("Could not draw card. Can't find CardDrawPiles!");
+				}
+			}
+
+			if (Window.Button("Draw Side Deck"))
+			{
+				Part3CardDrawPiles part1CardDrawPiles = (Singleton<CardDrawPiles>.Instance as Part3CardDrawPiles);
+				if (part1CardDrawPiles)
+				{
+					if (part1CardDrawPiles.SideDeck.cards.Count > 0)
+					{
+						part1CardDrawPiles.SidePile.Draw();
+						Plugin.Instance.StartCoroutine(part1CardDrawPiles.DrawFromSidePile());
+					}
+				}
+				else
+				{
+					Plugin.Log.LogError("Could not draw side deck. Can't find CardDrawPiles!");
+				}
+			}
+		}
+
+		using (Window.HorizontalScope(3))
+		{
+			Window.Label("Scales:\n" + Singleton<LifeManager>.Instance.Balance);
 			
-		if (Window.Button("Draw Card"))
-		{
-			Part3CardDrawPiles part1CardDrawPiles = (Singleton<CardDrawPiles>.Instance as Part3CardDrawPiles);
-			if (part1CardDrawPiles)
+			if (Window.Button("Deal 2"))
 			{
-				if (part1CardDrawPiles.Deck.cards.Count > 0)
+				LifeManager lifeManager = Singleton<LifeManager>.Instance;
+				Plugin.Instance.StartCoroutine(lifeManager.ShowDamageSequence(2, 2, false, 0.125f, null, 0f, false));
+			}
+
+			if (Window.Button("Take 2"))
+			{
+				LifeManager lifeManager = Singleton<LifeManager>.Instance;
+				Plugin.Instance.StartCoroutine(lifeManager.ShowDamageSequence(2, 2, true, 0.125f, null, 0f, false));
+			}
+		}
+
+		using (Window.HorizontalScope(4))
+		{
+			Window.Label($"Energy: \n{ResourcesManager.Instance.PlayerEnergy}\\{ResourcesManager.Instance.PlayerMaxEnergy}");
+
+			if (Window.Button("-1"))
+			{
+				ResourcesManager.Instance.StartCoroutine(ResourcesManager.Instance.SpendEnergy(1));
+			}
+
+			if (Window.Button("+1"))
+			{
+				ResourcesManager.Instance.StartCoroutine(ResourcesManager.Instance.AddEnergy(1));
+			}
+
+			if (Window.Button("Fill"))
+			{
+				ResourcesManager.Instance.StartCoroutine(ResourcesManager.Instance.RefreshEnergy());
+			}
+		}
+
+		using (Window.HorizontalScope(4))
+		{
+			Window.Label("Max Energy");
+
+			if (Window.Button("-1"))
+			{
+				ResourcesManager.Instance.StartCoroutine(ResourcesManager.Instance.AddMaxEnergy(-1));
+			}
+
+			if (Window.Button("+1"))
+			{
+				ResourcesManager.Instance.StartCoroutine(ResourcesManager.Instance.AddMaxEnergy(1));
+			}
+
+			if (Window.Button("MAX"))
+			{
+				for (int i = ResourcesManager.Instance.PlayerMaxEnergy; i < 6; i++)
 				{
-					part1CardDrawPiles.pile.Draw();
-					Plugin.Instance.StartCoroutine(part1CardDrawPiles.DrawCardFromDeck());
+					Singleton<ResourceDrone>.Instance.OpenCell(i);
 				}
+				ResourcesManager.Instance.StartCoroutine(ResourcesManager.Instance.AddMaxEnergy(6));
 			}
-			else
-			{
-				Plugin.Log.LogError("Could not draw card. Can't find CardDrawPiles!");
-			}
-		}
-		
-		if (Window.Button("Draw Side Deck"))
-		{
-			Part3CardDrawPiles part1CardDrawPiles = (Singleton<CardDrawPiles>.Instance as Part3CardDrawPiles);
-			if (part1CardDrawPiles)
-			{
-				if (part1CardDrawPiles.SideDeck.cards.Count > 0)
-				{
-					part1CardDrawPiles.SidePile.Draw();
-					Plugin.Instance.StartCoroutine(part1CardDrawPiles.DrawFromSidePile());
-				}
-			}
-			else
-			{
-				Plugin.Log.LogError("Could not draw side deck. Can't find CardDrawPiles!");
-			}
-		}
-		
-		Window.Padding();
-		
-		if (Window.Button("Deal 2 Damage"))
-		{
-			LifeManager lifeManager = Singleton<LifeManager>.Instance;
-			Plugin.Instance.StartCoroutine(lifeManager.ShowDamageSequence(2, 2, false, 0.125f, null, 0f, false));
-		}
-		
-		if (Window.Button("Take 2 Damage"))
-		{
-			LifeManager lifeManager = Singleton<LifeManager>.Instance;
-			Plugin.Instance.StartCoroutine(lifeManager.ShowDamageSequence(2, 2, true, 0.125f, null, 0f, false));
 		}
 	}
 }
