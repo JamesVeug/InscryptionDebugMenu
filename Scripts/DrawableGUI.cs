@@ -18,6 +18,37 @@ public abstract class DrawableGUI
 			Reason = reason;
 		}
 	}
+
+	public struct LayoutScope : IDisposable
+	{
+		public bool Horizontal => horizontal;
+		public int TotalElements => totalElements;
+
+		private readonly float originalX;
+		private readonly int totalElements;
+		private readonly bool horizontal;
+		private readonly DrawableGUI scope;
+
+		public LayoutScope(int totalElements, bool horizontal, DrawableGUI scope)
+		{
+			this.originalX = scope.X;
+			this.totalElements = totalElements;
+			this.horizontal = horizontal;
+			this.scope = scope;
+			scope.m_layoutScopes.Add(this);
+			//scope.Y += scope.RowHeight;
+		}
+		
+		public void Dispose()
+		{
+			scope.m_layoutScopes.Remove(this);
+			if (horizontal)
+			{
+				scope.X = originalX;
+				scope.Y += scope.RowHeight;
+			}
+		}
+	}
 	
 	public float TotalWidth => Columns * ColumnWidth + ((Columns - 1) * ColumnPadding);
 	public float Height => MaxHeight + RowHeight;
@@ -31,6 +62,7 @@ public abstract class DrawableGUI
 	private float MaxHeight = 1;
 
 	private Dictionary<string, string> m_buttonGroups = new Dictionary<string, string>();
+	private List<LayoutScope> m_layoutScopes = new List<LayoutScope>();
 
 	private GUIStyle LabelHeaderStyle = GUIStyle.none;
 	private GUIStyle ButtonStyle = GUIStyle.none;
@@ -77,10 +109,7 @@ public abstract class DrawableGUI
 	/// <returns>Returns true if the button was pressed</returns>
 	public virtual bool Button(string text, float? height = null, string buttonGroup = null, Func<ButtonDisabledData> disabled = null)
 	{
-		float h = height.HasValue ? height.Value : RowHeight;
-		float y = Y;
-		Y += h;
-		MaxHeight = Mathf.Max(MaxHeight, Y);
+		(float x, float y, float w, float h) = GetPosition(height);
 
 		GUIStyle style = ButtonStyle;
 		bool wasPressed = false;
@@ -89,11 +118,11 @@ public abstract class DrawableGUI
 		bool isDisabled = disabledData.Disabled;
 		if (isDisabled)
 		{
-			GUI.Label(new Rect(X, y, ColumnWidth, h), text + "\n(" + disabledData.Reason + ")", ButtonDisabledStyle);
+			GUI.Label(new Rect(x,y,w,h), text + "\n(" + disabledData.Reason + ")", ButtonDisabledStyle);
 		}
 		else if (buttonGroup == null)
 		{
-			wasPressed = GUI.Button(new Rect(X, y, ColumnWidth, h), text, ButtonStyle);
+			wasPressed = GUI.Button(new Rect(x, y, w, h), text, ButtonStyle);
 		}
 		else
 		{
@@ -107,7 +136,7 @@ public abstract class DrawableGUI
 				style = ButtonDisabledStyle;
 			}
 
-			wasPressed = GUI.Button(new Rect(X, y, ColumnWidth, h), text, style);
+			wasPressed = GUI.Button(new Rect(x,y,w,h), text, style);
 			if (wasPressed)
 			{
 				m_buttonGroups[buttonGroup] = text;
@@ -119,12 +148,10 @@ public abstract class DrawableGUI
 	}
 	
 	/// <returns>Returns True if the value changed</returns>
-	public virtual bool Toggle(string text, ref bool value)
+	public virtual bool Toggle(string text, ref bool value, float? height = null)
 	{
-		float y = Y;
-		Y += RowHeight;
-		MaxHeight = Mathf.Max(MaxHeight, Y);
-		bool toggle = GUI.Toggle(new Rect(X, y, ColumnWidth, RowHeight), value, text);
+		(float x, float y, float w, float h) = GetPosition(height);
+		bool toggle = GUI.Toggle(new Rect(x,y,w,h), value, text);
 		if (toggle != value)
 		{
 			value = toggle;
@@ -133,13 +160,11 @@ public abstract class DrawableGUI
 		return false;
 	}
 	
-	public virtual bool Toggle(string text, ref ConfigEntry<bool> value)
+	public virtual bool Toggle(string text, ref ConfigEntry<bool> value, float? height = null)
 	{
-		float y = Y;
-		Y += RowHeight;
-		MaxHeight = Mathf.Max(MaxHeight, Y);
+		(float x, float y, float w, float h) = GetPosition(height);
 		bool b = value.Value;
-		bool toggle = GUI.Toggle(new Rect(X, y, ColumnWidth, RowHeight), b, text);
+		bool toggle = GUI.Toggle(new Rect(x,y,w,h), b, text);
 		if (toggle != b)
 		{
 			value.Value = toggle;
@@ -150,38 +175,27 @@ public abstract class DrawableGUI
 
 	public virtual void Label(string text, float? height = null)
 	{
-		float h = height.HasValue ? height.Value : RowHeight;
-		float y = Y;
-		Y += h;
-		MaxHeight = Mathf.Max(MaxHeight, Y);
-		GUI.Label(new Rect(X, y, ColumnWidth, h), text);
+		(float x, float y, float w, float h) = GetPosition(height);
+		GUI.Label(new Rect(x, y,w,h), text);
 	}
 
-	public virtual void LabelHeader(string text)
+	public virtual void LabelHeader(string text, float? height = null)
 	{
-		float y = Y;
-		Y += RowHeight;
-		MaxHeight = Mathf.Max(MaxHeight, Y);
-		GUI.Label(new Rect(X, y, ColumnWidth, RowHeight), text, LabelHeaderStyle);
+		(float x, float y, float w, float h) = GetPosition(height);
+		GUI.Label(new Rect(x,y,w,h), text, LabelHeaderStyle);
 	}
 
 	public virtual string TextField(string text, float? height = null)
 	{
-		float h = height.HasValue ? height.Value : RowHeight;
-		float y = Y;
-		Y += h;
-		MaxHeight = Mathf.Max(MaxHeight, Y);
-		return GUI.TextField(new Rect(X, y, ColumnWidth, h), text);
+		(float x, float y, float w, float h) = GetPosition(height);
+		return GUI.TextField(new Rect(x, y, w, h), text);
 	}
 
 	public virtual int IntField(int text, float? height = null)
 	{
-		float h = height.HasValue ? height.Value : RowHeight;
-		float y = Y;
-		Y += h;
-		MaxHeight = Mathf.Max(MaxHeight, Y);
+		(float x, float y, float w, float h) = GetPosition(height);
 
-		string textField = GUI.TextField(new Rect(X, y, ColumnWidth, h), text.ToString());
+		string textField = GUI.TextField(new Rect(x, y, w, h), text.ToString());
 		if (!int.TryParse(textField, out int result)) 
 			return text;
 		
@@ -195,5 +209,32 @@ public abstract class DrawableGUI
 		Y += h;
 		MaxHeight = Mathf.Max(MaxHeight, Y);
 		GUI.Label(new Rect(X, y, ColumnWidth, h), "");
+	}
+
+	private (float X, float y, float w, float h) GetPosition(float? height = null)
+	{
+		float x = X;
+		float y = Y;
+		float h = height.HasValue ? height.Value : RowHeight;
+		float w = ColumnWidth;
+		
+		bool verticallyAligned = m_layoutScopes.Count == 0 || !m_layoutScopes[m_layoutScopes.Count - 1].Horizontal;
+		if (verticallyAligned)
+		{
+			Y += h;
+		}
+		else
+		{
+			w = ColumnWidth / m_layoutScopes[m_layoutScopes.Count - 1].TotalElements;
+			X += w;
+		}
+		MaxHeight = Mathf.Max(MaxHeight, Y);
+		
+		return (x, y, w, h);
+	}
+
+	public IDisposable HorizontalScope(int elementCount)
+	{
+		return new LayoutScope(elementCount, true, this);
 	}
 }

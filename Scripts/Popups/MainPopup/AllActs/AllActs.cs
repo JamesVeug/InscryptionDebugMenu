@@ -26,21 +26,28 @@ public class AllActs : BaseAct
 		{
 			Plugin.Instance.ToggleWindow<GameInfoPopup>();
 		}
-		
-		if (Window.Button("0.1x"))
+
+		using (Window.HorizontalScope(4))
 		{
-			Log("Minimum Time Scale");
-			SetTimeScale(0.1f);
-		}
-		if (Window.Button("1x"))
-		{
-			Log("Minimum Time Scale");
-			SetTimeScale(1f);
-		}
-		if (Window.Button("5x"))
-		{
-			Log("Minimum Time Scale");
-			SetTimeScale(5f);
+			Window.Label("Time Scale:");
+			
+			if (Window.Button("0.1x"))
+			{
+				Log("Minimum Time Scale");
+				SetTimeScale(0.1f);
+			}
+
+			if (Window.Button("1x"))
+			{
+				Log("Minimum Time Scale");
+				SetTimeScale(1f);
+			}
+
+			if (Window.Button("5x"))
+			{
+				Log("Minimum Time Scale");
+				SetTimeScale(5f);
+			}
 		}
 	}
 

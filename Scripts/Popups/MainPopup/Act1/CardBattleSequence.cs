@@ -24,85 +24,99 @@ public class CardBattleSequence
 		{
 			Window.Label($"Difficulty: {cardBattleNodeData.difficulty} + {RunState.Run.DifficultyModifier}");
 		}
-		
-		if (Window.Button("Auto win battle"))
+
+		using (Window.HorizontalScope(2))
 		{
-			LifeManager lifeManager = Singleton<LifeManager>.Instance;
-			int lifeLeft = Mathf.Abs(lifeManager.Balance - 5);
-			Plugin.Instance.StartCoroutine(lifeManager.ShowDamageSequence(lifeLeft, lifeLeft, false, 0.125f, null, 0f, false));
-		}
-		if (Window.Button("Auto lose battle"))
-		{
-			LifeManager lifeManager = Singleton<LifeManager>.Instance;
-			int lifeLeft = Mathf.Abs(lifeManager.Balance - 5);
-			Plugin.Instance.StartCoroutine(lifeManager.ShowDamageSequence(lifeLeft, lifeLeft, true, 0.125f, null, 0f, false));
+			if (Window.Button("Auto win battle"))
+			{
+				LifeManager lifeManager = Singleton<LifeManager>.Instance;
+				int lifeLeft = Mathf.Abs(lifeManager.Balance - 5);
+				Plugin.Instance.StartCoroutine(lifeManager.ShowDamageSequence(lifeLeft, lifeLeft, false, 0.125f, null,
+					0f, false));
+			}
+
+			if (Window.Button("Auto lose battle"))
+			{
+				LifeManager lifeManager = Singleton<LifeManager>.Instance;
+				int lifeLeft = Mathf.Abs(lifeManager.Balance - 5);
+				Plugin.Instance.StartCoroutine(lifeManager.ShowDamageSequence(lifeLeft, lifeLeft, true, 0.125f, null,
+					0f, false));
+			}
 		}
 
-		Window.Padding();
+		using (Window.HorizontalScope(2))
+		{
+			if (Window.Button("Draw Card"))
+			{
+				Part1CardDrawPiles part1CardDrawPiles = (Singleton<CardDrawPiles>.Instance as Part1CardDrawPiles);
+				if (part1CardDrawPiles)
+				{
+					if (part1CardDrawPiles.Deck.cards.Count > 0)
+					{
+						part1CardDrawPiles.pile.Draw();
+						Plugin.Instance.StartCoroutine(part1CardDrawPiles.DrawCardFromDeck());
+					}
+				}
+				else
+				{
+					Plugin.Log.LogError("Could not draw card. Can't find CardDrawPiles!");
+				}
+			}
+
+			if (Window.Button("Draw Side Deck"))
+			{
+				Part1CardDrawPiles part1CardDrawPiles = (Singleton<CardDrawPiles>.Instance as Part1CardDrawPiles);
+				if (part1CardDrawPiles)
+				{
+					if (part1CardDrawPiles.SideDeck.cards.Count > 0)
+					{
+						part1CardDrawPiles.SidePile.Draw();
+						Plugin.Instance.StartCoroutine(part1CardDrawPiles.DrawFromSidePile());
+					}
+				}
+				else
+				{
+					Plugin.Log.LogError("Could not draw side deck. Can't find CardDrawPiles!");
+				}
+			}
+		}
+
+		using (Window.HorizontalScope(3))
+		{
+			Window.Label("Bones:\n" + Singleton<ResourcesManager>.Instance.PlayerBones);
 			
-		if (Window.Button("Draw Card"))
-		{
-			Part1CardDrawPiles part1CardDrawPiles = (Singleton<CardDrawPiles>.Instance as Part1CardDrawPiles);
-			if (part1CardDrawPiles)
+			if (Window.Button("+5"))
 			{
-				if (part1CardDrawPiles.Deck.cards.Count > 0)
+				Plugin.Instance.StartCoroutine(Singleton<ResourcesManager>.Instance.AddBones(5));
+			}
+
+			if (Window.Button("-5"))
+			{
+				int bones = 5;
+				if (Singleton<ResourcesManager>.Instance.PlayerBones < 5)
 				{
-					part1CardDrawPiles.pile.Draw();
-					Plugin.Instance.StartCoroutine(part1CardDrawPiles.DrawCardFromDeck());
+					bones = Singleton<ResourcesManager>.Instance.PlayerBones;
 				}
-			}
-			else
-			{
-				Plugin.Log.LogError("Could not draw card. Can't find CardDrawPiles!");
-			}
-		}
-		
-		if (Window.Button("Draw Side Deck"))
-		{
-			Part1CardDrawPiles part1CardDrawPiles = (Singleton<CardDrawPiles>.Instance as Part1CardDrawPiles);
-			if (part1CardDrawPiles)
-			{
-				if (part1CardDrawPiles.SideDeck.cards.Count > 0)
-				{
-					part1CardDrawPiles.SidePile.Draw();
-					Plugin.Instance.StartCoroutine(part1CardDrawPiles.DrawFromSidePile());
-				}
-			}
-			else
-			{
-				Plugin.Log.LogError("Could not draw side deck. Can't find CardDrawPiles!");
+
+				Plugin.Instance.StartCoroutine(Singleton<ResourcesManager>.Instance.SpendBones(bones));
 			}
 		}
 
-		Window.Padding();
-		
-		if (Window.Button("+5 bones"))
+		using (Window.HorizontalScope(3))
 		{
-			Plugin.Instance.StartCoroutine(Singleton<ResourcesManager>.Instance.AddBones(5));
-		}
-		
-		if (Window.Button("-5 bones"))
-		{
-			int bones = 5;
-			if (Singleton<ResourcesManager>.Instance.PlayerBones < 5)
+			Window.Label("Scales:\n" + Singleton<LifeManager>.Instance.Balance);
+			
+			if (Window.Button("Deal 2 Damage"))
 			{
-				bones = Singleton<ResourcesManager>.Instance.PlayerBones;
+				LifeManager lifeManager = Singleton<LifeManager>.Instance;
+				Plugin.Instance.StartCoroutine(lifeManager.ShowDamageSequence(2, 2, false, 0.125f, null, 0f, false));
 			}
-			Plugin.Instance.StartCoroutine(Singleton<ResourcesManager>.Instance.SpendBones(bones));
-		}
-		
-		Window.Padding();
-		
-		if (Window.Button("Deal 2 Damage"))
-		{
-			LifeManager lifeManager = Singleton<LifeManager>.Instance;
-			Plugin.Instance.StartCoroutine(lifeManager.ShowDamageSequence(2, 2, false, 0.125f, null, 0f, false));
-		}
-		
-		if (Window.Button("Take 2 Damage"))
-		{
-			LifeManager lifeManager = Singleton<LifeManager>.Instance;
-			Plugin.Instance.StartCoroutine(lifeManager.ShowDamageSequence(2, 2, true, 0.125f, null, 0f, false));
+
+			if (Window.Button("Take 2 Damage"))
+			{
+				LifeManager lifeManager = Singleton<LifeManager>.Instance;
+				Plugin.Instance.StartCoroutine(lifeManager.ShowDamageSequence(2, 2, true, 0.125f, null, 0f, false));
+			}
 		}
 	}
 }

@@ -48,12 +48,17 @@ public abstract class BaseAct
 		Window.LabelHeader("Items");
 		List<string> items = RunState.Run.consumables;
 
-		for (int i = 0; i < RunState.Run.MaxConsumables; i++)
+		using (Window.HorizontalScope(RunState.Run.MaxConsumables))
 		{
-			string consumable = i >= items.Count ? null : items[i];
-			string itemRulebookName = Helpers.GetConsumableByName(consumable);
-			string itemName = itemRulebookName != null ? itemRulebookName : consumable == null ? "None" : consumable;
-			ButtonListPopup.OnGUI(Window, itemName, "Change Item " + (i+1), GetListsOfAllItems, OnChoseButtonCallback, i.ToString());
+			for (int i = 0; i < RunState.Run.MaxConsumables; i++)
+			{
+				string consumable = i >= items.Count ? null : items[i];
+				string itemRulebookName = Helpers.GetConsumableByName(consumable);
+				string itemName = itemRulebookName != null ? itemRulebookName :
+					consumable == null ? "None" : consumable;
+				ButtonListPopup.OnGUI(Window, itemName, "Change Item " + (i + 1), GetListsOfAllItems,
+					OnChoseButtonCallback, i.ToString());
+			}
 		}
 	}
 

@@ -45,15 +45,19 @@ public class Act3 : BaseAct
 		}
 
 		Window.Padding();
-	
-		Window.Label("Currency: " + Part3SaveData.Data.currency);
-		if (Window.Button("Add 5 Cash"))
+
+		using (Window.HorizontalScope(3))
 		{
-			Part3SaveData.Data.currency += 5;
-		}
-		if (Window.Button("Remove 5 Cash"))
-		{
-			RunState.Run.currency = Mathf.Max(0, Part3SaveData.Data.currency - 5);
+			Window.Label("Currency: \n" + Part3SaveData.Data.currency);
+			if (Window.Button("+5"))
+			{
+				Part3SaveData.Data.currency += 5;
+			}
+
+			if (Window.Button("-5"))
+			{
+				RunState.Run.currency = Mathf.Max(0, Part3SaveData.Data.currency - 5);
+			}
 		}
 
 		DrawItemsGUI();

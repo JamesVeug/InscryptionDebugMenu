@@ -26,17 +26,21 @@ public class Act2 : BaseAct
 		Window.LabelHeader("Act 2");
 		
 		Window.Padding();
-		
-		Window.Label("Currency: " + SaveData.Data.currency);
-		if (Window.Button("Add 5 Currency"))
+
+		using (Window.HorizontalScope(3))
 		{
-			SaveData.Data.currency += 5;
+			Window.Label("Currency: \n" + SaveData.Data.currency);
+			if (Window.Button("+5"))
+			{
+				SaveData.Data.currency += 5;
+			}
+
+			if (Window.Button("-5"))
+			{
+				SaveData.Data.currency = Mathf.Max(0, SaveData.Data.currency - 5);
+			}
 		}
-		if (Window.Button("Remove 5 Currency"))
-		{
-			SaveData.Data.currency = Mathf.Max(0, SaveData.Data.currency - 5);
-		}
-		
+
 		Window.StartNewColumn();
 		OnGUICurrentNode();
 	}

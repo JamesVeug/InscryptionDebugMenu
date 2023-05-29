@@ -31,17 +31,23 @@ public class CardBattleSequence
 			Window.Label($"Difficulty: {cardBattleNodeData.difficulty} + {RunState.Run.DifficultyModifier}");
 		}
 		
-		if (Window.Button("Auto win battle"))
+		using (Window.HorizontalScope(2))
 		{
-			LifeManager lifeManager = Singleton<LifeManager>.Instance;
-			int lifeLeft = Mathf.Abs(lifeManager.Balance - 5);
-			Plugin.Instance.StartCoroutine(lifeManager.ShowDamageSequence(lifeLeft, lifeLeft, false, 0.125f, null, 0f, false));
-		}
-		if (Window.Button("Auto lose battle"))
-		{
-			LifeManager lifeManager = Singleton<LifeManager>.Instance;
-			int lifeLeft = Mathf.Abs(lifeManager.Balance - 5);
-			Plugin.Instance.StartCoroutine(lifeManager.ShowDamageSequence(lifeLeft, lifeLeft, true, 0.125f, null, 0f, false));
+			if (Window.Button("Auto win battle"))
+			{
+				LifeManager lifeManager = Singleton<LifeManager>.Instance;
+				int lifeLeft = Mathf.Abs(lifeManager.Balance - 5);
+				Plugin.Instance.StartCoroutine(lifeManager.ShowDamageSequence(lifeLeft, lifeLeft, false, 0.125f, null,
+					0f, false));
+			}
+
+			if (Window.Button("Auto lose battle"))
+			{
+				LifeManager lifeManager = Singleton<LifeManager>.Instance;
+				int lifeLeft = Mathf.Abs(lifeManager.Balance - 5);
+				Plugin.Instance.StartCoroutine(lifeManager.ShowDamageSequence(lifeLeft, lifeLeft, true, 0.125f, null,
+					0f, false));
+			}
 		}
 
 		Window.Padding();

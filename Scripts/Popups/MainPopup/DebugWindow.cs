@@ -99,6 +99,7 @@ public class DebugWindow : BaseWindow
 
 				if (CurrentAct != null)
 				{
+					CurrentAct.Window.Padding();
 					CurrentAct.OnGUIReload();
 					CurrentAct.OnGUIRestart();
 				}

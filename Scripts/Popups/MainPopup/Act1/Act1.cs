@@ -48,15 +48,19 @@ public class Act1 : BaseAct
 		}
 		
 		Window.Padding();
-		
-		Window.Label("Currency: " + RunState.Run.currency);
-		if (Window.Button("Add 5 Teeth"))
+
+		using (Window.HorizontalScope(3))
 		{
-			RunState.Run.currency += 5;
-		}
-		if (Window.Button("Remove 5 Teeth"))
-		{
-			RunState.Run.currency = Mathf.Max(0, RunState.Run.currency - 5);
+			Window.Label("Currency: \n" + RunState.Run.currency);
+			if (Window.Button("+5"))
+			{
+				RunState.Run.currency += 5;
+			}
+
+			if (Window.Button("-5"))
+			{
+				RunState.Run.currency = Mathf.Max(0, RunState.Run.currency - 5);
+			}
 		}
 
 		DrawItemsGUI();
