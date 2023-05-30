@@ -19,29 +19,7 @@ public class CardBattleSequence
 	}
 
 	public void OnGUI()
-	{
-
-		using (Window.HorizontalScope(2))
-		{
-			if (Window.Button("Auto win battle"))
-			{
-				PixelLifeManager lifeManager = Singleton<PixelLifeManager>.Instance;
-				int lifeLeft = Mathf.Abs(lifeManager.Balance - 5);
-				Plugin.Instance.StartCoroutine(lifeManager.ShowDamageSequence(lifeLeft, lifeLeft, false, 0.125f, null,
-					0f, false));
-			}
-
-			if (Window.Button("Auto lose battle"))
-			{
-				PixelLifeManager lifeManager = Singleton<PixelLifeManager>.Instance;
-				int lifeLeft = Mathf.Abs(lifeManager.Balance - 5);
-				Plugin.Instance.StartCoroutine(lifeManager.ShowDamageSequence(lifeLeft, lifeLeft, true, 0.125f, null,
-					0f, false));
-			}
-		}
-
-		Window.Padding();
-			
+	{			
 		if (Window.Button("Draw Card"))
 		{
 			PixelCardDrawPiles drawPile = (Singleton<PixelCardDrawPiles>.Instance as PixelCardDrawPiles);
@@ -129,6 +107,27 @@ public class CardBattleSequence
 			if (Window.Button("+1"))
 			{
 				ResourcesManager.Instance.StartCoroutine(ResourcesManager.Instance.AddMaxEnergy(1));
+			}
+		}
+
+		Window.Padding();
+		
+		using (Window.HorizontalScope(2))
+		{
+			if (Window.Button("Auto win battle"))
+			{
+				PixelLifeManager lifeManager = Singleton<PixelLifeManager>.Instance;
+				int lifeLeft = Mathf.Abs(lifeManager.Balance - 5);
+				Plugin.Instance.StartCoroutine(lifeManager.ShowDamageSequence(lifeLeft, lifeLeft, false, 0.125f, null,
+					0f, false));
+			}
+
+			if (Window.Button("Auto lose battle"))
+			{
+				PixelLifeManager lifeManager = Singleton<PixelLifeManager>.Instance;
+				int lifeLeft = Mathf.Abs(lifeManager.Balance - 5);
+				Plugin.Instance.StartCoroutine(lifeManager.ShowDamageSequence(lifeLeft, lifeLeft, true, 0.125f, null,
+					0f, false));
 			}
 		}
 	}
