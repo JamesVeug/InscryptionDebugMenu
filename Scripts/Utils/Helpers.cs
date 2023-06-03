@@ -258,7 +258,7 @@ public static partial class Helpers
 		return SaveManager.ToJSON(o);
 	}
 	
-	public static object GetDefaultValue(this Type type)
+	public static object GetDefaultValue(Type type)
 	{
 		// Validate parameters.
 		if (type == null) throw new ArgumentNullException("type");

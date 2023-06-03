@@ -54,20 +54,12 @@ public class HotkeyController
 			{
 				arguments += type.Name + ", ";
 			}
-			Plugin.Log.LogInfo($"Hotkey: {pair.Key} ({arguments})");
 		}
 
 		string hotkeys = Configs.Hotkeys.Trim();
-		if (string.IsNullOrEmpty(hotkeys))
-		{
-			hotkeys = "F5:CurrentAct_TakeDamage:4,F9:Restart:F4:ToggleDebugMode";
-		}
-		Plugin.Log.LogError($"Hotkeys: '{hotkeys}'");
-		
 		string[] hotkeyStrings = hotkeys.Split(',');
 		foreach (string hotkey in hotkeyStrings)
 		{
-			Plugin.Log.LogError($"Hotkey: '{hotkey}'");
 			string[] split = hotkey.Trim().Split(':');
 			if (split.Length == 0)
 			{
@@ -76,16 +68,9 @@ public class HotkeyController
 			}
 
 			KeyCode[] keyCodes = DeserializeKeyCodes(split[0]);
-			Plugin.Log.LogError($"Keys: '{keyCodes.Serialize()}'");
-			
 			string functionID = DeserializeFunction(split, keyCodes, out FunctionData data);
-			Plugin.Log.LogError($"Function: '{functionID}'");
-
 			string[] argumentStrings = split.Length > 2 ? split.Skip(2).ToArray() : null;
-			Plugin.Log.LogError($"Args: '{(argumentStrings == null ? "null" : string.Join(",", argumentStrings))}'");
-			
 			object[] arguments = ConvertArguments(argumentStrings, data, hotkey, functionID);
-
 			Hotkeys.Add(new Hotkey()
 			{
 				Arguments = arguments,
@@ -105,15 +90,13 @@ public class HotkeyController
 		{
 			functionID = m_allFunctionData[0].ID;
 			data = m_allFunctionData[0];
-			Plugin.Log.LogError(
-				$"No function specified for hotkey: '{keyCodes.Serialize()}'. Using default: '{functionID}'");
+			Plugin.Log.LogError($"No function specified for hotkey: '{keyCodes.Serialize()}'. Using default: '{functionID}'");
 		}
 		else if (!m_functionIDToData.TryGetValue(functionID, out data))
 		{
 			functionID = m_allFunctionData[0].ID;
 			data = m_allFunctionData[0];
-			Plugin.Log.LogError(
-				$"Bad function id: '{functionID}' for hotkey '{keyCodes.Serialize()}'. Using default: '{functionID}'");
+			Plugin.Log.LogError($"Bad function id: '{functionID}' for hotkey '{keyCodes.Serialize()}'. Using default: '{functionID}'");
 		}
 
 		return functionID;
@@ -156,8 +139,7 @@ public class HotkeyController
 				}
 				catch (Exception e)
 				{
-					Plugin.Log.LogError(
-						$"Failed to parse argument '{argumentStrings[i]}' from string to {data.Arguments[i].Name}");
+					Plugin.Log.LogError($"Failed to parse argument '{argumentStrings[i]}' from string to {data.Arguments[i].Name}");
 					Plugin.Log.LogError(e);
 				}
 			}
@@ -188,10 +170,8 @@ public class HotkeyController
 			}
 			
 			format += hotkeyString;
-
 		}
 
-		
 		Plugin.Log.LogInfo($"Saved hotkeys");
 		Configs.Hotkeys = format;
 	}
@@ -218,7 +198,6 @@ public class HotkeyController
 				if (m_pressedKeys.Count == 0)
 				{
 					m_hotkeyActivated = false;
-					Plugin.Log.LogError($"Hotkey reset");
 				}
 			}
 		}
@@ -231,7 +210,6 @@ public class HotkeyController
 		{
 			if (m_hotkeyActivated)
 			{
-				Plugin.Log.LogInfo($"Hotkey already activated...");
 				continue;
 			}
 
@@ -255,7 +233,6 @@ public class HotkeyController
 		{
 			if (m_functionIDToData.TryGetValue(activatedHotkey.FunctionID, out FunctionData data))
 			{
-				Plugin.Log.LogError($"Hotkey activated: {activatedHotkey.FunctionID}");
 				data.Invoke(activatedHotkey.Arguments);
 				m_hotkeyActivated = true;
 			}
@@ -276,7 +253,7 @@ public class HotkeyController
 		m_functionIDToData = new Dictionary<string, FunctionData>();
 		
 		// Show/hide debug menu
-		Add("Debug Menu Show/Hide", (args) => Configs.ShowDebugMenu = !Configs.ShowDebugMenu);
+		Add("Debug Menu Show/Hide", (_) => Configs.ShowDebugMenu = !Configs.ShowDebugMenu);
 		
 		// Turn windows on/off
 		GetToggleWindowData();
@@ -296,11 +273,9 @@ public class HotkeyController
 			(info) => info.GetBaseDefinition().DeclaringType == info.DeclaringType);
 
 
-		Debug.Log("Total functions " + m_functionIDToData.Count);
 		m_allFunctionData = m_functionIDToData.Values.ToList();
 		m_allFunctionData.Sort(SortFunctions);
 		MaxArgumentsInFunctions = m_allFunctionData.Max(static (a) => a.Arguments.Length);
-		Debug.Log("MaxArgumentsInFunctions " + MaxArgumentsInFunctions);
 	}
 
 	private static int SortFunctions(FunctionData a, FunctionData b)
@@ -371,8 +346,11 @@ public class HotkeyController
 					T obj = getter();
 					if (obj != null)
 					{
-						MethodInfo objectMethodInfo = obj.GetType().GetMethod(info.Name);
-						objectMethodInfo.Invoke(obj, args);
+						MethodInfo methodInfo = obj.GetType().GetMethod(info.Name);
+						if (methodInfo != null)
+						{
+							methodInfo.Invoke(obj, args);
+						}
 					}
 				}
 			};
