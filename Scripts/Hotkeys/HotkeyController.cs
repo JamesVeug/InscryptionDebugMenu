@@ -45,18 +45,13 @@ public class HotkeyController
 	public HotkeyController()
 	{
 		InitializeFunctions();
-		
-		// log all data types by their id
-		foreach (KeyValuePair<string, FunctionData> pair in m_functionIDToData)
-		{
-			string arguments = "";
-			foreach (Type type in pair.Value.Arguments)
-			{
-				arguments += type.Name + ", ";
-			}
-		}
 
 		string hotkeys = Configs.Hotkeys.Trim();
+		if (string.IsNullOrEmpty(hotkeys))
+		{
+			return;
+		}
+		
 		string[] hotkeyStrings = hotkeys.Split(',');
 		foreach (string hotkey in hotkeyStrings)
 		{
@@ -70,7 +65,7 @@ public class HotkeyController
 			KeyCode[] keyCodes = DeserializeKeyCodes(split[0]);
 			string functionID = DeserializeFunction(split, keyCodes, out FunctionData data);
 			string[] argumentStrings = split.Length > 2 ? split.Skip(2).ToArray() : null;
-			object[] arguments = ConvertArguments(argumentStrings, data, hotkey, functionID);
+			object[] arguments = ConvertArguments(argumentStrings, data);
 			Hotkeys.Add(new Hotkey()
 			{
 				Arguments = arguments,
@@ -78,8 +73,6 @@ public class HotkeyController
 				FunctionID = functionID
 			});
 		}
-
-		SaveHotKeys(); 
 	}
 
 	private string DeserializeFunction(string[] split, KeyCode[] keyCodes, out FunctionData data)
@@ -116,7 +109,7 @@ public class HotkeyController
 		return keyCodes;
 	}
 
-	private static object[] ConvertArguments(string[] argumentStrings, FunctionData data, string hotkey, string callbackID)
+	private static object[] ConvertArguments(string[] argumentStrings, FunctionData data)
 	{
 		object[] arguments = new object[data.Arguments.Length];
 		if (data != null)

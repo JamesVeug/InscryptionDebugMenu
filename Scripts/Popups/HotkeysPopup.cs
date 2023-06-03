@@ -30,6 +30,7 @@ public class HotkeysPopup : BaseWindow
 		if (Button("New Hotkey"))
 		{
 			hotkeys.Add(Plugin.Hotkeys.CreateNewHotkey());
+			Plugin.Hotkeys.SaveHotKeys();
 		}
 		
 		Padding();
