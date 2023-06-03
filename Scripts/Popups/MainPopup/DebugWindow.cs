@@ -17,9 +17,11 @@ public class DebugWindow : BaseWindow
 	public override string PopupName => "Debug Menu";
 	public override Vector2 Size => new Vector2(700, 400);
 	public override bool ClosableWindow => false;
+	public BaseAct CurrentAct => currentAct;
+	public AllActs AllActs => allActs;
 
-	private BaseAct CurrentAct = null;
-	private ToggleStates CurrentState = ToggleStates.Off;
+	private BaseAct currentAct = null;
+	private ToggleStates currentState = ToggleStates.Off;
 
 	private AllActs allActs;
 	private Act1.Act1 act1;
@@ -45,37 +47,37 @@ public class DebugWindow : BaseWindow
 		if (SaveManager.SaveFile.IsPart1 && GameFlowManager.m_Instance)
 		{
 			// Leshy
-			CurrentAct = act1;
+			currentAct = act1;
 		}
 		else if (SaveManager.SaveFile.IsPart2)
 		{
 			// GDC
-			CurrentAct = act2;
+			currentAct = act2;
 		}
 		else if (SaveManager.SaveFile.IsPart3)
 		{
 			// PO3
-			CurrentAct = act3;
+			currentAct = act3;
 		}
 		else if (SaveManager.SaveFile.IsGrimora)
 		{
 			// Grimora
-			CurrentAct = actGrimora;
+			currentAct = actGrimora;
 		}
 		else if (SaveManager.SaveFile.IsMagnificus)
 		{
 			// Magnificus
-			CurrentAct = actMagnificus;
+			currentAct = actMagnificus;
 		}
 		else
 		{
 			// In main menu maybe???
-			CurrentAct = null;
+			currentAct = null;
 		}
 
-		if (CurrentAct != null)
+		if (currentAct != null)
 		{
-			CurrentAct.Update();
+			currentAct.Update();
 		}
 	}
 
@@ -89,33 +91,41 @@ public class DebugWindow : BaseWindow
 		
 		DrawToggleButtons();
 		
-		if (CurrentState > ToggleStates.Off)
+		if (currentState > ToggleStates.Off)
 		{
 			base.OnGUI();
 
-			if (CurrentState == ToggleStates.All || CurrentAct == null)
+			if (currentState == ToggleStates.All || currentAct == null)
 			{
 				allActs.OnGUI();
 
-				if (CurrentAct != null)
+				if (currentAct != null)
 				{
-					CurrentAct.Window.Padding();
-					CurrentAct.OnGUIReload();
-					CurrentAct.OnGUIRestart();
+					currentAct.Window.Padding();
+					
+					if (currentAct.Window.Button("Reload"))
+					{
+						currentAct.Restart();
+					}
+
+					if (currentAct.Window.Button("Restart"))
+					{
+						currentAct.Reload();
+					}
 				}
 				StartNewColumn();
 			}
 
-			if (CurrentAct != null)
+			if (currentAct != null)
 			{
 				
-				if (CurrentState == ToggleStates.Minimal)
+				if (currentState == ToggleStates.Minimal)
 				{
-					CurrentAct.OnGUIMinimal();
+					currentAct.OnGUIMinimal();
 				}
 				else
 				{
-					CurrentAct.OnGUI();
+					currentAct.OnGUI();
 				}
 			}
 		}
@@ -127,24 +137,24 @@ public class DebugWindow : BaseWindow
 	{
 		if (GUI.Button(new Rect(5f, 0f, 20f, 20f), "-"))
 		{
-			CurrentState = ToggleStates.Off;
+			currentState = ToggleStates.Off;
 			position = Vector2.zero;
 		}
 
 		if (GUI.Button(new Rect(25f, 0f, 20f, 20f), "+"))
 		{
-			CurrentState = ToggleStates.Minimal;
+			currentState = ToggleStates.Minimal;
 		}
 
 		if (GUI.Button(new Rect(45F, 0f, 25f, 20f), "X"))
 		{
-			CurrentState = ToggleStates.All;
+			currentState = ToggleStates.All;
 		}
 	}
 
 	protected override bool OnToggleWindowDraw()
 	{
-		switch (CurrentState)
+		switch (currentState)
 		{
 			case ToggleStates.Off:
 				windowRect.Set(windowRect.x, windowRect.y, 100, 60);

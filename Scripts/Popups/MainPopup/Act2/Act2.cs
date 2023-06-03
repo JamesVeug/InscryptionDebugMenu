@@ -9,11 +9,10 @@ namespace DebugMenu.Scripts.Act2;
 
 public class Act2 : BaseAct
 {
-	private CardBattleSequence m_cardBattleSequence;
-	
 	public Act2(DebugWindow window) : base(window)
 	{
-		m_cardBattleSequence = new CardBattleSequence(this);
+		m_mapSequence = new MapSequence(this);
+		m_cardBattleSequence = new CardBattleSequence(window);
 	}
 
 	public override void Update()
@@ -62,12 +61,12 @@ public class Act2 : BaseAct
 		OnGUICurrentNode();
 	}
 
-	public override void OnGUIRestart()
+	public override void Restart()
 	{
 		// TODO:
 	}
 
-	public override void OnGUIReload()
+	public override void Reload()
 	{
 		// TODO:
 	}

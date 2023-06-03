@@ -1,6 +1,7 @@
 using BepInEx;
 using BepInEx.Logging;
 using DebugMenu.Scripts.Acts;
+using DebugMenu.Scripts.Hotkeys;
 using DebugMenu.Scripts.Popups;
 using HarmonyLib;
 using UnityEngine;
@@ -17,6 +18,7 @@ namespace DebugMenu
 
 	    public static Plugin Instance;
 	    public static ManualLogSource Log;
+	    public static HotkeyController Hotkeys;
 	    
 	    public static string PluginDirectory;
 	    public static float StartingFixedDeltaTime;
@@ -30,6 +32,7 @@ namespace DebugMenu
 	        Instance = this;
 	        Log = Logger;
 	        StartingFixedDeltaTime = Time.fixedDeltaTime;
+	        Hotkeys = new HotkeyController();
 	        
             PluginDirectory = this.Info.Location.Replace("DebugMenu.dll", "");
 
@@ -45,14 +48,24 @@ namespace DebugMenu
 
         private void Update()
         {
-	        for (int i = 0; i < AllWindows.Count; i++)
+	        if (Configs.ShowDebugMenu)
 	        {
-		        AllWindows[i].Update();
+		        for (int i = 0; i < AllWindows.Count; i++)
+		        {
+			        AllWindows[i].Update();
+		        }
 	        }
+
+	        Hotkeys.Update();
         }
 
         private void OnGUI()
         {
+	        if (!Configs.ShowDebugMenu)
+	        {
+		        return;
+	        }
+	        
 	        for (int i = 0; i < AllWindows.Count; i++)
 	        {
 		        AllWindows[i].OnWindowGUI();
@@ -61,19 +74,38 @@ namespace DebugMenu
 
         public T ToggleWindow<T>() where T : BaseWindow, new()
         {
+	        return (T)ToggleWindow(typeof(T));
+        }
+
+        public BaseWindow ToggleWindow(Type t)
+        {
 	        for (int i = 0; i < AllWindows.Count; i++)
 	        {
 		        BaseWindow window = AllWindows[i];
-		        if (window.GetType() == typeof(T))
+		        if (window.GetType() == t)
 		        {
 			        AllWindows.RemoveAt(i);
 			        return null;
 		        }
 	        }
 
-	        T t = new T();
-	        AllWindows.Add(t);
-	        return t;
+	        BaseWindow baseWindow = (BaseWindow)Activator.CreateInstance(t);
+	        AllWindows.Add(baseWindow);
+	        return baseWindow;
+        }
+        
+        public T GetWindow<T>() where T : BaseWindow
+        {
+	        for (int i = 0; i < AllWindows.Count; i++)
+	        {
+		        T window = (T)AllWindows[i];
+		        if (window.GetType() == typeof(T))
+		        {
+			        return window;
+		        }
+	        }
+
+	        return null;
         }
     }
 }

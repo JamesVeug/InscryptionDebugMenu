@@ -8,13 +8,10 @@ namespace DebugMenu.Scripts.Grimora;
 
 public class ActGrimora : BaseAct
 {
-	private MapSequence m_mapSequence;
-	private CardBattleSequence m_cardBattleSequence;
-	
 	public ActGrimora(DebugWindow window) : base(window)
 	{
 		m_mapSequence = new MapSequence(this);
-		m_cardBattleSequence = new CardBattleSequence(this);
+		m_cardBattleSequence = new CardBattleSequence(window);
 	}
 
 	public override void Update()
@@ -29,7 +26,7 @@ public class ActGrimora : BaseAct
 		if (RunState.Run.currentNodeId > 0 && Singleton<MapNodeManager>.m_Instance != null)
 		{
 			MapNode nodeWithId = Singleton<MapNodeManager>.Instance.GetNodeWithId(RunState.Run.currentNodeId);
-			Window.Label("Current Node: " + RunState.Run.currentNodeId + " = " + nodeWithId, 120);
+			Window.Label("Current Node: " + RunState.Run.currentNodeId + " = " + nodeWithId, new(0, 120));
 		}
 		
 		DrawItemsGUI();
@@ -90,7 +87,7 @@ public class ActGrimora : BaseAct
 	private void OnGUICardChoiceNodeSequence()
 	{
 		CardSingleChoicesSequencer sequencer = Singleton<SpecialNodeHandler>.Instance.cardChoiceSequencer;
-		Window.Label("Sequencer: " + sequencer, 80);
+		Window.Label("Sequencer: " + sequencer, new(0, 80));
 		if (Window.Button("Reroll choices"))
 		{
 			sequencer.OnRerollChoices();
@@ -102,12 +99,12 @@ public class ActGrimora : BaseAct
 		Window.Label("TODO:");
 	}
 
-	public override void OnGUIRestart()
+	public override void Restart()
 	{
 		// TODO:
 	}
 
-	public override void OnGUIReload()
+	public override void Reload()
 	{
 		// TODO:
 	}

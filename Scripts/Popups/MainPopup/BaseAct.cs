@@ -1,19 +1,22 @@
 ﻿using BepInEx.Logging;
-using DebugMenu.Scripts.Act1;
 using DebugMenu.Scripts.Popups;
 using DebugMenu.Scripts.Sequences;
 using DebugMenu.Scripts.Utils;
 using DiskCardGame;
-using InscryptionAPI.Encounters;
-using UnityEngine;
 
 namespace DebugMenu.Scripts.Acts;
 
 public abstract class BaseAct
 {
+	public BaseCardBattleSequence BattleSequence => m_cardBattleSequence;
+	public BaseMapSequence MapSequence => m_mapSequence;
+	
 	public readonly ManualLogSource Logger;
 	public readonly DebugWindow Window;
 	
+	protected BaseCardBattleSequence m_cardBattleSequence;
+	protected BaseMapSequence m_mapSequence;
+		
 	public BaseAct(DebugWindow window)
 	{
 		Window = window;
@@ -25,22 +28,22 @@ public abstract class BaseAct
 	public abstract void OnGUI();
 	public abstract void OnGUIMinimal();
 	
-	public abstract void OnGUIReload();
-	public abstract void OnGUIRestart();
+	public abstract void Reload();
+	public abstract void Restart();
 
 	public void Log(string log)
 	{
-		Logger.LogInfo(log);
+		Logger.LogInfo($"[{GetType().Name}] {log}");
 	}
 	
 	public void Warning(string log)
 	{
-		Logger.LogWarning(log);
+		Logger.LogWarning($"[{GetType().Name}] {log}");
 	}
 	
 	public void Error(string log)
 	{
-		Logger.LogError(log);
+		Logger.LogError($"[{GetType().Name}] {log}");
 	}
 
 	public void DrawItemsGUI()

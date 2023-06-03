@@ -1,12 +1,9 @@
-﻿using System.Collections;
-using BepInEx.Logging;
-using DebugMenu.Scripts.Acts;
+﻿using DebugMenu.Scripts.Acts;
 using DiskCardGame;
-using UnityEngine;
 
 namespace DebugMenu.Scripts.Grimora;
 
-public class MapSequence
+public class MapSequence : BaseMapSequence
 {
 	private readonly ActGrimora Act;
 	private readonly DebugWindow Window;
@@ -17,14 +14,26 @@ public class MapSequence
 		this.Window = act.Window;
 	}
 
-	public void OnGUI()
+	public override void OnGUI()
 	{
-		if (Window.Toggle("Activate all Map nodes", ref Act1.Act1.ActivateAllMapNodesActive))
+		bool nodesActive = Act1.Act1.ActivateAllMapNodesActive;
+		if (Window.Toggle("Activate all Map nodes", ref nodesActive))
 		{
-			MapNode node = Singleton<MapNodeManager>.Instance.ActiveNode;
-			Singleton<MapNodeManager>.Instance.SetActiveNode(node);
+			ToggleAllNodes();
 		}
 		
 		Act.DrawSequencesGUI();
+	}
+
+	public override void ToggleSkipNextNode()
+	{
+		
+	}
+
+	public override void ToggleAllNodes()
+	{
+		Act1.Act1.ActivateAllMapNodesActive = !Act1.Act1.ActivateAllMapNodesActive;
+		MapNode node = Singleton<MapNodeManager>.Instance.ActiveNode;
+		Singleton<MapNodeManager>.Instance.SetActiveNode(node);
 	}
 }

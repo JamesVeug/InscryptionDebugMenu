@@ -22,11 +22,6 @@ public class AllActs : BaseAct
 		Window.Toggle("Block all Input", ref blockAllInput);
 		Window.Toggle("Disable all Dialogue", ref Configs.m_disableDialogue);
 
-		if (Window.Button("Show Game Info"))
-		{
-			Plugin.Instance.ToggleWindow<GameInfoPopup>();
-		}
-
 		using (Window.HorizontalScope(4))
 		{
 			Window.Label("Time Scale:");
@@ -49,6 +44,16 @@ public class AllActs : BaseAct
 				SetTimeScale(5f);
 			}
 		}
+
+		if (Window.Button("Show Game Info"))
+		{
+			Plugin.Instance.ToggleWindow<GameInfoPopup>();
+		}
+		
+		if (Window.Button("Show Hotkeys Popup"))
+		{
+			Plugin.Instance.ToggleWindow<HotkeysPopup>();
+		}
 	}
 
 	public override void OnGUIMinimal()
@@ -56,18 +61,18 @@ public class AllActs : BaseAct
 		
 	}
 
-	private void SetTimeScale(float speed)
+	public void SetTimeScale(float speed)
 	{
 		Time.timeScale = speed;
 		Time.fixedDeltaTime = Plugin.StartingFixedDeltaTime * Time.timeScale;
 	}
 
-	public override void OnGUIRestart()
+	public override void Restart()
 	{
 		// Nothing
 	}
 
-	public override void OnGUIReload()
+	public override void Reload()
 	{
 		// Nothing
 	}

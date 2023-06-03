@@ -25,12 +25,12 @@ public class ActMagnificus : BaseAct
 		OnGUI();
 	}
 
-	public override void OnGUIRestart()
+	public override void Restart()
 	{
 		// TODO:
 	}
 
-	public override void OnGUIReload()
+	public override void Reload()
 	{
 		// TODO:
 	}

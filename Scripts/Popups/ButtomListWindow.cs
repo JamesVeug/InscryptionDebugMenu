@@ -32,8 +32,8 @@ public class ButtonListPopup : BaseWindow
 		
 		LabelHeader(header);
 
-		Label("Filter", RowHeight / 2);
-		filterText = TextField(filterText, RowHeight / 2);
+		Label("Filter", new(0, RowHeight / 2));
+		filterText = TextField(filterText, new(0, RowHeight / 2));
 
 		DrawExtraTools();
 
@@ -83,7 +83,7 @@ public class ButtonListPopup : BaseWindow
 		
 	}
 
-	public static void OnGUI(DrawableGUI gui, string buttonText, string headerText, Func<Tuple<List<string>, List<string>>> GetDataCallback, Action<int, string, string> OnChoseButtonCallback, string metaData=null)
+	public static bool OnGUI(DrawableGUI gui, string buttonText, string headerText, Func<Tuple<List<string>, List<string>>> GetDataCallback, Action<int, string, string> OnChoseButtonCallback, string metaData=null)
 	{
 		if (gui.Button(buttonText))
 		{
@@ -99,6 +99,9 @@ public class ButtonListPopup : BaseWindow
 			buttonListPopup.header = headerText;
 			buttonListPopup.filterText = "";
 			buttonListPopup.metaData = metaData;
+			return true;
 		}
+
+		return false;
 	}
 }

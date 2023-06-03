@@ -27,7 +27,7 @@ public abstract class BaseWindow : DrawableGUI
 		windowRect = GUI.Window(id, windowRect, OnWindowDraw, PopupName);
 	}
 
-	protected void OnWindowDraw(int windowID)
+	private void OnWindowDraw(int windowID)
 	{
 		GUI.DragWindow(new Rect(25f, 0f, Size.x, 20f));
 		if (ClosableWindow)

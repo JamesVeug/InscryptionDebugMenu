@@ -12,13 +12,10 @@ public class Act1 : BaseAct
 	public static bool SkipNextNode = false;
 	public static bool ActivateAllMapNodesActive = false;
 
-	private MapSequence m_mapSequence;
-	private CardBattleSequence m_cardBattleSequence;
-
 	public Act1(DebugWindow window) : base(window)
 	{
 		m_mapSequence = new MapSequence(this);
-		m_cardBattleSequence = new CardBattleSequence(this);
+		m_cardBattleSequence = new CardBattleSequence(window);
 	}
 
 	public override void Update()
@@ -39,7 +36,7 @@ public class Act1 : BaseAct
 		if (RunState.Run.currentNodeId > 0)
 		{
 			MapNode nodeWithId = mapNodeManager.GetNodeWithId(RunState.Run.currentNodeId);
-			Window.Label("Current Node: " + RunState.Run.currentNodeId + " = " + nodeWithId, 120);
+			Window.Label("Current Node: " + RunState.Run.currentNodeId + " = " + nodeWithId, new(0, 120));
 		}
 		
 		if (Window.Button("Replenish Candles"))
@@ -117,26 +114,10 @@ public class Act1 : BaseAct
 	private void OnGUICardChoiceNodeSequence()
 	{
 		CardSingleChoicesSequencer sequencer = Singleton<SpecialNodeHandler>.Instance.cardChoiceSequencer;
-		Window.Label("Sequencer: " + sequencer, 80);
+		Window.Label("Sequencer: " + sequencer, new(0, 80));
 		if (Window.Button("Reroll choices"))
 		{
 			sequencer.OnRerollChoices();
-		}
-	}
-
-	public override void OnGUIRestart()
-	{
-		if (Window.Button("Restart"))
-		{
-			Restart();
-		}
-	}
-
-	public override void OnGUIReload()
-	{
-		if (Window.Button("Reload"))
-		{
-			Reload();
 		}
 	}
 
@@ -145,7 +126,7 @@ public class Act1 : BaseAct
 		m_mapSequence.OnGUI();
 	}
 
-	private void Restart()
+	public override void Restart()
 	{
 		if (SaveFile.IsAscension)
 		{
@@ -156,8 +137,8 @@ public class Act1 : BaseAct
 			RestartVanilla();
 		}
 	}
-	
-	private void Reload()
+
+	public override void Reload()
 	{
 		if (SaveFile.IsAscension)
 		{

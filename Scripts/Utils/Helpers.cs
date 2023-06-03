@@ -1,9 +1,11 @@
-﻿using System.Reflection;
+﻿using System.Linq.Expressions;
+using System.Reflection;
 using System.Text;
 using DebugMenu.Scripts.Popups;
 using DiskCardGame;
 using InscryptionAPI.Card;
 using InscryptionAPI.Encounters;
+using UnityEngine;
 
 namespace DebugMenu.Scripts.Utils;
 
@@ -254,5 +256,47 @@ public static partial class Helpers
 		}
 		
 		return SaveManager.ToJSON(o);
+	}
+	
+	public static object GetDefaultValue(this Type type)
+	{
+		// Validate parameters.
+		if (type == null) throw new ArgumentNullException("type");
+
+		// We want an Func<object> which returns the default.
+		// Create that expression here.
+		Expression<Func<object>> e = Expression.Lambda<Func<object>>(
+			// Have to convert to object.
+			Expression.Convert(
+				// The default value, always get what the *code* tells us.
+				Expression.Default(type), typeof(object)
+			)
+		);
+
+		// Compile and return the value.
+		return e.Compile()();
+	}
+}
+
+public static class KeyCodeExtensions
+{
+	public static string Serialize(this KeyCode keyCode)
+	{
+		return keyCode.ToString();
+	}
+	
+	public static string Serialize(this IEnumerable<KeyCode> keyCode, string separator = ",", bool includeUnassigned = false)
+	{
+		string serialized = "";
+		if (keyCode != null)
+		{
+			serialized = string.Join(separator, keyCode.Select((a)=>a.Serialize()));
+		}
+
+		if (includeUnassigned && string.IsNullOrEmpty(separator))
+		{
+			serialized = "Unassigned";
+		}
+		return serialized;
 	}
 }

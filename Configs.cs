@@ -13,8 +13,30 @@ public static class Configs
 			Plugin.Instance.Config.Save();
 		}
 	}
+	
+	public static string Hotkeys
+	{
+		get => m_hotkeys.Value;
+		set
+		{
+			m_hotkeys.Value = value;
+			Plugin.Instance.Config.Save();
+		}
+	}
+	
+	public static bool ShowDebugMenu
+	{
+		get => m_showDebugMenu.Value;
+		set
+		{
+			m_showDebugMenu.Value = value;
+			Plugin.Instance.Config.Save();
+		}
+	}
 
 	public static ConfigEntry<bool> m_disableDialogue = Bind("General", "Disable Dialogue", false, "Should all dialogue be disabled?");
+	public static ConfigEntry<string> m_hotkeys = Bind("General", "Hotkeys", "", "Quick access buttons to control the debug menu. Use in-game menu to change them");
+	public static ConfigEntry<bool> m_showDebugMenu = Bind("General", "Show Debug Menu", true, "Should the in-game debug menu window be shown?");
 	
 	private static ConfigEntry<T> Bind<T>(string section, string key, T defaultValue, string description)
 	{

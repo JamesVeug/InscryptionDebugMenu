@@ -23,8 +23,10 @@ public abstract class DrawableGUI
 	{
 		public bool Horizontal => horizontal;
 		public int TotalElements => totalElements;
+		public Vector2 CurrentSize => currentSize;
 
 		private readonly float originalX;
+		private readonly Vector2 currentSize;
 		private readonly int totalElements;
 		private readonly bool horizontal;
 		private readonly DrawableGUI scope;
@@ -35,8 +37,8 @@ public abstract class DrawableGUI
 			this.totalElements = totalElements;
 			this.horizontal = horizontal;
 			this.scope = scope;
+			this.currentSize = new Vector2(0, 0);
 			scope.m_layoutScopes.Add(this);
-			//scope.Y += scope.RowHeight;
 		}
 		
 		public void Dispose()
@@ -107,9 +109,9 @@ public abstract class DrawableGUI
 	}
 
 	/// <returns>Returns true if the button was pressed</returns>
-	public virtual bool Button(string text, float? height = null, string buttonGroup = null, Func<ButtonDisabledData> disabled = null)
+	public virtual bool Button(string text, Vector2? size = null, string buttonGroup = null, Func<ButtonDisabledData> disabled = null)
 	{
-		(float x, float y, float w, float h) = GetPosition(height);
+		(float x, float y, float w, float h) = GetPosition(size);
 
 		GUIStyle style = ButtonStyle;
 		bool wasPressed = false;
@@ -148,9 +150,9 @@ public abstract class DrawableGUI
 	}
 	
 	/// <returns>Returns True if the value changed</returns>
-	public virtual bool Toggle(string text, ref bool value, float? height = null)
+	public virtual bool Toggle(string text, ref bool value, Vector2? size = null)
 	{
-		(float x, float y, float w, float h) = GetPosition(height);
+		(float x, float y, float w, float h) = GetPosition(size);
 		bool toggle = GUI.Toggle(new Rect(x,y,w,h), value, text);
 		if (toggle != value)
 		{
@@ -160,9 +162,9 @@ public abstract class DrawableGUI
 		return false;
 	}
 	
-	public virtual bool Toggle(string text, ref ConfigEntry<bool> value, float? height = null)
+	public virtual bool Toggle(string text, ref ConfigEntry<bool> value, Vector2? size = null)
 	{
-		(float x, float y, float w, float h) = GetPosition(height);
+		(float x, float y, float w, float h) = GetPosition(size);
 		bool b = value.Value;
 		bool toggle = GUI.Toggle(new Rect(x,y,w,h), b, text);
 		if (toggle != b)
@@ -173,27 +175,54 @@ public abstract class DrawableGUI
 		return false;
 	}
 
-	public virtual void Label(string text, float? height = null)
+	public virtual void Label(string text, Vector2? size = null)
 	{
-		(float x, float y, float w, float h) = GetPosition(height);
+		(float x, float y, float w, float h) = GetPosition(size);
 		GUI.Label(new Rect(x, y,w,h), text);
 	}
 
-	public virtual void LabelHeader(string text, float? height = null)
+	public virtual void LabelHeader(string text, Vector2? size = null)
 	{
-		(float x, float y, float w, float h) = GetPosition(height);
+		(float x, float y, float w, float h) = GetPosition(size);
 		GUI.Label(new Rect(x,y,w,h), text, LabelHeaderStyle);
 	}
 
-	public virtual string TextField(string text, float? height = null)
+	public virtual object InputField(object value, Type type, Vector2? size = null)
 	{
-		(float x, float y, float w, float h) = GetPosition(height);
+		if (type == typeof(int))
+		{
+			return IntField((int)value, size);
+		}
+		else if (type == typeof(float))
+		{
+			return FloatField((float)value, size);
+		}
+		else if (type == typeof(string))
+		{
+			return TextField((string)value, size);
+		}
+		else if (type == typeof(string))
+		{
+			bool t = (bool)value;
+			Toggle("", ref t, size);
+			return t;
+		}
+		else
+		{
+			Label("Unsupported type: " + type);
+			return value;
+		}
+	}
+
+	public virtual string TextField(string text, Vector2? size = null)
+	{
+		(float x, float y, float w, float h) = GetPosition(size);
 		return GUI.TextField(new Rect(x, y, w, h), text);
 	}
 
-	public virtual int IntField(int text, float? height = null)
+	public virtual int IntField(int text, Vector2? size = null)
 	{
-		(float x, float y, float w, float h) = GetPosition(height);
+		(float x, float y, float w, float h) = GetPosition(size);
 
 		string textField = GUI.TextField(new Rect(x, y, w, h), text.ToString());
 		if (!int.TryParse(textField, out int result)) 
@@ -202,21 +231,33 @@ public abstract class DrawableGUI
 		return result;
 	}
 
-	public virtual void Padding(float? height = null)
+	public virtual float FloatField(float text, Vector2? size = null)
 	{
-		float h = height.HasValue ? height.Value : RowHeight;
+		(float x, float y, float w, float h) = GetPosition(size);
+
+		string textField = GUI.TextField(new Rect(x, y, w, h), text.ToString());
+		if (!float.TryParse(textField, out float result)) 
+			return text;
+		
+		return result;
+	}
+
+	public virtual void Padding(Vector2? size = null)
+	{
+		float w = size.HasValue && size.Value.x != 0 ? size.Value.x : ColumnWidth;
+		float h = size.HasValue && size.Value.y != 0 ? size.Value.y : RowHeight;
 		float y = Y;
 		Y += h;
 		MaxHeight = Mathf.Max(MaxHeight, Y);
-		GUI.Label(new Rect(X, y, ColumnWidth, h), "");
+		GUI.Label(new Rect(X, y, w, h), "");
 	}
 
-	private (float X, float y, float w, float h) GetPosition(float? height = null)
+	private (float X, float y, float w, float h) GetPosition(Vector2? size = null)
 	{
 		float x = X;
 		float y = Y;
-		float h = height.HasValue ? height.Value : RowHeight;
-		float w = ColumnWidth;
+		float h = size.HasValue && size.Value.y != 0 ? size.Value.y : RowHeight;
+		float w = size.HasValue && size.Value.x != 0 ? size.Value.x : ColumnWidth;
 		
 		bool verticallyAligned = m_layoutScopes.Count == 0 || !m_layoutScopes[m_layoutScopes.Count - 1].Horizontal;
 		if (verticallyAligned)
@@ -225,7 +266,11 @@ public abstract class DrawableGUI
 		}
 		else
 		{
-			w = ColumnWidth / m_layoutScopes[m_layoutScopes.Count - 1].TotalElements;
+			if (!size.HasValue)
+			{
+				w = ColumnWidth / m_layoutScopes[m_layoutScopes.Count - 1].TotalElements;
+			}
+
 			X += w;
 		}
 		MaxHeight = Mathf.Max(MaxHeight, Y);

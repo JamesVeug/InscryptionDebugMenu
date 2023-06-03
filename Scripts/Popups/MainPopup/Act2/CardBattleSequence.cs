@@ -7,128 +7,110 @@ using UnityEngine;
 
 namespace DebugMenu.Scripts.Act2;
 
-public class CardBattleSequence
+public class CardBattleSequence : BaseCardBattleSequence
 {
-	private readonly Act2 Act;
-	private readonly DebugWindow Window;
-
-	public CardBattleSequence(Act2 act)
+	public override int PlayerBones => PixelResourcesManager.Instance.PlayerBones;
+	public override int ScalesBalance => PixelLifeManager.Instance.Balance;
+	public override int PlayerEnergy => PixelResourcesManager.Instance.PlayerEnergy;
+	public override int PlayerMaxEnergy => PixelResourcesManager.Instance.PlayerMaxEnergy;
+	
+	public CardBattleSequence(DebugWindow window) : base(window)
 	{
-		this.Act = act;
-		this.Window = act.Window;
 	}
 
-	public void OnGUI()
-	{			
-		if (Window.Button("Draw Card"))
+	public override void DrawCard()
+	{
+		PixelCardDrawPiles drawPile = (Singleton<PixelCardDrawPiles>.Instance as PixelCardDrawPiles);
+		if (drawPile)
 		{
-			PixelCardDrawPiles drawPile = (Singleton<PixelCardDrawPiles>.Instance as PixelCardDrawPiles);
-			if (drawPile)
+			if (drawPile.Deck.cards.Count > 0)
 			{
-				if (drawPile.Deck.cards.Count > 0)
-				{
-					//drawPile.DrawCardFromDeck();
-					Plugin.Instance.StartCoroutine(drawPile.DrawCardFromDeck());
-				}
-			}
-			else
-			{
-				Plugin.Log.LogError("Could not draw card. Can't find CardDrawPiles!");
+				//drawPile.DrawCardFromDeck();
+				Plugin.Instance.StartCoroutine(drawPile.DrawCardFromDeck());
 			}
 		}
-
-		using (Window.HorizontalScope(3))
+		else
 		{
-			Window.Label("Bones:\n" + Singleton<ResourcesManager>.Instance.PlayerBones);
-			
-			if (Window.Button("+5 bones"))
-			{
-				Plugin.Instance.StartCoroutine(Singleton<PixelResourcesManager>.Instance.AddBones(5));
-			}
-
-			if (Window.Button("-5 bones"))
-			{
-				int bones = 5;
-				if (Singleton<PixelResourcesManager>.Instance.PlayerBones < 5)
-				{
-					bones = Singleton<PixelResourcesManager>.Instance.PlayerBones;
-				}
-
-				Plugin.Instance.StartCoroutine(Singleton<PixelResourcesManager>.Instance.SpendBones(bones));
-			}
+			Plugin.Log.LogError("Could not draw card. Can't find CardDrawPiles!");
 		}
+	}
 
-		using (Window.HorizontalScope(3))
-		{
-			Window.Label("Scales:\n" + Singleton<PixelLifeManager>.Instance.Balance);
-			
-			if (Window.Button("Deal 2"))
-			{
-				PixelLifeManager lifeManager = Singleton<PixelLifeManager>.Instance;
-				Plugin.Instance.StartCoroutine(lifeManager.ShowDamageSequence(2, 2, false, 0.125f, null, 0f, false));
-			}
-
-			if (Window.Button("Take 2"))
-			{
-				PixelLifeManager lifeManager = Singleton<PixelLifeManager>.Instance;
-				Plugin.Instance.StartCoroutine(lifeManager.ShowDamageSequence(2, 2, true, 0.125f, null, 0f, false));
-			}
-		}
-
-		using (Window.HorizontalScope(4))
-		{
-			Window.Label($"Energy: \n{ResourcesManager.Instance.PlayerEnergy}\\{ResourcesManager.Instance.PlayerMaxEnergy}");
-
-			if (Window.Button("-1"))
-			{
-				ResourcesManager.Instance.StartCoroutine(ResourcesManager.Instance.SpendEnergy(1));
-			}
-
-			if (Window.Button("+1"))
-			{
-				ResourcesManager.Instance.StartCoroutine(ResourcesManager.Instance.AddEnergy(1));
-			}
-
-			if (Window.Button("Fill"))
-			{
-				ResourcesManager.Instance.StartCoroutine(ResourcesManager.Instance.RefreshEnergy());
-			}
-		}
-
-		using (Window.HorizontalScope(4))
-		{
-			Window.Label("Max Energy");
-
-			if (Window.Button("-1"))
-			{
-				ResourcesManager.Instance.StartCoroutine(ResourcesManager.Instance.AddMaxEnergy(-1));
-			}
-
-			if (Window.Button("+1"))
-			{
-				ResourcesManager.Instance.StartCoroutine(ResourcesManager.Instance.AddMaxEnergy(1));
-			}
-		}
-
-		Window.Padding();
+	public override void DrawSideDeck()
+	{
 		
-		using (Window.HorizontalScope(2))
-		{
-			if (Window.Button("Auto win battle"))
-			{
-				PixelLifeManager lifeManager = Singleton<PixelLifeManager>.Instance;
-				int lifeLeft = Mathf.Abs(lifeManager.Balance - 5);
-				Plugin.Instance.StartCoroutine(lifeManager.ShowDamageSequence(lifeLeft, lifeLeft, false, 0.125f, null,
-					0f, false));
-			}
+	}
 
-			if (Window.Button("Auto lose battle"))
-			{
-				PixelLifeManager lifeManager = Singleton<PixelLifeManager>.Instance;
-				int lifeLeft = Mathf.Abs(lifeManager.Balance - 5);
-				Plugin.Instance.StartCoroutine(lifeManager.ShowDamageSequence(lifeLeft, lifeLeft, true, 0.125f, null,
-					0f, false));
-			}
+	public override void AddBones(int amount)
+	{
+		Plugin.Instance.StartCoroutine(Singleton<PixelResourcesManager>.Instance.AddBones(amount));
+	}
+
+	public override void RemoveBones(int amount)
+	{
+		int bones = amount;
+		if (Singleton<PixelResourcesManager>.Instance.PlayerBones < amount)
+		{
+			bones = Singleton<PixelResourcesManager>.Instance.PlayerBones;
 		}
+
+		Plugin.Instance.StartCoroutine(Singleton<PixelResourcesManager>.Instance.SpendBones(bones));
+	}
+
+	public override void AutoLoseBattle()
+	{
+		PixelLifeManager lifeManager = Singleton<PixelLifeManager>.Instance;
+		int lifeLeft = Mathf.Abs(lifeManager.Balance - 5);
+		Plugin.Instance.StartCoroutine(lifeManager.ShowDamageSequence(lifeLeft, lifeLeft, true, 0.125f, null,
+			0f, false));
+	}
+
+	public override void AutoWinBattle()
+	{
+		PixelLifeManager lifeManager = Singleton<PixelLifeManager>.Instance;
+		int lifeLeft = Mathf.Abs(lifeManager.Balance - 5);
+		Plugin.Instance.StartCoroutine(lifeManager.ShowDamageSequence(lifeLeft, lifeLeft, false, 0.125f, null,
+			0f, false));
+	}
+
+	public override void SetMaxEnergyToMax()
+	{
+		
+	}
+
+	public override void AddMaxEnergy(int amount)
+	{
+		ResourcesManager.Instance.StartCoroutine(ResourcesManager.Instance.AddMaxEnergy(amount));
+	}
+
+	public override void RemoveMaxEnergy(int amount)
+	{
+		ResourcesManager.Instance.StartCoroutine(ResourcesManager.Instance.AddMaxEnergy(-amount));
+	}
+
+	public override void FillEnergy()
+	{
+		ResourcesManager.Instance.StartCoroutine(ResourcesManager.Instance.RefreshEnergy());
+	}
+
+	public override void AddEnergy(int amount)
+	{
+		ResourcesManager.Instance.StartCoroutine(ResourcesManager.Instance.AddEnergy(amount));
+	}
+
+	public override void RemoveEnergy(int amount)
+	{
+		ResourcesManager.Instance.StartCoroutine(ResourcesManager.Instance.SpendEnergy(amount));
+	}
+
+	public override void TakeDamage(int amount)
+	{
+		PixelLifeManager lifeManager = Singleton<PixelLifeManager>.Instance;
+		Plugin.Instance.StartCoroutine(lifeManager.ShowDamageSequence(amount, 2, true, 0.125f, null, 0f, false));
+	}
+
+	public override void DealDamage(int amount)
+	{
+		PixelLifeManager lifeManager = Singleton<PixelLifeManager>.Instance;
+		Plugin.Instance.StartCoroutine(lifeManager.ShowDamageSequence(amount, 2, false, 0.125f, null, 0f, false));
 	}
 }

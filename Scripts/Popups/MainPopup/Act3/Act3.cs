@@ -8,13 +8,10 @@ namespace DebugMenu.Scripts.Act3;
 
 public class Act3 : BaseAct
 {
-	private MapSequence m_mapSequence;
-	private CardBattleSequence m_cardBattleSequence;
-	
 	public Act3(DebugWindow window) : base(window)
 	{
 		m_mapSequence = new MapSequence(this);
-		m_cardBattleSequence = new CardBattleSequence(this);
+		m_cardBattleSequence = new CardBattleSequence(window);
 	}
 
 	public override void Update()
@@ -41,7 +38,7 @@ public class Act3 : BaseAct
 			{
 				s = nodeWithId.GetType() + " " + nodeWithId.nodeId + " " + nodeWithId.Data.prefabPath;
 			}
-			Window.Label("Current Node: " + RunState.Run.currentNodeId + " = " + s, 120);
+			Window.Label("Current Node: " + RunState.Run.currentNodeId + " = " + s, new(0, 120));
 		}
 
 		Window.Padding();
@@ -104,12 +101,12 @@ public class Act3 : BaseAct
 		}
 	}
 
-	public override void OnGUIRestart()
+	public override void Restart()
 	{
 		// TODO:
 	}
 
-	public override void OnGUIReload()
+	public override void Reload()
 	{
 		// TODO:
 	}

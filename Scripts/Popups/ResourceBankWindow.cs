@@ -10,7 +10,6 @@ public class ResourceBankPopup : BaseWindow
 	public override string PopupName => "Resource Bank";
 	public override Vector2 Size => new Vector2(1000, 1000);
 
-	private Vector2 scrollPosition;
 	private string resourceBankInfo;
 	private string filterText;
 
@@ -35,8 +34,8 @@ public class ResourceBankPopup : BaseWindow
 			GUIUtility.systemCopyBuffer = resourceBankInfo;
 		}
 		
-		Label("Filter", RowHeight / 2);
-		filterText = TextField(filterText, RowHeight / 2);
+		Label("Filter", new(0, RowHeight / 2));
+		filterText = TextField(filterText, new(0, RowHeight / 2));
 
 		Label(""); // padding
 		
@@ -70,7 +69,7 @@ public class ResourceBankPopup : BaseWindow
 			}
 
 			resourcePath += assetString;
-			if (Button(resourcePath, 60))
+			if (Button(resourcePath, new(0, 60)))
 			{
 				GUIUtility.systemCopyBuffer = resourcePath;
 			}

@@ -10,7 +10,7 @@ using UnityEngine;
 
 namespace DebugMenu.Scripts.Act1;
 
-public class MapSequence
+public class MapSequence : BaseMapSequence
 {
 	public static bool RegionOverride = false;
 	public static string RegionNameOverride = "";  
@@ -24,13 +24,18 @@ public class MapSequence
 		this.Window = act.Window;
 	}
 
-	public void OnGUI()
+	public override void OnGUI()
 	{
-		Window.Toggle("Skip next node", ref Act1.SkipNextNode);
-		if (Window.Toggle("Activate all Map nodes", ref Act1.ActivateAllMapNodesActive))
+		bool skipNextNode = Act1.SkipNextNode;
+		if (Window.Toggle("Skip next node", ref skipNextNode))
 		{
-			MapNode node = Singleton<MapNodeManager>.Instance.ActiveNode;
-			Singleton<MapNodeManager>.Instance.SetActiveNode(node);
+			ToggleSkipNextNode();
+		}
+		
+		bool activateAllNodes = Act1.ActivateAllMapNodesActive;
+		if (Window.Toggle("Activate all Map nodes", ref activateAllNodes))
+		{
+			ToggleAllNodes();
 		}
 
 		Act.DrawSequencesGUI();
@@ -43,6 +48,18 @@ public class MapSequence
 			RegionNameOverride = value;
 		});
 		Window.Toggle("Toggle Map Override", ref RegionOverride);
+	}
+
+	public override void ToggleSkipNextNode()
+	{
+		Act1.SkipNextNode = !Act1.SkipNextNode;
+	}
+
+	public override void ToggleAllNodes()
+	{
+		Act1.ActivateAllMapNodesActive = !Act1.ActivateAllMapNodesActive;
+		MapNode node = Singleton<MapNodeManager>.Instance.ActiveNode;
+		Singleton<MapNodeManager>.Instance.SetActiveNode(node);
 	}
 
 	private Tuple<List<string>, List<string>> RegionNameList()

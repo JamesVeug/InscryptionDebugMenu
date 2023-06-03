@@ -6,7 +6,7 @@ using UnityEngine;
 
 namespace DebugMenu.Scripts.Act3;
 
-public class MapSequence
+public class MapSequence : BaseMapSequence
 {
 	private readonly Act3 Act;
 	private readonly DebugWindow Window;
@@ -17,14 +17,26 @@ public class MapSequence
 		this.Window = act.Window;
 	}
 
-	public void OnGUI()
+	public override void OnGUI()
 	{
-		if (Window.Toggle("Activate all Map nodes", ref Act1.Act1.ActivateAllMapNodesActive))
+		bool activateAllNodes = Act1.Act1.ActivateAllMapNodesActive;
+		if (Window.Toggle("Activate all Map nodes", ref activateAllNodes))
 		{
-			MapNode node = Singleton<MapNodeManager>.Instance.ActiveNode;
-			Singleton<MapNodeManager>.Instance.SetActiveNode(node);
+			ToggleAllNodes();
 		}
 
 		Act.DrawSequencesGUI();
+	}
+
+	public override void ToggleSkipNextNode()
+	{
+		
+	}
+
+	public override void ToggleAllNodes()
+	{
+		Act1.Act1.ActivateAllMapNodesActive = !Act1.Act1.ActivateAllMapNodesActive;
+		MapNode node = Singleton<MapNodeManager>.Instance.ActiveNode;
+		Singleton<MapNodeManager>.Instance.SetActiveNode(node);
 	}
 }
