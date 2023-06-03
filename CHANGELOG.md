@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.8.0
+
+### General
+- Added changeable Hotkeys (Saves through configs)
+- Collapse buttons to save space
+
+### All Acts
+- Added buttons to change Energy during battles
+
+
+
 ## 0.7.0
 
 ### All Acts
