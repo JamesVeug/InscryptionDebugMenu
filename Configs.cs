@@ -35,7 +35,7 @@ public static class Configs
 	}
 
 	public static ConfigEntry<bool> m_disableDialogue = Bind("General", "Disable Dialogue", false, "Should all dialogue be disabled?");
-	public static ConfigEntry<string> m_hotkeys = Bind("General", "Hotkeys", "", "Quick access buttons to control the debug menu. Use in-game menu to change them");
+	public static ConfigEntry<string> m_hotkeys = Bind("General", "Hotkeys", "F1:AllAct SetTimeScale:1,LeftControl+F1:AllAct SetTimeScale:10,LeftShift+F1:AllAct SetTimeScale:0.1,BackQuote:Debug Menu Show/Hide:,F5:AllAct Reload:,F9:AllAct Restart:,F4:Map ToggleSkipNextNode:,F3:Map ToggleAllNodes:", "Quick access buttons to control the debug menu. Use in-game menu to change them");
 	public static ConfigEntry<bool> m_showDebugMenu = Bind("General", "Show Debug Menu", true, "Should the in-game debug menu window be shown?");
 	
 	private static ConfigEntry<T> Bind<T>(string section, string key, T defaultValue, string description)
