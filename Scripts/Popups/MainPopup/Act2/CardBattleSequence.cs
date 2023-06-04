@@ -16,6 +16,7 @@ public class CardBattleSequence : BaseCardBattleSequence
 	
 	public CardBattleSequence(DebugWindow window) : base(window)
 	{
+		hasSideDeck = false;
 	}
 
 	public override void DrawCard()
