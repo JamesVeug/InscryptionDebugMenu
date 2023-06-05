@@ -1,6 +1,6 @@
+using System.Reflection;
 using BepInEx;
 using BepInEx.Logging;
-using DebugMenu.Scripts.Acts;
 using DebugMenu.Scripts.Hotkeys;
 using DebugMenu.Scripts.Popups;
 using HarmonyLib;
@@ -38,10 +38,17 @@ namespace DebugMenu
 
             new Harmony(PluginGuid).PatchAll();
 
-            if (AllWindows.Count == 0)
-            {
-	            ToggleWindow<DebugWindow>();
-            }
+            // Get all types of BaseWindow, instntiate them and add them to allwindows
+            Type[] types = Assembly.GetExecutingAssembly().GetTypes();
+            for (int i = 0; i < types.Length; i++)
+			{
+	            Type type = types[i];
+	            if (type.IsSubclassOf(typeof(BaseWindow)))
+	            {
+		            Logger.LogInfo($"Made {type}!");	   
+		            AllWindows.Add((BaseWindow)Activator.CreateInstance(type));
+	            }
+			}
 
             Logger.LogInfo($"Loaded {PluginName}!");	        
         }
@@ -52,7 +59,8 @@ namespace DebugMenu
 	        {
 		        for (int i = 0; i < AllWindows.Count; i++)
 		        {
-			        AllWindows[i].Update();
+			        if(AllWindows[i].IsActive)
+						AllWindows[i].Update();
 		        }
 	        }
 
@@ -68,7 +76,8 @@ namespace DebugMenu
 	        
 	        for (int i = 0; i < AllWindows.Count; i++)
 	        {
-		        AllWindows[i].OnWindowGUI();
+		        if(AllWindows[i].IsActive)
+					AllWindows[i].OnWindowGUI();
 	        }
         }
 
@@ -84,14 +93,12 @@ namespace DebugMenu
 		        BaseWindow window = AllWindows[i];
 		        if (window.GetType() == t)
 		        {
-			        AllWindows.RemoveAt(i);
-			        return null;
+			        window.IsActive = !window.IsActive;
+			        return window;
 		        }
 	        }
 
-	        BaseWindow baseWindow = (BaseWindow)Activator.CreateInstance(t);
-	        AllWindows.Add(baseWindow);
-	        return baseWindow;
+	        return null;
         }
         
         public T GetWindow<T>() where T : BaseWindow

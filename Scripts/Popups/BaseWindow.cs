@@ -8,6 +8,8 @@ public abstract class BaseWindow : DrawableGUI
 	public abstract Vector2 Size { get; }
 	public virtual bool ClosableWindow => true; 
 	
+	public bool IsActive = false;
+	
 	protected Rect windowRect = new Rect(20f, 20f, 512f, 512f);
 	protected bool isOpen = true;
 
@@ -71,7 +73,7 @@ public abstract class BaseWindow : DrawableGUI
 	{
 		if (GUI.Button(new Rect(5f, 0f, 20f, 20f), "X"))
 		{
-			Plugin.AllWindows.Remove(this);
+			IsActive = false;
 			return false;
 		}
 

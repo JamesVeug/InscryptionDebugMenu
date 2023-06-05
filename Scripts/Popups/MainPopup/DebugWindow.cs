@@ -40,6 +40,7 @@ public class DebugWindow : BaseWindow
 		act3 = new Act3.Act3(this);
 		actGrimora = new ActGrimora(this);
 		actMagnificus = new ActMagnificus(this);
+		IsActive = true;
 		isOpen = false;
 	}
 
