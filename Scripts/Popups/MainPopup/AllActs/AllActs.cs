@@ -50,7 +50,7 @@ public class AllActs : BaseAct
 			Plugin.Instance.ToggleWindow<GameInfoPopup>();
 		}
 		
-		if (Window.Button("Show Hotkeys Popup"))
+		if (Window.Button("Change Hotkeys"))
 		{
 			Plugin.Instance.ToggleWindow<HotkeysPopup>();
 		}
