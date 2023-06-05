@@ -3,6 +3,7 @@ using System.Reflection;
 using System.Reflection.Emit;
 using DebugMenu.Scripts.All;
 using DiskCardGame;
+using GBC;
 using HarmonyLib;
 using InscryptionAPI.Regions;
 using UnityEngine;
@@ -179,6 +180,8 @@ internal class DisableDialogue_IEnumerator_Patch
 		yield return AccessTools.Method(typeof(TextDisplayer), nameof(TextDisplayer.ShowThenClear));
 		yield return AccessTools.Method(typeof(CardSingleChoicesSequencer), nameof(CardSingleChoicesSequencer.TutorialTextSequence));
 		yield return AccessTools.Method(typeof(GainConsumablesSequencer), nameof(GainConsumablesSequencer.LearnObjectSequence));
+		yield return AccessTools.Method(typeof(DialogueHandler), nameof(DialogueHandler.PlayDialogueEvent));
+		yield return AccessTools.Method(typeof(TextBox), nameof(TextBox.ShowUntilInput));
 	}
 	
 	private static IEnumerator Postfix(IEnumerator enumerator)
