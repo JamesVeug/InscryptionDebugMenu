@@ -1,5 +1,6 @@
 ﻿using DebugMenu.Scripts.Acts;
 using DebugMenu.Scripts.Popups;
+using DebugMenu.Scripts.Popups.DeckEditorPopup;
 using UnityEngine;
 
 namespace DebugMenu.Scripts.All;
@@ -53,6 +54,11 @@ public class AllActs : BaseAct
 		if (Window.Button("Change Hotkeys"))
 		{
 			Plugin.Instance.ToggleWindow<HotkeysPopup>();
+		}
+		
+		if (Window.Button("Deck Editor"))
+		{
+			Plugin.Instance.ToggleWindow<DeckEditorPopup>();
 		}
 	}
 
