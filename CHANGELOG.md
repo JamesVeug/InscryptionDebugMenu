@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.9.0
+
+### All Acts
+- Ported and extended Deck editor from the Deck Editor mod (only tested on Act 1 and 2)
+
+## Act 2
+- Fixed disable button not working
+
+### General
+- Windows now keep their position when closed and reopened (not saved)
+- Minor adjustments to the UI
+
+
 ## 0.8.0
 
 ### General
@@ -8,7 +21,6 @@
 
 ### All Acts
 - Added buttons to change Energy during battles
-
 
 
 ## 0.7.0
