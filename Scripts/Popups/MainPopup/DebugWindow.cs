@@ -2,6 +2,7 @@
 using DebugMenu.Scripts.Grimora;
 using DebugMenu.Scripts.Magnificus;
 using DebugMenu.Scripts.Popups;
+using DebugMenu.Scripts.Utils;
 using DiskCardGame;
 using UnityEngine;
 
@@ -44,35 +45,26 @@ public class DebugWindow : BaseWindow
 
 	public override void Update()
 	{
-		if (SaveManager.SaveFile.IsPart1 && GameFlowManager.m_Instance)
+		switch (Helpers.GetCurrentSavedAct())
 		{
-			// Leshy
-			currentAct = act1;
-		}
-		else if (SaveManager.SaveFile.IsPart2)
-		{
-			// GDC
-			currentAct = act2;
-		}
-		else if (SaveManager.SaveFile.IsPart3)
-		{
-			// PO3
-			currentAct = act3;
-		}
-		else if (SaveManager.SaveFile.IsGrimora)
-		{
-			// Grimora
-			currentAct = actGrimora;
-		}
-		else if (SaveManager.SaveFile.IsMagnificus)
-		{
-			// Magnificus
-			currentAct = actMagnificus;
-		}
-		else
-		{
-			// In main menu maybe???
-			currentAct = null;
+			case Helpers.Acts.Act1:
+				currentAct = act1;
+				break;
+			case Helpers.Acts.Act2:
+				currentAct = act2;
+				break;
+			case Helpers.Acts.Act3:
+				currentAct = act3;
+				break;
+			case Helpers.Acts.GrimoraAct:
+				currentAct = actGrimora;
+				break;
+			case Helpers.Acts.MagnificusAct:
+				currentAct = actMagnificus;
+				break;
+			default:
+				currentAct = null;
+				break;
 		}
 
 		if (currentAct != null)

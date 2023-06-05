@@ -3,6 +3,7 @@ using System.Reflection;
 using System.Text;
 using DebugMenu.Scripts.Popups;
 using DiskCardGame;
+using GBC;
 using InscryptionAPI.Card;
 using InscryptionAPI.Encounters;
 using UnityEngine;
@@ -11,6 +12,16 @@ namespace DebugMenu.Scripts.Utils;
 
 public static partial class Helpers
 {
+	public enum Acts
+	{
+		Unknown,
+		Act1,
+		Act2,
+		Act3,
+		GrimoraAct,
+		MagnificusAct,
+	}
+	
 	public static SpecialNodeData LastSpecialNodeData;
 	
 	private static Dictionary<string, string> m_itemNameToRulebookName = null;
@@ -275,6 +286,57 @@ public static partial class Helpers
 
 		// Compile and return the value.
 		return e.Compile()();
+	}
+
+	public static Acts GetCurrentSavedAct()
+	{
+		if (SaveManager.SaveFile.IsPart1 && GameFlowManager.m_Instance)
+		{
+			// Leshy
+			return Acts.Act1;
+		}
+		else if (SaveManager.SaveFile.IsPart2)
+		{
+			// GDC
+			return Acts.Act2;
+		}
+		else if (SaveManager.SaveFile.IsPart3)
+		{
+			// PO3
+			return Acts.Act3;
+		}
+		else if (SaveManager.SaveFile.IsGrimora)
+		{
+			// Grimora
+			return Acts.GrimoraAct;
+		}
+		else if (SaveManager.SaveFile.IsMagnificus)
+		{
+			// Magnificus
+			return Acts.MagnificusAct;
+		}
+		else
+		{
+			// In main menu maybe???
+			return Acts.Unknown;
+		}
+	}
+
+	public static DeckInfo CurrentDeck()
+	{
+		switch (GetCurrentSavedAct())
+		{
+			case Acts.Act1:
+			case Acts.Act3:
+			case Acts.MagnificusAct:
+				return SaveManager.SaveFile.CurrentDeck;
+			case Acts.GrimoraAct:
+				return SaveManager.SaveFile.grimoraData.deck;
+			case Acts.Act2:
+				return SaveData.Data.deck;
+			default:
+				return null;
+		}
 	}
 }
 
