@@ -23,7 +23,7 @@ public abstract class BaseCardBattleSequence
 	
 	public virtual void OnGUI()
 	{
-		using (Window.HorizontalScope(2))
+		using (Window.HorizontalScope(3))
 		{
 			if (Window.Button("Draw Card"))
 			{
@@ -34,6 +34,11 @@ public abstract class BaseCardBattleSequence
 			if (Window.Button("Draw Side Deck", disabled:disabled))
 			{
 				DrawSideDeck();
+			}
+
+			if (Window.Button("Draw Tutor", disabled: () => new() { Disabled = !IsGBCBattle() || (Singleton<CardDrawPiles>.Instance?.Deck?.CardsInDeck).GetValueOrDefault() == 0 }))
+			{
+				Plugin.Instance.StartCoroutine(DrawTutor());
 			}
 		}
 
@@ -124,6 +129,15 @@ public abstract class BaseCardBattleSequence
 		}
 	}
 	
+	public bool IsGBCBattle() => SceneLoader.ActiveSceneName == "GBC_CardBattle";
+	public IEnumerator DrawTutor()
+	{
+		if (Singleton<CardDrawPiles>.Instance.Deck.CardsInDeck > 0)
+		{
+			yield return Singleton<CardDrawPiles>.Instance.Deck.Tutor();
+		}
+	}
+
 	public abstract void DrawCard();
 	public abstract void DrawSideDeck();
 	public abstract void AddBones(int amount);
