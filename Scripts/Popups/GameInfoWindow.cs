@@ -7,7 +7,7 @@ namespace DebugMenu.Scripts.Popups;
 public class GameInfoPopup : BaseWindow
 {
 	public override string PopupName => "Game Info";
-	public override Vector2 Size => new Vector2(200, 500);
+	public override Vector2 Size => new Vector2(220, 500);
 
 	public float updateInterval = 0.5F;
  
@@ -26,7 +26,11 @@ public class GameInfoPopup : BaseWindow
 		{
 			Plugin.Instance.ToggleWindow<ResourceBankPopup>();
 		}
-		
+		if (Button("Show Dialogue Events"))
+		{
+			Plugin.Instance.ToggleWindow<DialogueEventPopup>();
+		}
+
 		int sceneCount = SceneManager.sceneCount;		
 		LabelHeader($"Scenes {sceneCount}");
 		Scene activeScene = SceneManager.GetActiveScene();
