@@ -1,6 +1,5 @@
 ﻿using System.Reflection;
 using DebugMenu.Scripts.Acts;
-using DebugMenu.Scripts.All;
 using DebugMenu.Scripts.Popups;
 using DebugMenu.Scripts.Utils;
 using UnityEngine;
@@ -78,7 +77,6 @@ public class HotkeyController
 	private string DeserializeFunction(string[] split, KeyCode[] keyCodes, out FunctionData data)
 	{
 		string functionID = split.Length > 1 ? split[1].Trim() : null;
-		data = default;
 		if (functionID == null)
 		{
 			functionID = m_allFunctionData[0].ID;
@@ -118,11 +116,12 @@ public class HotkeyController
 			for (int i = 0; i < Mathf.Min(totalArguments, data.Arguments.Length); i++)
 			{
 				// Convert from string to the type expected by the callback
+				string argumentString = argumentStrings[i] == null ? null : argumentStrings[i].Trim();
 				try
 				{
-					if (!string.IsNullOrEmpty(argumentStrings[i]))
+					if (!string.IsNullOrEmpty(argumentString))
 					{
-						arguments[i] = Convert.ChangeType(argumentStrings[i], data.Arguments[i]);
+						arguments[i] = Convert.ChangeType(argumentString, data.Arguments[i]);
 					}
 					else
 					{
@@ -132,8 +131,9 @@ public class HotkeyController
 				}
 				catch (Exception e)
 				{
-					Plugin.Log.LogError($"Failed to parse argument '{argumentStrings[i]}' from string to {data.Arguments[i].Name}");
+					Plugin.Log.LogError($"Failed to parse argument '{Helpers.ToLiteral(argumentString)}' from string to {data.Arguments[i].Name}");
 					Plugin.Log.LogError(e);
+					arguments[i] = Helpers.GetDefaultValue(data.Arguments[i]);
 				}
 			}
 		}
@@ -152,7 +152,7 @@ public class HotkeyController
 				hotkeyString += ":" + hotkey.FunctionID;
 			}
 
-			if (hotkey.Arguments != null)
+			if (hotkey.Arguments != null && hotkey.Arguments.Length > 0)
 			{
 				hotkeyString += ":" + string.Join(":", hotkey.Arguments);
 			}
