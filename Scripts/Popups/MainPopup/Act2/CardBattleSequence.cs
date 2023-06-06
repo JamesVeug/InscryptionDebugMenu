@@ -9,10 +9,10 @@ namespace DebugMenu.Scripts.Act2;
 
 public class CardBattleSequence : BaseCardBattleSequence
 {
-	public override int PlayerBones => PixelResourcesManager.Instance.PlayerBones;
-	public override int ScalesBalance => PixelLifeManager.Instance.Balance;
-	public override int PlayerEnergy => PixelResourcesManager.Instance.PlayerEnergy;
-	public override int PlayerMaxEnergy => PixelResourcesManager.Instance.PlayerMaxEnergy;
+	public override int PlayerBones => IsGBCBattle() ? PixelResourcesManager.Instance.PlayerBones : 0;
+	public override int ScalesBalance => IsGBCBattle() ? PixelLifeManager.Instance.Balance : 0;
+	public override int PlayerEnergy => IsGBCBattle() ? PixelResourcesManager.Instance.PlayerEnergy : 0;
+	public override int PlayerMaxEnergy => IsGBCBattle() ? PixelResourcesManager.Instance.PlayerMaxEnergy : 0;
 	
 	public CardBattleSequence(DebugWindow window) : base(window)
 	{
