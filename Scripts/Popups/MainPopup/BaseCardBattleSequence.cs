@@ -1,4 +1,4 @@
-﻿using DiskCardGame;
+using DiskCardGame;
 using System.Collections;
 using UnityEngine;
 
@@ -45,7 +45,7 @@ public abstract class BaseCardBattleSequence
 		using (Window.HorizontalScope(3))
 		{
 			Window.Label("Bones:\n" + PlayerBones);
-
+			
 			Func<DrawableGUI.ButtonDisabledData> disabled = hasBones ? default : () => new DrawableGUI.ButtonDisabledData("No bones in this act");
 			if (Window.Button("+5", disabled: disabled))
 			{

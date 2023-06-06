@@ -17,21 +17,22 @@ public class CardBattleSequence : BaseCardBattleSequence
         hasSideDeck = false;
     }
 
-    public override void DrawCard()
-    {
+	public override void DrawCard()
+	{
         PixelCardDrawPiles drawPile = PixelCardDrawPiles.Instance as PixelCardDrawPiles;
-        if (drawPile)
-        {
+		if (drawPile)
+		{
             if (drawPile.Deck.CardsInDeck > 0)
-            {
-                Plugin.Instance.StartCoroutine(drawPile.DrawCardFromDeck());
-            }
-        }
-        else
-        {
-            Plugin.Log.LogError("Could not draw card. Can't find CardDrawPiles!");
-        }
-    }
+			{
+				//drawPile.DrawCardFromDeck();
+				Plugin.Instance.StartCoroutine(drawPile.DrawCardFromDeck());
+			}
+		}
+		else
+		{
+			Plugin.Log.LogError("Could not draw card. Can't find CardDrawPiles!");
+		}
+	}
 
     public override void DrawSideDeck()
     {
