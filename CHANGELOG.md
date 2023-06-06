@@ -3,10 +3,15 @@
 ## 0.9.0
 
 ### All Acts
-- Ported and extended Deck editor from the Deck Editor mod (only tested on Act 1 and 2)
+- Ported and extended Deck editor from the Deck Editor mod
+  - Works for all acts (only tested on Act 1 and 2)
+  - Added support for adding gem costs
+  - Added support to gemify a card
+  - Added support for custom sigils and specials
+  - Shows all portraits
 
 ## Act 2
-- Fixed disable button not working
+- Fixed disable dialogue button not working
 
 ### General
 - Windows now keep their position when closed and reopened (not saved)
