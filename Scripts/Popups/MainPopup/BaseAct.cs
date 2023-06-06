@@ -8,140 +8,140 @@ namespace DebugMenu.Scripts.Acts;
 
 public abstract class BaseAct
 {
-	public BaseCardBattleSequence BattleSequence => m_cardBattleSequence;
-	public BaseMapSequence MapSequence => m_mapSequence;
-	
-	public readonly ManualLogSource Logger;
-	public readonly DebugWindow Window;
-	
-	protected BaseCardBattleSequence m_cardBattleSequence;
-	protected BaseMapSequence m_mapSequence;
-		
-	public BaseAct(DebugWindow window)
-	{
-		Window = window;
-		Logger = Plugin.Log;
-	}
+    public BaseCardBattleSequence BattleSequence => m_cardBattleSequence;
+    public BaseMapSequence MapSequence => m_mapSequence;
 
-	public abstract void Update();
-	
-	public abstract void OnGUI();
-	public abstract void OnGUIMinimal();
-	
-	public abstract void Reload();
-	public abstract void Restart();
+    public readonly ManualLogSource Logger;
+    public readonly DebugWindow Window;
 
-	public void Log(string log)
-	{
-		Logger.LogInfo($"[{GetType().Name}] {log}");
-	}
-	
-	public void Warning(string log)
-	{
-		Logger.LogWarning($"[{GetType().Name}] {log}");
-	}
-	
-	public void Error(string log)
-	{
-		Logger.LogError($"[{GetType().Name}] {log}");
-	}
+    protected BaseCardBattleSequence m_cardBattleSequence;
+    protected BaseMapSequence m_mapSequence;
 
-	public void DrawItemsGUI()
-	{
-		Window.LabelHeader("Items");
-		List<string> items = RunState.Run.consumables;
+    public BaseAct(DebugWindow window)
+    {
+        Window = window;
+        Logger = Plugin.Log;
+    }
 
-		using (Window.HorizontalScope(RunState.Run.MaxConsumables))
-		{
-			for (int i = 0; i < RunState.Run.MaxConsumables; i++)
-			{
-				string consumable = i >= items.Count ? null : items[i];
-				string itemRulebookName = Helpers.GetConsumableByName(consumable);
-				string itemName = itemRulebookName != null ? itemRulebookName :
-					consumable == null ? "None" : consumable;
-				ButtonListPopup.OnGUI(Window, itemName, "Change Item " + (i + 1), GetListsOfAllItems,
-					OnChoseButtonCallback, i.ToString());
-			}
-		}
-	}
+    public abstract void Update();
 
-	public static void OnChoseButtonCallback(int chosenIndex, string chosenValue, string inventoryIndex)
-	{
-		List<string> currentItems = RunState.Run.consumables;
-		int index = int.Parse(inventoryIndex);
-		string selectedItem = index >= RunState.Run.consumables.Count ? null : RunState.Run.consumables[index];
+    public abstract void OnGUI();
+    public abstract void OnGUIMinimal();
 
-		if (chosenValue == null)
-		{
-			ItemsManager.Instance.RemoveItemFromSaveData(selectedItem);
-		}
-		else
-		{
-			if (index >= currentItems.Count)
-			{
-				currentItems.Add(chosenValue);
-			}
-			else
-			{
-				currentItems[index] = chosenValue;
-			}
-		}
+    public abstract void Reload();
+    public abstract void Restart();
 
-		foreach (ConsumableItemSlot slot in Singleton<ItemsManager>.Instance.consumableSlots)
-		{
-			if (slot.Item)
-			{
-				slot.DestroyItem();
-			}
-		}
+    public void Log(string log)
+    {
+        Logger.LogInfo($"[{GetType().Name}] {log}");
+    }
 
-		Singleton<ItemsManager>.Instance.UpdateItems(true);
-	}
+    public void Warning(string log)
+    {
+        Logger.LogWarning($"[{GetType().Name}] {log}");
+    }
 
-	private Tuple<List<string>, List<string>> GetListsOfAllItems()
-	{
-		List<ConsumableItemData> allConsumables = ItemsUtil.AllConsumables;
+    public void Error(string log)
+    {
+        Logger.LogError($"[{GetType().Name}] {log}");
+    }
 
-		List<string> names = new List<string>(allConsumables.Count);
-		List<string> values = new List<string>(allConsumables.Count);
-		
-		names.Add("None"); // Option to set the item to null (Don't have an item in this slot)
-		values.Add(null); // Option to set the item to null (Don't have an item in this slot) 
-		for (int i = 0; i < allConsumables.Count; i++)
-		{
-			names.Add(allConsumables[i].rulebookName + "\n(" + allConsumables[i].name + ")");
-			values.Add(allConsumables[i].name);
-		}
+    public void DrawItemsGUI()
+    {
+        Window.LabelHeader("Items");
+        List<string> items = RunState.Run.consumables;
 
-		return new Tuple<List<string>, List<string>>(names, values);
-	}
-	
-	public void DrawSequencesGUI()
-	{
-		ButtonListPopup.OnGUI(Window, "Trigger Sequence", "Trigger Sequence", GetListsOfSequences, OnChoseSequenceButtonCallback);
-	}
+        using (Window.HorizontalScope(RunState.Run.MaxConsumables))
+        {
+            for (int i = 0; i < RunState.Run.MaxConsumables; i++)
+            {
+                string consumable = i >= items.Count ? null : items[i];
+                string itemRulebookName = Helpers.GetConsumableByName(consumable);
+                string itemName = itemRulebookName != null ? itemRulebookName :
+                    consumable == null ? "None" : consumable;
+                ButtonListPopup.OnGUI(Window, itemName, "Change Item " + (i + 1), GetListsOfAllItems,
+                    OnChoseButtonCallback, i.ToString());
+            }
+        }
+    }
 
-	public static void OnChoseSequenceButtonCallback(int chosenIndex, string chosenValue, string metaData)
-	{
-		if (chosenIndex < 0 || chosenIndex >= Helpers.Sequences.Count)
-		{
-			return;
-		}
+    public static void OnChoseButtonCallback(int chosenIndex, string chosenValue, string inventoryIndex)
+    {
+        List<string> currentItems = RunState.Run.consumables;
+        int index = int.Parse(inventoryIndex);
+        string selectedItem = index >= RunState.Run.consumables.Count ? null : RunState.Run.consumables[index];
 
-		ABaseTriggerSequences sequence = Helpers.Sequences[chosenIndex];
-		sequence.Sequence();
-	}
+        if (chosenValue == null)
+        {
+            ItemsManager.Instance.RemoveItemFromSaveData(selectedItem);
+        }
+        else
+        {
+            if (index >= currentItems.Count)
+            {
+                currentItems.Add(chosenValue);
+            }
+            else
+            {
+                currentItems[index] = chosenValue;
+            }
+        }
 
-	private Tuple<List<string>, List<string>> GetListsOfSequences()
-	{
-		List<string> names = new List<string>(Helpers.Sequences.Count);
-		List<string> values = new List<string>(Helpers.Sequences.Count);
-		for (int i = 0; i < Helpers.Sequences.Count; i++)
-		{
-			names.Add(Helpers.Sequences[i].ButtonName);
-			values.Add(Helpers.Sequences[i].ButtonName);
-		}
+        foreach (ConsumableItemSlot slot in Singleton<ItemsManager>.Instance.consumableSlots)
+        {
+            if (slot.Item)
+            {
+                slot.DestroyItem();
+            }
+        }
 
-		return new Tuple<List<string>, List<string>>(names, values);
-	}
+        Singleton<ItemsManager>.Instance.UpdateItems(true);
+    }
+
+    private Tuple<List<string>, List<string>> GetListsOfAllItems()
+    {
+        List<ConsumableItemData> allConsumables = ItemsUtil.AllConsumables;
+
+        List<string> names = new List<string>(allConsumables.Count);
+        List<string> values = new List<string>(allConsumables.Count);
+
+        names.Add("None"); // Option to set the item to null (Don't have an item in this slot)
+        values.Add(null); // Option to set the item to null (Don't have an item in this slot) 
+        for (int i = 0; i < allConsumables.Count; i++)
+        {
+            names.Add(allConsumables[i].rulebookName + "\n(" + allConsumables[i].name + ")");
+            values.Add(allConsumables[i].name);
+        }
+
+        return new Tuple<List<string>, List<string>>(names, values);
+    }
+
+    public void DrawSequencesGUI()
+    {
+        ButtonListPopup.OnGUI(Window, "Trigger Sequence", "Trigger Sequence", GetListsOfSequences, OnChoseSequenceButtonCallback);
+    }
+
+    public static void OnChoseSequenceButtonCallback(int chosenIndex, string chosenValue, string metaData)
+    {
+        if (chosenIndex < 0 || chosenIndex >= Helpers.Sequences.Count)
+        {
+            return;
+        }
+
+        ABaseTriggerSequences sequence = Helpers.Sequences[chosenIndex];
+        sequence.Sequence();
+    }
+
+    private Tuple<List<string>, List<string>> GetListsOfSequences()
+    {
+        List<string> names = new List<string>(Helpers.Sequences.Count);
+        List<string> values = new List<string>(Helpers.Sequences.Count);
+        for (int i = 0; i < Helpers.Sequences.Count; i++)
+        {
+            names.Add(Helpers.Sequences[i].ButtonName);
+            values.Add(Helpers.Sequences[i].ButtonName);
+        }
+
+        return new Tuple<List<string>, List<string>>(names, values);
+    }
 }

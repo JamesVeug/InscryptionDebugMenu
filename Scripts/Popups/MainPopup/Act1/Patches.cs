@@ -1,11 +1,10 @@
-﻿using System.Collections;
-using System.Reflection;
-using System.Reflection.Emit;
-using DebugMenu.Scripts.All;
+﻿using DebugMenu.Scripts.All;
 using DiskCardGame;
 using GBC;
 using HarmonyLib;
 using InscryptionAPI.Regions;
+using System.Collections;
+using System.Reflection;
 using UnityEngine;
 
 namespace DebugMenu.Scripts.Act1;
@@ -78,7 +77,7 @@ internal class MoveToNode_Debug
 	}
 }
 
-[HarmonyPatch(typeof(MapNode), nameof(MapNode.SetActive), new Type[]{typeof(bool)})]
+[HarmonyPatch(typeof(MapNode), nameof(MapNode.SetActive), new Type[] { typeof(bool) })]
 internal class MapNode_SetActive
 {
 	[HarmonyPostfix]
@@ -104,7 +103,7 @@ internal class InputButtons_Buttons
 		yield return AccessTools.Method(inputButtons, nameof(InputButtons.GetButtonRepeating));
 		yield return AccessTools.Method(inputButtons, nameof(InputButtons.AnyGamepadButton));
 	}
-	
+
 	[HarmonyPostfix]
 	private static void Postfix(ref bool __result)
 	{
@@ -123,7 +122,7 @@ internal class InputButtons_Axis
 		Type inputButtons = typeof(InputButtons);
 		yield return AccessTools.Method(inputButtons, nameof(InputButtons.GetAxis));
 	}
-	
+
 	[HarmonyPostfix]
 	private static void Postfix(ref float __result)
 	{
@@ -158,7 +157,7 @@ internal class RegionManager_GetRandomRegionFromTier
 	}
 }
 
-[HarmonyPatch(typeof(MapNodeManager), nameof(MapNodeManager.GetNodeWithId), new Type[]{typeof(int)})]
+[HarmonyPatch(typeof(MapNodeManager), nameof(MapNodeManager.GetNodeWithId), new Type[] { typeof(int) })]
 internal class MapNodeManager_GetNodeWithId
 {
 	[HarmonyPrefix]
@@ -183,7 +182,7 @@ internal class DisableDialogue_IEnumerator_Patch
 		yield return AccessTools.Method(typeof(DialogueHandler), nameof(DialogueHandler.PlayDialogueEvent));
 		yield return AccessTools.Method(typeof(TextBox), nameof(TextBox.ShowUntilInput));
 	}
-	
+
 	private static IEnumerator Postfix(IEnumerator enumerator)
 	{
 		if (Configs.DisableAllInput)
@@ -202,7 +201,7 @@ internal class DisableDialogue_Patch
 	{
 		yield return AccessTools.Method(typeof(TextDisplayer), nameof(TextDisplayer.ShowMessage));
 	}
-	
+
 	private static bool Prefix()
 	{
 		if (Configs.DisableAllInput)

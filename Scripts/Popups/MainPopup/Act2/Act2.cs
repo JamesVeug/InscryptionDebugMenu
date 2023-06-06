@@ -1,7 +1,4 @@
-﻿using BepInEx.Logging;
-using DebugMenu.Scripts.Acts;
-using DebugMenu.Scripts.Utils;
-using DiskCardGame;
+﻿using DebugMenu.Scripts.Acts;
 using GBC;
 using UnityEngine;
 
@@ -9,65 +6,65 @@ namespace DebugMenu.Scripts.Act2;
 
 public class Act2 : BaseAct
 {
-	public Act2(DebugWindow window) : base(window)
-	{
-		m_mapSequence = new MapSequence(this);
-		m_cardBattleSequence = new CardBattleSequence(window);
-	}
+    public Act2(DebugWindow window) : base(window)
+    {
+        m_mapSequence = new MapSequence(this);
+        m_cardBattleSequence = new CardBattleSequence(window);
+    }
 
-	public override void Update()
-	{
-		
-	}
-	
-	public override void OnGUI()
-	{
-		Window.LabelHeader("Act 2");
-		
-		Window.Padding();
+    public override void Update()
+    {
 
-		using (Window.HorizontalScope(3))
-		{
-			Window.Label("Currency: \n" + SaveData.Data.currency);
-			if (Window.Button("+5"))
-			{
-				SaveData.Data.currency += 5;
-			}
+    }
 
-			if (Window.Button("-5"))
-			{
-				SaveData.Data.currency = Mathf.Max(0, SaveData.Data.currency - 5);
-			}
-		}
+    public override void OnGUI()
+    {
+        Window.LabelHeader("Act 2");
 
-		Window.StartNewColumn();
-		OnGUICurrentNode();
-	}
-	
-	private void OnGUICurrentNode()
-	{
-		if (GBCEncounterManager.Instance.EncounterOccurring)
-		{
-			Window.LabelHeader("Encounter");
-			m_cardBattleSequence.OnGUI();
-			return;
-		}
-		
-		Window.Label("Unhandled state type");
-	}
+        Window.Padding();
 
-	public override void OnGUIMinimal()
-	{
-		OnGUICurrentNode();
-	}
+        using (Window.HorizontalScope(3))
+        {
+            Window.Label("Currency: \n" + SaveData.Data.currency);
+            if (Window.Button("+5"))
+            {
+                SaveData.Data.currency += 5;
+            }
 
-	public override void Restart()
-	{
-		// TODO:
-	}
+            if (Window.Button("-5"))
+            {
+                SaveData.Data.currency = Mathf.Max(0, SaveData.Data.currency - 5);
+            }
+        }
 
-	public override void Reload()
-	{
-		// TODO:
-	}
+        Window.StartNewColumn();
+        OnGUICurrentNode();
+    }
+
+    private void OnGUICurrentNode()
+    {
+        if (GBCEncounterManager.Instance.EncounterOccurring)
+        {
+            Window.LabelHeader("Encounter");
+            m_cardBattleSequence.OnGUI();
+            return;
+        }
+
+        Window.Label("Unhandled state type");
+    }
+
+    public override void OnGUIMinimal()
+    {
+        OnGUICurrentNode();
+    }
+
+    public override void Restart()
+    {
+        // TODO:
+    }
+
+    public override void Reload()
+    {
+        // TODO:
+    }
 }

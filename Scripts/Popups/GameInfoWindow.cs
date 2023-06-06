@@ -1,5 +1,4 @@
-﻿using DiskCardGame;
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.SceneManagement;
 
 namespace DebugMenu.Scripts.Popups;
@@ -7,10 +6,10 @@ namespace DebugMenu.Scripts.Popups;
 public class GameInfoPopup : BaseWindow
 {
 	public override string PopupName => "Game Info";
-	public override Vector2 Size => new Vector2(200, 500);
+	public override Vector2 Size => new(220, 500);
 
 	public float updateInterval = 0.5F;
- 
+
 	private float lastInterval;
 	private int frames = 0;
 	private int fps;
@@ -26,8 +25,12 @@ public class GameInfoPopup : BaseWindow
 		{
 			Plugin.Instance.ToggleWindow<ResourceBankPopup>();
 		}
-		
-		int sceneCount = SceneManager.sceneCount;		
+        if (Button("Show Dialogue Events"))
+        {
+            Plugin.Instance.ToggleWindow<DialogueEventPopup>();
+        }
+
+        int sceneCount = SceneManager.sceneCount;
 		LabelHeader($"Scenes {sceneCount}");
 		Scene activeScene = SceneManager.GetActiveScene();
 
@@ -49,7 +52,7 @@ public class GameInfoPopup : BaseWindow
 	{
 		base.Update();
 		++frames;
- 
+
 		float timeNow = Time.realtimeSinceStartup;
 		if (timeNow > lastInterval + updateInterval)
 		{

@@ -1,70 +1,65 @@
-﻿using System.Collections;
-using System.Reflection;
-using BepInEx.Logging;
-using DebugMenu.Scripts.Acts;
+﻿using DebugMenu.Scripts.Acts;
 using DebugMenu.Scripts.Popups;
-using DebugMenu.Scripts.Utils;
 using DiskCardGame;
 using InscryptionAPI.Regions;
-using UnityEngine;
 
 namespace DebugMenu.Scripts.Act1;
 
 public class MapSequence : BaseMapSequence
 {
-	public static bool RegionOverride = false;
-	public static string RegionNameOverride = "";  
-	
-	private readonly Act1 Act = null;
-	private readonly DebugWindow Window = null;
+    public static bool RegionOverride = false;
+    public static string RegionNameOverride = "";
 
-	public MapSequence(Act1 act)
-	{
-		this.Act = act;
-		this.Window = act.Window;
-	}
+    private readonly Act1 Act = null;
+    private readonly DebugWindow Window = null;
 
-	public override void OnGUI()
-	{
-		bool skipNextNode = Act1.SkipNextNode;
-		if (Window.Toggle("Skip next node", ref skipNextNode))
-		{
-			ToggleSkipNextNode();
-		}
-		
-		bool activateAllNodes = Act1.ActivateAllMapNodesActive;
-		if (Window.Toggle("Activate all Map nodes", ref activateAllNodes))
-		{
-			ToggleAllNodes();
-		}
+    public MapSequence(Act1 act)
+    {
+        this.Act = act;
+        this.Window = act.Window;
+    }
 
-		Act.DrawSequencesGUI();
-		
-		Window.Padding();
+    public override void OnGUI()
+    {
+        bool skipNextNode = Act1.SkipNextNode;
+        if (Window.Toggle("Skip next node", ref skipNextNode))
+        {
+            ToggleSkipNextNode();
+        }
 
-		Window.Label("Override Region");
-		ButtonListPopup.OnGUI(Window, RegionNameOverride, "Override Region", RegionNameList, static (_, value, _)=>
-		{
-			RegionNameOverride = value;
-		});
-		Window.Toggle("Toggle Map Override", ref RegionOverride);
-	}
+        bool activateAllNodes = Act1.ActivateAllMapNodesActive;
+        if (Window.Toggle("Activate all Map nodes", ref activateAllNodes))
+        {
+            ToggleAllNodes();
+        }
 
-	public override void ToggleSkipNextNode()
-	{
-		Act1.SkipNextNode = !Act1.SkipNextNode;
-	}
+        Act.DrawSequencesGUI();
 
-	public override void ToggleAllNodes()
-	{
-		Act1.ActivateAllMapNodesActive = !Act1.ActivateAllMapNodesActive;
-		MapNode node = Singleton<MapNodeManager>.Instance.ActiveNode;
-		Singleton<MapNodeManager>.Instance.SetActiveNode(node);
-	}
+        Window.Padding();
 
-	private Tuple<List<string>, List<string>> RegionNameList()
-	{
-		List<string> regionsNames = RegionManager.AllRegionsCopy.ConvertAll((a) => a.name).ToList();
-		return new Tuple<List<string>, List<string>>(regionsNames, regionsNames);
-	}
+        Window.Label("Override Region");
+        ButtonListPopup.OnGUI(Window, RegionNameOverride, "Override Region", RegionNameList, static (_, value, _) =>
+        {
+            RegionNameOverride = value;
+        });
+        Window.Toggle("Toggle Map Override", ref RegionOverride);
+    }
+
+    public override void ToggleSkipNextNode()
+    {
+        Act1.SkipNextNode = !Act1.SkipNextNode;
+    }
+
+    public override void ToggleAllNodes()
+    {
+        Act1.ActivateAllMapNodesActive = !Act1.ActivateAllMapNodesActive;
+        MapNode node = Singleton<MapNodeManager>.Instance.ActiveNode;
+        Singleton<MapNodeManager>.Instance.SetActiveNode(node);
+    }
+
+    private Tuple<List<string>, List<string>> RegionNameList()
+    {
+        List<string> regionsNames = RegionManager.AllRegionsCopy.ConvertAll((a) => a.name).ToList();
+        return new Tuple<List<string>, List<string>>(regionsNames, regionsNames);
+    }
 }

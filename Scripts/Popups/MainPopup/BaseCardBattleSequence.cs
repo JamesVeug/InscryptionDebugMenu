@@ -1,6 +1,6 @@
-﻿using DebugMenu.Scripts.Popups;
-using DiskCardGame;
-using InscryptionAPI.Nodes;
+﻿using DiskCardGame;
+using System.Collections;
+using UnityEngine;
 
 namespace DebugMenu.Scripts.Acts;
 
@@ -10,20 +10,20 @@ public abstract class BaseCardBattleSequence
 	public abstract int ScalesBalance { get; }
 	public abstract int PlayerEnergy { get; }
 	public abstract int PlayerMaxEnergy { get; }
-	
+
 	protected readonly DebugWindow Window;
-	
+
 	protected bool hasSideDeck = true;
 	protected bool hasBones = true;
-	
+
 	public BaseCardBattleSequence(DebugWindow window)
 	{
 		this.Window = window;
 	}
-	
+
 	public virtual void OnGUI()
 	{
-		using (Window.HorizontalScope(2))
+		using (Window.HorizontalScope(3))
 		{
 			if (Window.Button("Draw Card"))
 			{
@@ -31,16 +31,21 @@ public abstract class BaseCardBattleSequence
 			}
 
 			Func<DrawableGUI.ButtonDisabledData> disabled = hasSideDeck ? default : () => new DrawableGUI.ButtonDisabledData("No Side deck in this act");
-			if (Window.Button("Draw Side Deck", disabled:disabled))
+			if (Window.Button("Draw Side Deck", disabled: disabled))
 			{
 				DrawSideDeck();
 			}
-		}
+
+            if (Window.Button("Draw Tutor", disabled: () => new() { Disabled = !(SceneLoader.ActiveSceneName == "GBC_CardBattle") || (Singleton<CardDrawPiles>.Instance?.Deck?.CardsInDeck).GetValueOrDefault() == 0 }))
+            {
+                Plugin.Instance.StartCoroutine(DrawTutor());
+            }
+        }
 
 		using (Window.HorizontalScope(3))
 		{
 			Window.Label("Bones:\n" + PlayerBones);
-			
+
 			Func<DrawableGUI.ButtonDisabledData> disabled = hasBones ? default : () => new DrawableGUI.ButtonDisabledData("No bones in this act");
 			if (Window.Button("+5", disabled: disabled))
 			{
@@ -56,7 +61,7 @@ public abstract class BaseCardBattleSequence
 		using (Window.HorizontalScope(3))
 		{
 			Window.Label("Scales:\n" + ScalesBalance);
-			
+
 			if (Window.Button("Deal 2 Damage"))
 			{
 				DealDamage(2);
@@ -107,7 +112,7 @@ public abstract class BaseCardBattleSequence
 				SetMaxEnergyToMax();
 			}
 		}
-		
+
 		Window.Padding();
 
 		using (Window.HorizontalScope(2))
@@ -123,9 +128,19 @@ public abstract class BaseCardBattleSequence
 			}
 		}
 	}
-	
-	public abstract void DrawCard();
+
+	public bool IsGBCBattle() => SceneLoader.ActiveSceneName == "GBC_CardBattle";
+    public IEnumerator DrawTutor()
+    {
+        if (Singleton<CardDrawPiles>.Instance.Deck.CardsInDeck > 0)
+        {
+            yield return Singleton<CardDrawPiles>.Instance.Deck.Tutor();
+        }
+    }
+
+    public abstract void DrawCard();
 	public abstract void DrawSideDeck();
+
 	public abstract void AddBones(int amount);
 	public abstract void RemoveBones(int amount);
 
