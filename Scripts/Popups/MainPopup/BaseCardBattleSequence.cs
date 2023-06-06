@@ -1,11 +1,12 @@
-﻿using DebugMenu.Scripts.Popups;
+﻿using System.Collections;
 using DiskCardGame;
-using InscryptionAPI.Nodes;
 
 namespace DebugMenu.Scripts.Acts;
 
 public abstract class BaseCardBattleSequence
 {
+	public bool IsGBCBattle() => SceneLoader.ActiveSceneName == "GBC_CardBattle";
+	
 	public abstract int PlayerBones { get; }
 	public abstract int ScalesBalance { get; }
 	public abstract int PlayerEnergy { get; }
@@ -129,7 +130,6 @@ public abstract class BaseCardBattleSequence
 		}
 	}
 	
-	public bool IsGBCBattle() => SceneLoader.ActiveSceneName == "GBC_CardBattle";
 	public IEnumerator DrawTutor()
 	{
 		if (Singleton<CardDrawPiles>.Instance.Deck.CardsInDeck > 0)
