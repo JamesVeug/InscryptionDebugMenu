@@ -32,7 +32,7 @@ public abstract class BaseCardBattleSequence
 			}
 
 			Func<DrawableGUI.ButtonDisabledData> disabled = hasSideDeck ? default : () => new DrawableGUI.ButtonDisabledData("No Side deck in this act");
-			if (Window.Button("Draw Side Deck", disabled:disabled))
+			if (Window.Button("Draw Side", disabled:disabled))
 			{
 				DrawSideDeck();
 			}

@@ -16,7 +16,7 @@ public class DebugWindow : BaseWindow
 	}
 	
 	public override string PopupName => "Debug Menu";
-	public override Vector2 Size => new Vector2(700, 400);
+	public override Vector2 Size => new Vector2(700, 420);
 	public override bool ClosableWindow => false;
 	public BaseAct CurrentAct => currentAct;
 	public AllActs AllActs => allActs;
