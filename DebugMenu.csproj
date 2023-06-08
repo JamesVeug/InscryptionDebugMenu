@@ -35,14 +35,13 @@
     </ItemGroup>
 
     <ItemGroup>
-      <Reference Include="InscryptionAPI">
-        <HintPath>libs\InscryptionAPI.dll</HintPath>
-        <Private>False</Private>
-      </Reference>
+      <Folder Include="Scripts\Patches" />
     </ItemGroup>
 
     <ItemGroup>
-      <Folder Include="Scripts\Patches" />
+      <Reference Include="InscryptionAPI">
+        <HintPath>C:\Users\james\AppData\Roaming\Thunderstore Mod Manager\DataFolder\Inscryption\profiles\All\BepInEx\plugins\API_dev-API\InscryptionAPI.dll</HintPath>
+      </Reference>
     </ItemGroup>
 
 </Project>

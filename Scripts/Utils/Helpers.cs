@@ -178,7 +178,7 @@ public static partial class Helpers
 	{
 		List<Tribe> tribes = new List<Tribe>();
 		tribes.AddRange(Enum.GetValues(typeof(Tribe)).Cast<Tribe>());
-		tribes.AddRange(TribeManager.tribes.Select((a)=>a.tribe));
+		tribes.AddRange(TribeManager.NewTribes.Select((a)=>a.tribe));
 
 		return tribes;
 	}

@@ -134,7 +134,7 @@ internal class InputButtons_Axis
 	}
 }
 
-[HarmonyPatch(typeof(RegionManager), nameof(RegionManager.GetAllRegionsForMapGeneration))]
+[HarmonyPatch(typeof(RegionManager), "GetAllRegionsForMapGeneration")]
 internal class RegionManager_GetRandomRegionFromTier
 {
 	[HarmonyPostfix]
