@@ -221,7 +221,6 @@ internal class TriggerCardBattleSequenceWindow_Patches
 			totemItemData.bottom.effectParams.ability = TriggerCardBattleSequenceWindow.EncounterTotemBottomOverride;
 		}
 		
-		InscryptionAPI.InscryptionAPIPlugin.Logger.LogInfo($"Overriding totem data: {totemItemData.top.prerequisites.tribe} {totemItemData.bottom.effectParams.ability}");
 		TriggerCardBattleSequenceWindow.EncounterTotemTopOverride = Tribe.None;
 		TriggerCardBattleSequenceWindow.EncounterTotemBottomOverride = Ability.None;
 		return totemItemData;

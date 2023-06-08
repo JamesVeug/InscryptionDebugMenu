@@ -68,17 +68,6 @@ public static partial class Helpers
 				}
 			}
 		}
-
-		// log all the different paths from Paths
-		InscryptionAPIPlugin.Logger.LogInfo($"BepInExRootPath: {Paths.BepInExRootPath}");
-		InscryptionAPIPlugin.Logger.LogInfo($"BepInExConfigPath: {Paths.BepInExConfigPath}");
-		InscryptionAPIPlugin.Logger.LogInfo($"PluginPath: {Paths.PluginPath}");
-		InscryptionAPIPlugin.Logger.LogInfo($"ExecutablePath: {Paths.ExecutablePath}");
-		InscryptionAPIPlugin.Logger.LogInfo($"ManagedPath: {Paths.ManagedPath}");
-		InscryptionAPIPlugin.Logger.LogInfo($"DllSearchPaths: {Paths.DllSearchPaths}");
-		InscryptionAPIPlugin.Logger.LogInfo($"GameRootPath: {Paths.GameRootPath}");
-		InscryptionAPIPlugin.Logger.LogInfo($"BepInExAssemblyPath: {Paths.BepInExAssemblyPath}");
-		InscryptionAPIPlugin.Logger.LogInfo($"BepInExAssemblyDirectory: {Paths.BepInExAssemblyDirectory}");
 		
 		// get all types that override SpecialNodeData
 		foreach (KeyValuePair<Assembly,List<Type>> pair in nodeTypes)
