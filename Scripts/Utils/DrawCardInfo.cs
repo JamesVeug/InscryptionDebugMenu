@@ -1,5 +1,4 @@
-﻿using System.Collections.ObjectModel;
-using DiskCardGame;
+﻿using DiskCardGame;
 using InscryptionAPI.Card;
 using UnityEngine;
 using Object = System.Object;
@@ -8,7 +7,7 @@ namespace DebugMenu.Scripts.Utils;
 
 public static class DrawCardInfo
 {
-	private static string[] sigilsAbilities = new string[2] { "Sigils", "Abilities" };
+	private static string[] sigilsAbilities = new string[2] { "Sigils", "Special Abilities" };
 
 	private static string[] abilityManagementTabs = new string[2] { "Remove", "Add" };
 	private static string[] specialAbilitySelectorList = new string[2] { "Remove", "Add" };
@@ -76,7 +75,7 @@ public static class DrawCardInfo
 			}
 			else
 			{
-				EditSpecialAbilities(val, deckInfo);
+				ManageSpecialAbilities(val, deckInfo);
 			}
 		}
 
@@ -300,10 +299,6 @@ public static class DrawCardInfo
 
 	private static void EditAbilities(CardInfo currentCard, DeckInfo deckInfo)
 	{
-		//IL_0148: Unknown result type (might be due to invalid IL or missing references)
-		//IL_014d: Unknown result type (might be due to invalid IL or missing references)
-		//IL_01ce: Unknown result type (might be due to invalid IL or missing references)
-		//IL_0214: Unknown result type (might be due to invalid IL or missing references)
 		GUILayout.Label("Sigils", Array.Empty<GUILayoutOption>());
 		lastCardAbilitySearch = GUILayout.TextField(lastCardAbilitySearch, Array.Empty<GUILayoutOption>());
 		if (lastCardAbilitySearch != "")
@@ -469,22 +464,22 @@ public static class DrawCardInfo
 		return AbilityManager.AllAbilities;
 	}
 
-	private static void EditSpecialAbilities(CardInfo currentCard, DeckInfo deckInfo)
+	private static void ManageSpecialAbilities(CardInfo currentCard, DeckInfo deckInfo)
 	{
-		GUILayout.Label("Abilities", Array.Empty<GUILayoutOption>());
+		GUILayout.Label("Special Abilities", Array.Empty<GUILayoutOption>());
 		specialAbilitySelector = GUILayout.Toolbar(specialAbilitySelector, specialAbilitySelectorList, Array.Empty<GUILayoutOption>());
 		if (specialAbilitySelector == 0)
 		{
 			if (currentCard.SpecialAbilities.Count <= 0)
 			{
-				GUILayout.Label("No Abilities", Array.Empty<GUILayoutOption>());
+				GUILayout.Label("No Special Abilities", Array.Empty<GUILayoutOption>());
 				return;
 			}
 			specialAbilityListVector2 = GUILayout.BeginScrollView(specialAbilityListVector2, Array.Empty<GUILayoutOption>());
 			foreach (SpecialTriggeredAbility specialAbility2 in currentCard.SpecialAbilities)
 			{
 				SpecialTriggeredAbility current = specialAbility2;
-				if (GUILayout.Button(current.ToString(), Array.Empty<GUILayoutOption>()))
+				if (GUILayout.Button(GetSpecialAbilityName(current), Array.Empty<GUILayoutOption>()))
 				{
 					NewCardMod(deckInfo, currentCard, 0, 0, 0, 0, 0, 0, 0, 0, current);
 				}
@@ -492,36 +487,33 @@ public static class DrawCardInfo
 			GUILayout.EndScrollView();
 			return;
 		}
+		
 		specialAbilityListVector = GUILayout.BeginScrollView(specialAbilityListVector, Array.Empty<GUILayoutOption>());
 		foreach (SpecialTriggeredAbilityManager.FullSpecialTriggeredAbility allSpecialAbility in GetAllSpecialAbilities())
 		{
-			if (GUILayout.Button(GetSpecialAbilityName(allSpecialAbility), Array.Empty<GUILayoutOption>()))
+			if (GUILayout.Button(allSpecialAbility.AbilityName, Array.Empty<GUILayoutOption>()))
 			{
 				NewCardMod(deckInfo, currentCard, 0, 0, 0, 0, 0, 0, 0, allSpecialAbility.Id);
 			}
 		}
+		
 		GUILayout.EndScrollView();
 	}
-	
-	public static string GetSpecialAbilityName(SpecialTriggeredAbilityManager.FullSpecialTriggeredAbility ability)
+
+	private static string GetSpecialAbilityName(SpecialTriggeredAbility current)
 	{
-		if (ability.Id <= SpecialTriggeredAbility.NUM_ABILITIES)
+		SpecialTriggeredAbilityManager.FullSpecialTriggeredAbility ability = SpecialTriggeredAbilityManager.AllSpecialTriggers.Find((a) => a.Id == current);
+		if (ability != null)
 		{
-			return ability.ToString();
+			return ability.AbilityName;
 		}
-
-		StatIconManager.FullStatIcon icon = StatIconManager.AllStatIcons.Find((a)=>a.VariableStatBehavior == ability.AbilityBehaviour);
-		if (icon != null)
-		{
-			return icon.Info.rulebookName;
-		}
-
-		return null;
+		
+		return current.ToString();
 	}
 
-	private static ObservableCollection<SpecialTriggeredAbilityManager.FullSpecialTriggeredAbility> GetAllSpecialAbilities()
+	private static List<SpecialTriggeredAbilityManager.FullSpecialTriggeredAbility> GetAllSpecialAbilities()
 	{
-		return SpecialTriggeredAbilityManager.NewSpecialTriggers;
+		return SpecialTriggeredAbilityManager.AllSpecialTriggers;
 	}
 
 
