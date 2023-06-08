@@ -23,6 +23,8 @@ Hotkeys
 - `F1` Set time scale to 1
 - `F1 + LeftControl` Set time scale to 10
 - `F1 + LeftShift` Set time scale to 0.1
+- `F2` Draw Card
+- `F2 + LeftShift` Draw Side deck card
 - `F3` Toggle Activate all nodes
 - `F4` Toggle Skip next node
 - `F5` Reload the current act
