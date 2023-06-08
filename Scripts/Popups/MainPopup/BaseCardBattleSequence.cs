@@ -37,7 +37,11 @@ public abstract class BaseCardBattleSequence
 				DrawSideDeck();
 			}
 
-			if (Window.Button("Draw Tutor", disabled: () => new() { Disabled = !IsGBCBattle() || (Singleton<CardDrawPiles>.Instance?.Deck?.CardsInDeck).GetValueOrDefault() == 0 }))
+			if (Window.Button("Draw Tutor", disabled: () => new()
+				{
+					Disabled = (SaveManager.SaveFile.IsPart2 && !IsGBCBattle()) || (CardDrawPiles.Instance?.Deck?.CardsInDeck).GetValueOrDefault() == 0
+				}
+			 ))
 			{
 				Plugin.Instance.StartCoroutine(DrawTutor());
 			}
