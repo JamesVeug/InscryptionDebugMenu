@@ -176,7 +176,7 @@ public class HotkeyController
 			if (Input.GetKeyDown(code) && !m_pressedKeys.Contains(code))
 			{
 				m_pressedKeys.Add(code);
-				HotkeysChanged(code);
+				HotkeysChanged(code, true);
 			}
 		}
 
@@ -186,52 +186,52 @@ public class HotkeyController
 			if (!Input.GetKey(pressedKey))
 			{
 				m_pressedKeys.Remove(pressedKey);
-				HotkeysChanged(KeyCode.None);
+				HotkeysChanged(KeyCode.None, false);
 
-				if (m_pressedKeys.Count == 0)
-				{
-					m_hotkeyActivated = false;
-				}
+				m_hotkeyActivated = false;
 			}
 		}
 	}
 
-	private void HotkeysChanged(KeyCode pressedButton)
+	private void HotkeysChanged(KeyCode pressedButton, bool triggerHotkey)
 	{
-		Hotkey activatedHotkey = null;
-		foreach (Hotkey hotkey in Hotkeys)
+		if (triggerHotkey)
 		{
-			if (m_hotkeyActivated)
+			Hotkey activatedHotkey = null;
+			foreach (Hotkey hotkey in Hotkeys)
 			{
-				continue;
-			}
-
-			if (hotkey.KeyCodes.Length == 0)
-			{
-				continue;
-			}
-
-			// all buttons from hotkey are pressed
-			bool allHotkeysPressed = m_pressedKeys.Intersect(hotkey.KeyCodes).Count() == hotkey.KeyCodes.Length;
-			if (allHotkeysPressed)
-			{
-				if(activatedHotkey == null || activatedHotkey.KeyCodes.Length < hotkey.KeyCodes.Length)
+				if (m_hotkeyActivated)
 				{
-					activatedHotkey = hotkey;
+					continue;
+				}
+
+				if (hotkey.KeyCodes.Length == 0)
+				{
+					continue;
+				}
+
+				// all buttons from hotkey are pressed
+				bool allHotkeysPressed = m_pressedKeys.Intersect(hotkey.KeyCodes).Count() == hotkey.KeyCodes.Length;
+				if (allHotkeysPressed)
+				{
+					if (activatedHotkey == null || activatedHotkey.KeyCodes.Length < hotkey.KeyCodes.Length)
+					{
+						activatedHotkey = hotkey;
+					}
 				}
 			}
-		}
-		
-		if (activatedHotkey != null)
-		{
-			if (m_functionIDToData.TryGetValue(activatedHotkey.FunctionID, out FunctionData data))
+
+			if (activatedHotkey != null)
 			{
-				data.Invoke(activatedHotkey.Arguments);
-				m_hotkeyActivated = true;
-			}
-			else
-			{
-				Plugin.Log.LogError("Hotkey callback not found: " + activatedHotkey.FunctionID);
+				if (m_functionIDToData.TryGetValue(activatedHotkey.FunctionID, out FunctionData data))
+				{
+					data.Invoke(activatedHotkey.Arguments);
+					m_hotkeyActivated = true;
+				}
+				else
+				{
+					Plugin.Log.LogError("Hotkey callback not found: " + activatedHotkey.FunctionID);
+				}
 			}
 		}
 
