@@ -170,7 +170,7 @@ public class DeckEditorPopup : BaseWindow
 		deckCardArray[0] = "Add Card";
 		for (int i = 0; i < CurrentDeck.Cards.Count; i++)
 		{
-			deckCardArray[i + 1] = CurrentDeck.Cards[i].name;
+			deckCardArray[i + 1] = CurrentDeck.Cards[i].displayedName;
 		}
 
 		currentDeckEditorSelection =
