@@ -17,8 +17,8 @@ public static class DrawCardInfo
 	private static int selectedTab = 0;
 	private static int abilityManagerIndex = 0;
 	private static string lastCardAbilitySearch = "";
+	private static string lastCardAbilityGUIDSearch = "";
 	private static List<AbilityManager.FullAbility> cardAbilityList;
-	private static string lastAbilitySearch = "";
 	private static int currentPageEdit = 0;
 	private static int currentPageAdd = 0;
 	private static int specialAbilitySelector = 0;
@@ -300,36 +300,38 @@ public static class DrawCardInfo
 	private static void EditAbilities(CardInfo currentCard, DeckInfo deckInfo)
 	{
 		GUILayout.Label("Sigils", Array.Empty<GUILayoutOption>());
-		lastCardAbilitySearch = GUILayout.TextField(lastCardAbilitySearch, Array.Empty<GUILayoutOption>());
-		if (lastCardAbilitySearch != "")
+		using (new GUILayout.HorizontalScope())
+		{
+			GUILayout.Label("Filter Name", GUILayout.Width(80));
+			lastCardAbilitySearch = GUILayout.TextField(lastCardAbilitySearch, Array.Empty<GUILayoutOption>());
+			
+			GUILayout.Label("Filter GUID", GUILayout.Width(80));
+			lastCardAbilityGUIDSearch = GUILayout.TextField(lastCardAbilityGUIDSearch, Array.Empty<GUILayoutOption>());
+		}
+
+		if (lastCardAbilitySearch != "" || lastCardAbilityGUIDSearch != "")
 		{
 			List<AbilityManager.FullAbility> abilities = AbilityManager.AllAbilities.FindAll((a)=>currentCard.Abilities.Contains(a.Id));
-			if (GetAbilitiesThatContain(lastCardAbilitySearch, out var results, abilities))
-			{
-				GUILayout.Label("Results Found:", Array.Empty<GUILayoutOption>());
-				cardAbilityList = results;
-			}
-			else
-			{
-				GUILayout.Label("No Abilities Match", Array.Empty<GUILayoutOption>());
-				cardAbilityList = AbilityManager.AllAbilities.FindAll((a)=>currentCard.Abilities.Contains(a.Id));
-			}
+			GetAbilitiesThatContain(lastCardAbilitySearch, lastCardAbilityGUIDSearch, out var results, abilities);
+			cardAbilityList = results;
 		}
 		else
 		{
-			GUILayout.Label("Not Searching", Array.Empty<GUILayoutOption>());
 			cardAbilityList = AbilityManager.AllAbilities.FindAll((a)=>currentCard.Abilities.Contains(a.Id));
 		}
+		
 		if (currentCard == null)
 		{
 			GUILayout.Label("No Card", Array.Empty<GUILayoutOption>());
 			return;
 		}
+		
 		if (cardAbilityList.Count <= 0)
 		{
 			GUILayout.Label("No Sigils", Array.Empty<GUILayoutOption>());
 			return;
 		}
+		
 		bool flag = false;
 		NewPager(ref currentPageEdit, (cardAbilityList.Count - 1) / 8);
 		int num = 0;
@@ -376,20 +378,35 @@ public static class DrawCardInfo
 		}
 	}
 
-	private static bool GetAbilitiesThatContain(string testString, out List<AbilityManager.FullAbility> results, List<AbilityManager.FullAbility> searchingList)
+	private static bool GetAbilitiesThatContain(string nameString, string guidString,
+		out List<AbilityManager.FullAbility> results, List<AbilityManager.FullAbility> searchingList)
 	{
 		bool result = false;
 		results = new List<AbilityManager.FullAbility>();
 		foreach (AbilityManager.FullAbility searching in searchingList)
 		{
 			AbilityManager.FullAbility current = searching;
-			string rulebookName = current.Info?.rulebookName;
-			string abilityName = current.Id.ToString();
-			if (rulebookName != null && (rulebookName.ToLower().Contains(testString.ToLower())) || abilityName.Contains(testString.ToLower()))
+			if (guidString != "")
 			{
-				results.Add(current);
-				result = true;
+				if (current.ModGUID == null || !current.ModGUID.Contains(guidString))
+				{
+					continue;
+				}
 			}
+
+			if (nameString != "")
+			{
+				string rulebookName = current.Info?.rulebookName;
+				string abilityName = current.Id.ToString();
+				if (rulebookName == null || !rulebookName.ToLower().Contains(nameString.ToLower()) ||
+				    !abilityName.Contains(nameString.ToLower()))
+				{
+					continue;
+				}
+			}
+
+			results.Add(current);
+			result = true;
 		}
 		return result;
 	}
@@ -397,30 +414,33 @@ public static class DrawCardInfo
 	private static void AddAbilities(CardInfo currentCard, DeckInfo deckInfo)
 	{
 		GUILayout.Label("Sigils", Array.Empty<GUILayoutOption>());
-		lastAbilitySearch = GUILayout.TextField(lastAbilitySearch, Array.Empty<GUILayoutOption>());
-		if (lastAbilitySearch != "")
+		
+		using (new GUILayout.HorizontalScope())
 		{
-			if (GetAbilitiesThatContain(lastAbilitySearch, out List<AbilityManager.FullAbility> results, GetAllAbilities()))
-			{
-				GUILayout.Label("Results Found:", Array.Empty<GUILayoutOption>());
-				cardAbilityList = results;
-			}
-			else
-			{
-				GUILayout.Label("No Abilities Match", Array.Empty<GUILayoutOption>());
-				cardAbilityList = GetAllAbilities();
-			}
+			GUILayout.Label("Filter Name", GUILayout.Width(80));
+			lastCardAbilitySearch = GUILayout.TextField(lastCardAbilitySearch, Array.Empty<GUILayoutOption>());
+			
+			GUILayout.Label("Filter GUID", GUILayout.Width(80));
+			lastCardAbilityGUIDSearch = GUILayout.TextField(lastCardAbilityGUIDSearch, Array.Empty<GUILayoutOption>());
+		}
+
+		if (lastCardAbilitySearch != "" || lastCardAbilityGUIDSearch != "")
+		{
+			GetAbilitiesThatContain(lastCardAbilitySearch, lastCardAbilityGUIDSearch,
+				out List<AbilityManager.FullAbility> results, GetAllAbilities());
+			cardAbilityList = results;
 		}
 		else
 		{
-			GUILayout.Label("Not Searching", Array.Empty<GUILayoutOption>());
 			cardAbilityList = GetAllAbilities();
 		}
+		
 		if (currentCard == (Object)null)
 		{
 			GUILayout.Label("No Card", Array.Empty<GUILayoutOption>());
 			return;
 		}
+		
 		bool flag = false;
 		NewPager(ref currentPageAdd, (cardAbilityList.Count - 1) / 8);
 		int num = 0;
