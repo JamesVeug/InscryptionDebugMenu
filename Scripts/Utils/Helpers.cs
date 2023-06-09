@@ -1,6 +1,8 @@
 ﻿using System.Linq.Expressions;
 using System.Reflection;
 using System.Text;
+using BepInEx;
+using BepInEx.Bootstrap;
 using DebugMenu.Scripts.Popups;
 using DiskCardGame;
 using GBC;
@@ -331,6 +333,12 @@ public static partial class Helpers
 			case Acts.MagnificusAct:
 				return SaveManager.SaveFile.CurrentDeck;
 			case Acts.GrimoraAct:
+				if (GrimoraModHelpers.GrimoraModIsActive())
+				{
+					return GrimoraModHelpers.GetRunState().playerDeck;
+				}
+				
+				Plugin.Log.LogInfo($"Not grimora mod!");
 				return SaveManager.SaveFile.grimoraData.deck;
 			case Acts.Act2:
 				return SaveData.Data.deck;
