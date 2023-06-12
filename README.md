@@ -30,13 +30,20 @@ Hotkeys
 - `F5` Reload the current act
 - `F9` Restart the current act
 
+
 ## I want more!
 
 The project is open source and anyone can contribute by making pull request.
 https://github.com/JamesVeug/InscryptionDebugMenu
 
-### I don't know how to code!
-Create an issue on the github page and I will try to add it when I have time.
+**But... I don't know how to code!**
+
+Create an issue on the github page and mention it on the Inscryption modding discord and someone might take on the task.
+
+
+## Contributors
+- JamesGames
+- WhistleWind
 
 
 ## Thanks To:

@@ -1,5 +1,32 @@
 # Changelog
 
+## 1.0.0
+
+### General
+- Added `F2` hotkey to draw from deck
+- Added `LeftShift + F2` hotkey to draw from side deck
+- Fixed having to release all buttons before activating the next hotkey
+- Fixed (hopefully) error on boot when loading hotkeys
+- API requirement bumped to 2.x.x
+- Minor UI touch ups
+
+### All Acts
+- Added Dialogue Window (Thanks WhistleWind!)
+- Added Draw Tutor button to select card from your deck to be added to your hand (Thanks WhistleWind!)
+
+### Deck Editor
+- Added support for Grimora Mod
+- Added GUID filter when modifying sigils
+- Added name and GUID filter when modifying special abilities
+- Fixed not all Special abilities showing up 
+- Cards in deck show using their display now instead of .name
+
+### Act2
+- Fixed null Error spam when showing debug menu in act 2 (Thanks WhistleWind!)
+
+### Magnificus Act / Mod
+- Added light support
+
 ## 0.9.0
 
 ### All Acts
