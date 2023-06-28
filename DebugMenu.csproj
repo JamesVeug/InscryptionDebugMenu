@@ -13,14 +13,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <EmbeddedResource Include="$(ProjectDir)\Assets\*.png" />
-    </ItemGroup>
-
-    <ItemGroup>
-      <None Remove="ascensionicon_none.png" />
-      <None Remove="ascension_card_none_darker.png" />
-      <None Remove="mapevent_missing.png" />
-      <None Remove="starterdeck_icon_none.png" />
+      <None Remove="InscryptionAPI.dll" />
     </ItemGroup>
 
     <ItemGroup>
@@ -34,13 +27,10 @@
         <PackageReference Include="UnityEngine.Modules" Version="2019.4.24" />
     </ItemGroup>
 
-    <ItemGroup>
-      <Folder Include="Scripts\Patches" />
-    </ItemGroup>
 
     <ItemGroup>
-      <Reference Include="InscryptionAPI">
-        <HintPath>C:\Users\james\AppData\Roaming\Thunderstore Mod Manager\DataFolder\Inscryption\profiles\All\BepInEx\plugins\API_dev-API\InscryptionAPI.dll</HintPath>
+      <Reference Include="InscryptionAPI" Private="false">
+        <HintPath>InscryptionAPI.dll</HintPath>
       </Reference>
     </ItemGroup>
 
