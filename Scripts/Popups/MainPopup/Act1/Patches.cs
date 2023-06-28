@@ -188,7 +188,8 @@ internal class DisableDialogue_IEnumerator_Patch
 	{
 		if (Configs.DisableAllInput)
 		{
-			yield break;
+            Singleton<InteractionCursor>.Instance.InteractionDisabled = false;
+            yield break;
 		}
 
 		yield return enumerator;

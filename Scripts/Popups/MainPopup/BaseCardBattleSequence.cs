@@ -139,6 +139,8 @@ public abstract class BaseCardBattleSequence
 		if (Singleton<CardDrawPiles>.Instance.Deck.CardsInDeck > 0)
 		{
 			yield return Singleton<CardDrawPiles>.Instance.Deck.Tutor();
+			if (ViewManager.Instance != null)
+				Singleton<ViewManager>.Instance.Controller.LockState = ViewLockState.Unlocked;
 		}
 	}
 
