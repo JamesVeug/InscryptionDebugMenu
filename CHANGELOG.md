@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.0.1
+### Act 1
+- Fixed Draw Tutor locking camera controls
+
+### Act 2
+- Fixed cursor interaction being disabled when opening a card pack with dialogue disabled = true
+
 ## 1.0.0
 
 ### General
