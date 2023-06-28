@@ -1,6 +1,10 @@
 # Changelog
 
 ## 1.0.1
+
+### All Acts
+- Added toggles for disabling direct damage to the player or opponent (persistent settings)
+
 ### Act 1
 - Fixed Draw Tutor locking camera controls
 

@@ -20,8 +20,10 @@ public class AllActs : BaseAct
 	
 	public override void OnGUI()
 	{
-		Window.Toggle("Block all Input", ref blockAllInput);
-		Window.Toggle("Disable all Dialogue", ref Configs.m_disableDialogue);
+		Window.Toggle("Block All Input", ref blockAllInput);
+		Window.Toggle("Disable Player Damage", ref Configs.m_disablePlayerDamage);
+        Window.Toggle("Disable Opponent Damage", ref Configs.m_disableOpponentDamage);
+        Window.Toggle("Disable All Dialogue", ref Configs.m_disableDialogue);
 
 		using (Window.HorizontalScope(4))
 		{

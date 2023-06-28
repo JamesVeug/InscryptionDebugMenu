@@ -197,9 +197,36 @@ internal class DisableDialogue_IEnumerator_Patch
 }
 
 [HarmonyPatch]
+internal class DisablePlayerDamagePatch
+{
+	[HarmonyPostfix]
+	[HarmonyPatch(typeof(LifeManager), nameof(LifeManager.ShowDamageSequence))]
+    private static IEnumerator PlayersReceiveNoDamage(IEnumerator enumerator, bool toPlayer)
+	{
+		if (Configs.DisablePlayerDamage && toPlayer)
+			yield break;
+        if (Configs.DisableOpponentDamage && !toPlayer)
+            yield break;
+
+        yield return enumerator;
+	}
+    [HarmonyPostfix]
+    [HarmonyPatch(typeof(MagnificusLifeManager), nameof(MagnificusLifeManager.ShowLifeLoss))]
+    private static IEnumerator PlayersReceiveNoDamageMagnificus(IEnumerator enumerator, bool player)
+    {
+        if (Configs.DisablePlayerDamage && player)
+            yield break;
+        if (Configs.DisableOpponentDamage && !player)
+            yield break;
+
+        yield return enumerator;
+    }
+}
+
+[HarmonyPatch]
 internal class DisableDialogue_Patch
 {
-	public static IEnumerable<MethodBase> TargetMethods()
+	private static IEnumerable<MethodBase> TargetMethods()
 	{
 		yield return AccessTools.Method(typeof(TextDisplayer), nameof(TextDisplayer.ShowMessage));
 	}
