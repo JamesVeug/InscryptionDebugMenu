@@ -2,9 +2,12 @@
 using System.Reflection;
 using System.Reflection.Emit;
 using DebugMenu.Scripts.All;
+using DebugMenu.Scripts.Popups.DeckEditorPopup;
+using DebugMenu.Scripts.Utils;
 using DiskCardGame;
 using GBC;
 using HarmonyLib;
+using InscryptionAPI.Card;
 using InscryptionAPI.Regions;
 using UnityEngine;
 
@@ -14,10 +17,7 @@ namespace DebugMenu.Scripts.Act1;
 internal class Skip_Disclaimer
 {
 	[HarmonyPrefix]
-	private static bool SkipDisclaimerPrefix()
-	{
-		return false;
-	}
+	private static bool SkipDisclaimerPrefix() => false;
 
 	[HarmonyPostfix]
 	private static IEnumerator SkipDisclaimerPostfix(IEnumerator previous, string ___nextSceneName)
@@ -34,7 +34,7 @@ internal class SaveCardList
 	private static bool SaveCardListPrefix(List<CardInfo> starterDeck)
 	{
 		Act1.lastUsedStarterDeck = starterDeck;
-		Plugin.Log.LogInfo("New Starter Deck! With " + Act1.lastUsedStarterDeck.Count + " Cards!");
+		Plugin.Log.LogInfo("New Starter Deck with " + Act1.lastUsedStarterDeck.Count + " Cards!");
 		return true;
 	}
 
@@ -48,10 +48,7 @@ internal class SaveCardList
 internal class MoveToNode_Debug
 {
 	[HarmonyPrefix]
-	private static bool MoveToNodePrefix()
-	{
-		return false;
-	}
+	private static bool MoveToNodePrefix() => false;
 
 	[HarmonyPostfix]
 	private static IEnumerator MoveToNodePostfix(IEnumerator previous, MapNodeManager __instance, int ___transitioningGridY, MapNode newNode)
@@ -231,15 +228,42 @@ internal class DisableDialogue_Patch
 		yield return AccessTools.Method(typeof(TextDisplayer), nameof(TextDisplayer.ShowMessage));
 	}
 	
-	private static bool Prefix()
-	{
-		if (Configs.DisableAllInput)
-		{
-			return false;
-		}
+	private static bool Prefix() => !Configs.DisableAllInput;
+}
 
-		return true;
+[HarmonyPatch]
+internal class EmissionAndPortraitPatches
+{
+	[HarmonyPostfix, HarmonyPatch(typeof(CardDisplayer3D), nameof(CardDisplayer3D.EmissionEnabledForCard))]
+	private static void ForceEmission(CardRenderInfo renderInfo, ref bool __result)
+	{
+		if (renderInfo.baseInfo.Mods.Exists(x => x.singletonId == DrawCardInfo.EmissionMod))
+			__result = true;
 	}
+
+	[HarmonyPostfix, HarmonyPatch(typeof(CardDisplayer3D), nameof(CardDisplayer3D.DisplayInfo))]
+	private static void ForceAlternatePortrait(CardDisplayer3D __instance, CardRenderInfo renderInfo)
+	{
+        if (__instance == null || renderInfo?.baseInfo == null)
+			return;
+
+		// the check for HasAlternatePortrait is done before adding this mod to the card
+		if (renderInfo.baseInfo.Mods.Exists(x => x.singletonId == DrawCardInfo.PortraitMod))
+		{
+			__instance.SetPortrait(renderInfo.baseInfo.alternatePortrait);
+        }
+	}
+    [HarmonyPostfix, HarmonyPatch(typeof(PixelCardDisplayer), nameof(PixelCardDisplayer.DisplayInfo))]
+    private static void ForcePixelAlternatePortrait(PixelCardDisplayer __instance, CardRenderInfo renderInfo)
+    {
+        if (__instance == null || renderInfo?.baseInfo == null)
+            return;
+
+        if (renderInfo.baseInfo.Mods.Exists(x => x.singletonId == DrawCardInfo.PortraitMod))
+        {
+            __instance.SetPortrait(renderInfo.baseInfo.PixelAlternatePortrait());
+        }
+    }
 }
 
 /*

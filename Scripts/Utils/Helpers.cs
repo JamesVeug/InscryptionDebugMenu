@@ -292,64 +292,52 @@ public static partial class Helpers
 
 	public static Acts GetCurrentSavedAct()
 	{
-		if (SaveManager.SaveFile.IsPart1 && GameFlowManager.m_Instance)
-		{
-			// Leshy
+        // Leshy
+        if (SaveManager.SaveFile.IsPart1 && GameFlowManager.m_Instance)
 			return Acts.Act1;
-		}
-		else if (SaveManager.SaveFile.IsPart2)
-		{
-			// GDC
+
+        // GBC
+        if (SaveManager.SaveFile.IsPart2)
 			return Acts.Act2;
-		}
-		else if (SaveManager.SaveFile.IsPart3)
-		{
-			// PO3
+
+        // PO3
+        if (SaveManager.SaveFile.IsPart3)
 			return Acts.Act3;
-		}
-		else if (SaveManager.SaveFile.IsGrimora)
-		{
-			// Grimora
+
+        // Grimora
+        if (SaveManager.SaveFile.IsGrimora)
 			return Acts.GrimoraAct;
-		}
-		else if (SaveManager.SaveFile.IsMagnificus)
-		{
-			// Magnificus
+
+        // Magnificus
+        if (SaveManager.SaveFile.IsMagnificus)
 			return Acts.MagnificusAct;
-		}
-		else
-		{
-			// In main menu maybe???
-			return Acts.Unknown;
-		}
+
+        // Main menu/transitional screens
+        return Acts.Unknown;
 	}
 
 	public static DeckInfo CurrentDeck()
 	{
 		switch (GetCurrentSavedAct())
 		{
-			case Acts.Act1:
-			case Acts.Act3:
-			case Acts.MagnificusAct:
-				return SaveManager.SaveFile.CurrentDeck;
-			case Acts.GrimoraAct:
-				if (GrimoraModHelpers.GrimoraModIsActive())
-				{
-					return GrimoraModHelpers.GetRunState().playerDeck;
-				}
-				
-				Plugin.Log.LogInfo($"Not grimora mod!");
-				return SaveManager.SaveFile.grimoraData.deck;
 			case Acts.Act2:
 				return SaveData.Data.deck;
-			default:
+
+			case Acts.GrimoraAct:
+				if (GrimoraModHelpers.GrimoraModIsActive())
+					return GrimoraModHelpers.GetRunState().playerDeck;
+				break;
+
+			case Acts.Unknown:
 				return null;
-		}
+        }
+
+		return SaveManager.SaveFile.CurrentDeck;
 	}
 	
 	public static string ToLiteral(string input) 
 	{
-		StringBuilder literal = new StringBuilder(input.Length + 2);
+		StringBuilder literal = new(input.Length + 2);
 		literal.Append("\"");
 		foreach (var c in input) {
 			switch (c) {
