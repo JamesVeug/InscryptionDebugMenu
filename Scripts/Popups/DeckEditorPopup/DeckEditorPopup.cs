@@ -1,7 +1,9 @@
 ﻿using DebugMenu.Scripts.Acts;
 using DebugMenu.Scripts.Utils;
 using DiskCardGame;
+using GBC;
 using InscryptionAPI.Card;
+using InscryptionAPI.Helpers.Extensions;
 using UnityEngine;
 
 namespace DebugMenu.Scripts.Popups.DeckEditorPopup;
@@ -9,7 +11,7 @@ namespace DebugMenu.Scripts.Popups.DeckEditorPopup;
 public class DeckEditorPopup : BaseWindow
 {
 	public override string PopupName => "Deck Editor";
-	public override Vector2 Size => new Vector2(512f, 768f);
+	public override Vector2 Size => new(512f, 768f);
 
 	private DeckInfo CurrentDeck => Helpers.CurrentDeck();
 
@@ -37,13 +39,10 @@ public class DeckEditorPopup : BaseWindow
 		
 		GUILayout.BeginArea(new Rect(5f, Size.y / 4f, Size.x - 10f, Size.y / 4f * 3f + 5f));
 		if (currentDeckEditorSelection == 0)
-		{
 			OnGUICardSearcher();
-		}
 		else
-		{
 			OnGUICardEditor();
-		}
+
 		GUILayout.EndArea();
 		
 	}
@@ -51,20 +50,75 @@ public class DeckEditorPopup : BaseWindow
 	private void OnGUICardEditor()
 	{
 		if (currentDeckEditorSelection - 1 >= CurrentDeck.Cards.Count)
-		{
 			currentDeckEditorSelection--;
-		}
 
 		if (CurrentDeck.Cards[currentDeckEditorSelection - 1] == null)
-		{
 			return;
-		}
 
 		CardInfo val = CurrentDeck.Cards[currentDeckEditorSelection - 1];
-		if (DrawCardInfo.OnGUI(val, CurrentDeck) == DrawCardInfo.Result.Removed)
+		DrawCardInfo.Result result = DrawCardInfo.OnGUI(val, CurrentDeck);
+
+        if (result == DrawCardInfo.Result.Removed)
 		{
 			currentDeckEditorSelection =
 				Mathf.Min(currentDeckEditorSelection, CurrentDeck.Cards.Count - 1);
+		}
+		else if (result == DrawCardInfo.Result.Altered)
+		{
+			// if the board exists, update player cards
+			if (BoardManager.m_Instance != null)
+			{
+				foreach (PlayableCard card in BoardManager.Instance.GetPlayerCards())
+				{
+					if (card.Info == val)
+                        card.RenderCard();
+				}
+			}
+            // update cards in hand
+            if (PlayerHand.m_Instance != null)
+			{
+				foreach (PlayableCard hand in PlayerHand.Instance.CardsInHand)
+				{
+					if (hand.Info == val)
+						hand.RenderCard();
+				}
+			}
+            // update cards in deck review
+            if (ViewManager.m_Instance?.CurrentView == View.MapDeckReview)
+			{
+				DeckReviewSequencer sequence = UnityEngine.Object.FindObjectOfType<DeckReviewSequencer>();
+				if (sequence != null)
+				{
+					foreach (SelectableCard selectableCard in sequence.cardArray.displayedCards)
+					{
+						if (selectableCard?.Info == val)
+							selectableCard.RenderCard();
+					}
+				}
+			}
+			// can't figure out, maybe later if requested
+/*            if (SaveManager.SaveFile.IsPart2)
+			{
+                DeckBuildingUI deckUI = UnityEngine.Object.FindObjectOfType<DeckBuildingUI>();
+				if (deckUI?.gameObject.activeSelf == true)
+				{
+                    foreach (PixelSelectableCard selectableCard in deckUI.collection.pageCards)
+                    {
+						Debug.Log($"{selectableCard != null}");
+                        if (selectableCard?.Info == val)
+                            selectableCard.RenderCard();
+                    }
+                }
+                CollectionBookUI collectionUI = UnityEngine.Object.FindObjectOfType<CollectionBookUI>();
+                if (collectionUI?.gameObject.activeSelf == true)
+                {
+                    foreach (PixelSelectableCard selectableCard in collectionUI.collectionUI.pageCards)
+                    {
+                        if (selectableCard?.Info == val)
+                            selectableCard.RenderCard();
+                    }
+                }
+            }*/
 		}
 	}
 
@@ -76,12 +130,11 @@ public class DeckEditorPopup : BaseWindow
 		lastSearchedList = new List<CardInfo>();
 		if (lastCardSearch != "")
 		{
-			List<int> results;
 			if (GetCardByName(lastCardSearch, out var result))
 			{
 				lastSearchedList.Add(CardManager.AllCardsCopy[result]);
 			}
-			else if (GetCardsThatContain(lastCardSearch, out results))
+			else if (GetCardsThatContain(lastCardSearch, out List<int> results))
 			{
 				foreach (int item in results)
 				{
@@ -105,9 +158,8 @@ public class DeckEditorPopup : BaseWindow
 			{
 				if (GUILayout.Button(lastSearched.name, Array.Empty<GUILayoutOption>()))
 				{
-					var val = CurrentDeck;
 					CardInfo obj = lastSearched.Clone() as CardInfo;
-					val.AddCard(obj);
+                    CurrentDeck.AddCard(obj);
 					SaveManager.SaveToFile(false);
 					currentDeckEditorSelection = CurrentDeck.Cards.Count;
 				}

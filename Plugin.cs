@@ -14,7 +14,7 @@ namespace DebugMenu
     {
 	    public const string PluginGuid = "jamesgames.inscryption.debugmenu";
 	    public const string PluginName = "Debug Menu";
-	    public const string PluginVersion = "1.0.1";
+	    public const string PluginVersion = "1.0.2";
 
 	    public static Plugin Instance;
 	    public static ManualLogSource Log;
@@ -23,12 +23,11 @@ namespace DebugMenu
 	    public static string PluginDirectory;
 	    public static float StartingFixedDeltaTime;
 
-	    public static List<BaseWindow> AllWindows = new List<BaseWindow>();
+	    public static List<BaseWindow> AllWindows = new();
 	    
 
         private void Awake()
         {
-	        Logger.LogInfo($"Loading {PluginName}...");
 	        Instance = this;
 	        Log = Logger;
 	        StartingFixedDeltaTime = Time.fixedDeltaTime;
@@ -107,9 +106,7 @@ namespace DebugMenu
 	        {
 		        T window = (T)AllWindows[i];
 		        if (window.GetType() == typeof(T))
-		        {
 			        return window;
-		        }
 	        }
 
 	        return null;

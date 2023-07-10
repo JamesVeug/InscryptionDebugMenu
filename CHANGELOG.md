@@ -1,7 +1,13 @@
 # Changelog
 
-## 1.0.1
+## 1.0.2
+### General
+- Added options to force card emissions, switch to alternate portraits
+- Deck Viewer now shows API alternate pixel portraits, if they exist
+- Fixed deck editor not completely working in Kaycee's Mod
+- Removed BepInEx as a dependency (redundant)
 
+## 1.0.1
 ### All Acts
 - Added toggles for disabling direct damage to the player or opponent (persistent settings)
 
@@ -12,7 +18,6 @@
 - Fixed cursor interaction being disabled when opening a card pack with dialogue disabled = true
 
 ## 1.0.0
-
 ### General
 - Added `F2` hotkey to draw from deck
 - Added `LeftShift + F2` hotkey to draw from side deck
@@ -39,7 +44,6 @@
 - Added light support
 
 ## 0.9.0
-
 ### All Acts
 - Ported and extended Deck editor from the Deck Editor mod
   - Works for all acts (only tested on Act 1 and 2)
@@ -57,7 +61,6 @@
 
 
 ## 0.8.0
-
 ### General
 - Added changeable Hotkeys (Saves through configs)
 - Collapse buttons to save space
@@ -65,30 +68,22 @@
 ### All Acts
 - Added buttons to change Energy during battles
 
-
 ## 0.7.0
-
 ### All Acts
 - Added disable dialogue button (Saves through configs)
 
 ### Act 2
 - Basic support to skip through card battles
 
-
 ## 0.6.1
-
 ### General
 - Fixed act 1 totem fights always triggering Bird+Fecundity
 
-
 ## 0.6.0
-
 ### All Acts
 - Added button to trigger any sequence (Card battles, gain totem... etc)
 
-
 ## 0.5.0
-
 ### Act 1
 - Fixed Lag and Crash when loading expanded menu
 - Button to draw card during battles
