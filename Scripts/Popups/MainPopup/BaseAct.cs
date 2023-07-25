@@ -51,14 +51,13 @@ public abstract class BaseAct
 		Window.LabelHeader("Items");
 		List<string> items = RunState.Run.consumables;
 
-		using (Window.HorizontalScope(RunState.Run.MaxConsumables))
+		using (Configs.VerticalItems ? Window.VerticalScope(RunState.Run.MaxConsumables) : Window.HorizontalScope(RunState.Run.MaxConsumables))
 		{
 			for (int i = 0; i < RunState.Run.MaxConsumables; i++)
 			{
 				string consumable = i >= items.Count ? null : items[i];
 				string itemRulebookName = Helpers.GetConsumableByName(consumable);
-				string itemName = itemRulebookName != null ? itemRulebookName :
-					consumable == null ? "None" : consumable;
+				string itemName = itemRulebookName ?? (consumable ?? "None");
 				ButtonListPopup.OnGUI(Window, itemName, "Change Item " + (i + 1), GetListsOfAllItems,
 					OnChoseButtonCallback, i.ToString());
 			}
@@ -134,8 +133,8 @@ public abstract class BaseAct
 
 	private Tuple<List<string>, List<string>> GetListsOfSequences()
 	{
-		List<string> names = new List<string>(Helpers.Sequences.Count);
-		List<string> values = new List<string>(Helpers.Sequences.Count);
+		List<string> names = new(Helpers.Sequences.Count);
+		List<string> values = new(Helpers.Sequences.Count);
 		for (int i = 0; i < Helpers.Sequences.Count; i++)
 		{
 			names.Add(Helpers.Sequences[i].ButtonName);

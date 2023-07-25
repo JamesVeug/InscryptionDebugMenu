@@ -24,10 +24,10 @@ public class DebugWindow : BaseWindow
 	private BaseAct currentAct = null;
 	private ToggleStates currentState = ToggleStates.Off;
 
-	private AllActs allActs;
-	private Act1.Act1 act1;
-	private Act2.Act2 act2;
-	private Act3.Act3 act3;
+	private readonly AllActs allActs;
+	private readonly Act1.Act1 act1;
+	private readonly Act2.Act2 act2;
+	private readonly Act3.Act3 act3;
 	private ActGrimora actGrimora;
 	private ActMagnificus actMagnificus;
 	private Vector2 position;
@@ -46,32 +46,18 @@ public class DebugWindow : BaseWindow
 
 	public override void Update()
 	{
-		switch (Helpers.GetCurrentSavedAct())
+		currentAct = Helpers.GetCurrentSavedAct() switch
 		{
-			case Helpers.Acts.Act1:
-				currentAct = act1;
-				break;
-			case Helpers.Acts.Act2:
-				currentAct = act2;
-				break;
-			case Helpers.Acts.Act3:
-				currentAct = act3;
-				break;
-			case Helpers.Acts.GrimoraAct:
-				currentAct = actGrimora;
-				break;
-			case Helpers.Acts.MagnificusAct:
-				currentAct = actMagnificus;
-				break;
-			default:
-				currentAct = null;
-				break;
-		}
+			Helpers.Acts.Act1 => act1,
+			Helpers.Acts.Act2 => act2,
+			Helpers.Acts.Act3 => act3,
+			Helpers.Acts.GrimoraAct => actGrimora,
+			Helpers.Acts.MagnificusAct => actMagnificus,
+			_ => null,
+		};
 
 		if (currentAct != null)
-		{
 			currentAct.Update();
-		}
 	}
 
 	public override void OnGUI()

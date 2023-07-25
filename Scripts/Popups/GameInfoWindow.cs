@@ -20,9 +20,14 @@ public class GameInfoPopup : BaseWindow
 		base.OnGUI();
 
 		Label("FPS: " + fps);
-		Label("Seed: " + SaveManager.SaveFile.randomSeed);
+		Label("Random Seed: " + SaveManager.SaveFile.randomSeed);
+		try
+		{
+			Label("Current Seed: " + SaveManager.SaveFile.GetCurrentRandomSeed());
+		}
+		catch { }
 
-		if (Button("Show Resource Bank"))
+        if (Button("Show Resource Bank"))
 		{
 			Plugin.Instance.ToggleWindow<ResourceBankPopup>();
 		}

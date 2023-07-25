@@ -1,4 +1,4 @@
-# Debug menu
+# Debug Menu
 
 Adds a new in-game menu with buttons to quickly skip through the game.
 Also provides additional information if you have trouble debugging your mod!

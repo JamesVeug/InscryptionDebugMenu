@@ -22,7 +22,9 @@ public class CardBattleSequence : BaseCardBattleSequence
 		MapNode nodeWithId =  Singleton<MapNodeManager>.m_Instance.GetNodeWithId(RunState.Run.currentNodeId);
 		if (nodeWithId.Data is CardBattleNodeData cardBattleNodeData)
 		{
-			Window.Label($"Difficulty: {cardBattleNodeData.difficulty} + {RunState.Run.DifficultyModifier}");
+			Window.Label($"Difficulty: {cardBattleNodeData.difficulty + RunState.Run.DifficultyModifier} " +
+                $"({cardBattleNodeData.difficulty} + {RunState.Run.DifficultyModifier})" +
+				"Turn Number: " + TurnManager.Instance.TurnNumber);
 		}
 
 		base.OnGUI();
@@ -32,16 +34,20 @@ public class CardBattleSequence : BaseCardBattleSequence
 	{
 		LifeManager lifeManager = Singleton<LifeManager>.Instance;
 		int lifeLeft = Mathf.Abs(lifeManager.Balance - 5);
-		Plugin.Instance.StartCoroutine(lifeManager.ShowDamageSequence(lifeLeft, lifeLeft, true, 0.125f, null,
-			0f, false));
+        if (Configs.DisablePlayerDamage)
+            lifeManager.PlayerDamage += lifeLeft;
+        else
+            Plugin.Instance.StartCoroutine(lifeManager.ShowDamageSequence(lifeLeft, lifeLeft, true, 0.125f, null, 0f, false));
 	}
 
 	public override void AutoWinBattle()
 	{
 		LifeManager lifeManager = Singleton<LifeManager>.Instance;
 		int lifeLeft = Mathf.Abs(lifeManager.Balance - 5);
-		Plugin.Instance.StartCoroutine(lifeManager.ShowDamageSequence(lifeLeft, lifeLeft, false, 0.125f, null,
-			0f, false));
+		if (Configs.DisableOpponentDamage)
+			lifeManager.OpponentDamage += lifeLeft;
+		else
+			Plugin.Instance.StartCoroutine(lifeManager.ShowDamageSequence(lifeLeft, lifeLeft, false, 0.125f, null, 0f, false));
 	}
 
 	public override void SetMaxEnergyToMax()

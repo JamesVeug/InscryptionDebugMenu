@@ -96,7 +96,7 @@ public class DeckEditorPopup : BaseWindow
 					}
 				}
 			}
-			// can't figure out, maybe later if requested
+			// can't figure out how to update the GBC collection info dynamically, maybe later if requested
 /*            if (SaveManager.SaveFile.IsPart2)
 			{
                 DeckBuildingUI deckUI = UnityEngine.Object.FindObjectOfType<DeckBuildingUI>();
@@ -156,7 +156,7 @@ public class DeckEditorPopup : BaseWindow
 		{
 			foreach (CardInfo lastSearched in lastSearchedList)
 			{
-				if (GUILayout.Button(lastSearched.name, Array.Empty<GUILayoutOption>()))
+				if (GUILayout.Button($"{lastSearched.DisplayedNameLocalized}\n({lastSearched.name})", Array.Empty<GUILayoutOption>()))
 				{
 					CardInfo obj = lastSearched.Clone() as CardInfo;
                     CurrentDeck.AddCard(obj);
@@ -183,8 +183,7 @@ public class DeckEditorPopup : BaseWindow
 			CardInfo allCard = CardManager.AllCardsCopy[i];
 			string name = allCard.name;
 			string displayedName = allCard.displayedName;
-			if (name != null && name.ToLower().Contains(lower) || 
-			    displayedName != null && displayedName.ToLower().Contains(lower))
+			if (name != null && name.ToLower().Contains(lower) || displayedName != null && displayedName.ToLower().Contains(lower))
 			{
 				results.Add(i);
 				result = true;

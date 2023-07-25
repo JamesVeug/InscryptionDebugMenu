@@ -63,25 +63,37 @@ public abstract class DrawableGUI
 	private int Columns = 1;
 	private float MaxHeight = 1;
 
-	private Dictionary<string, string> m_buttonGroups = new Dictionary<string, string>();
-	private List<LayoutScope> m_layoutScopes = new List<LayoutScope>();
+	private readonly Dictionary<string, string> m_buttonGroups = new();
+	private readonly List<LayoutScope> m_layoutScopes = new();
 
-	private GUIStyle LabelHeaderStyle = GUIStyle.none;
-	private GUIStyle ButtonStyle = GUIStyle.none;
-	private GUIStyle ButtonDisabledStyle = GUIStyle.none;
+	// these can only be set to the correct values from within OnGUI
+	// since they reference GUI for their style
+	public GUIStyle LabelHeaderStyle = GUIStyle.none;
+    public GUIStyle LabelBoldStyle = GUIStyle.none;
+    public GUIStyle ButtonStyle = GUIStyle.none;
+    public GUIStyle ButtonDisabledStyle = GUIStyle.none;
 
 	public virtual void OnGUI()
 	{
-		LabelHeaderStyle = new GUIStyle(GUI.skin.label);
-		LabelHeaderStyle.fontSize = 17;
-		LabelHeaderStyle.alignment = TextAnchor.MiddleCenter;
-		LabelHeaderStyle.fontStyle = FontStyle.Bold;
-
-		ButtonStyle = new GUIStyle(GUI.skin.button);
-		ButtonStyle.wordWrap = true;
-		
-		ButtonDisabledStyle = new GUIStyle(ButtonStyle);
-		ButtonDisabledStyle.fontStyle = FontStyle.Bold;
+        LabelHeaderStyle = new(GUI.skin.label)
+        {
+            fontSize = 17,
+            alignment = TextAnchor.MiddleCenter,
+            fontStyle = FontStyle.Bold
+        };
+        LabelBoldStyle = new(GUI.skin.label)
+        {
+            //fontSize = 14,
+            fontStyle = FontStyle.Bold
+        };
+        ButtonStyle = new(GUI.skin.button)
+        {
+            wordWrap = true
+        };
+        ButtonDisabledStyle = new GUIStyle(ButtonStyle)
+		{
+			fontStyle = FontStyle.Bold
+		};
 		ButtonDisabledStyle.normal.background = ButtonDisabledStyle.active.background;
 		ButtonDisabledStyle.hover.background = ButtonDisabledStyle.active.background;
 		ButtonDisabledStyle.onNormal.background = ButtonDisabledStyle.active.background;
@@ -108,8 +120,8 @@ public abstract class DrawableGUI
 		Columns++;
 	}
 
-	/// <returns>Returns true if the button was pressed</returns>
-	public virtual bool Button(string text, Vector2? size = null, string buttonGroup = null, Func<ButtonDisabledData> disabled = null)
+    /// <returns>Returns true if the button was pressed</returns>
+    public virtual bool Button(string text, Vector2? size = null, string buttonGroup = null, Func<ButtonDisabledData> disabled = null)
 	{
 		(float x, float y, float w, float h) = GetPosition(size);
 
@@ -120,19 +132,24 @@ public abstract class DrawableGUI
 		bool isDisabled = disabledData.Disabled;
 		if (isDisabled)
 		{
-			GUI.Label(new Rect(x,y,w,h), text + "\n(" + disabledData.Reason + ")", ButtonDisabledStyle);
-		}
+			if (!string.IsNullOrEmpty(disabledData.Reason))
+				GUI.Label(new Rect(x,y,w,h), text + "\n(" + disabledData.Reason + ")", ButtonDisabledStyle);
+			else
+                GUI.Label(new Rect(x, y, w, h), text, ButtonDisabledStyle);
+        }
 		else if (buttonGroup == null)
 		{
 			wasPressed = GUI.Button(new Rect(x, y, w, h), text, ButtonStyle);
 		}
 		else
 		{
+			// create the button group if it doesn't exist
 			if (!m_buttonGroups.TryGetValue(buttonGroup, out string selectedButton))
 			{
 				m_buttonGroups[buttonGroup] = text;
 			}
 
+			// grey-out the text if the current button has been selected
 			if (selectedButton == text)
 			{
 				style = ButtonDisabledStyle;
@@ -186,8 +203,13 @@ public abstract class DrawableGUI
 		(float x, float y, float w, float h) = GetPosition(size);
 		GUI.Label(new Rect(x,y,w,h), text, LabelHeaderStyle);
 	}
+    public virtual void LabelBold(string text, Vector2? size = null)
+    {
+        (float x, float y, float w, float h) = GetPosition(size);
+        GUI.Label(new Rect(x, y, w, h), text, LabelBoldStyle);
+    }
 
-	public virtual object InputField(object value, Type type, Vector2? size = null)
+    public virtual object InputField(object value, Type type, Vector2? size = null)
 	{
 		if (type == typeof(int))
 		{
@@ -252,7 +274,7 @@ public abstract class DrawableGUI
 		GUI.Label(new Rect(X, y, w, h), "");
 	}
 
-	private (float X, float y, float w, float h) GetPosition(Vector2? size = null)
+	public (float X, float y, float w, float h) GetPosition(Vector2? size = null)
 	{
 		float x = X;
 		float y = Y;
@@ -282,4 +304,8 @@ public abstract class DrawableGUI
 	{
 		return new LayoutScope(elementCount, true, this);
 	}
+    public IDisposable VerticalScope(int elementCount)
+    {
+        return new LayoutScope(elementCount, false, this);
+    }
 }
