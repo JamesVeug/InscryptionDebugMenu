@@ -37,14 +37,14 @@ public static class DrawCardInfo
 		Altered
 	}
 	
-	public static Result OnGUI(CardInfo val, DeckInfo deckInfo)
+	public static Result OnGUI(CardInfo val, DeckInfo deckInfo = null)
 	{
 		if (val == null)
 			return Result.None;
 		
 		GUILayout.BeginHorizontal(Array.Empty<GUILayoutOption>());
 		GUILayout.Label("Card Editor (" + val.name + ")", Array.Empty<GUILayoutOption>());
-		if (deckInfo.Cards.Count > 2 && GUILayout.Button("Remove", Array.Empty<GUILayoutOption>()))
+		if (deckInfo != null && deckInfo.Cards.Count > 2 && GUILayout.Button("Remove", Array.Empty<GUILayoutOption>()))
 		{
 			deckInfo.RemoveCard(val);
 			SaveManager.SaveToFile(false);
@@ -76,17 +76,23 @@ public static class DrawCardInfo
                 if (GUILayout.Button("Unforce Emission", Array.Empty<GUILayoutOption>()))
                 {
                     val.Mods.Remove(emissionMod);
-                    deckInfo.UpdateModDictionary();
-                    SaveManager.SaveToFile(false);
-                    return Result.Altered;
+					if (deckInfo != null)
+					{
+						deckInfo?.UpdateModDictionary();
+						SaveManager.SaveToFile(false);
+					}
+					return Result.Altered;
                 }
             }
             else
             {
                 if (GUILayout.Button("Force Emission", Array.Empty<GUILayoutOption>()))
                 {
-                    deckInfo.ModifyCard(val, new() { singletonId = EmissionMod });
-                    SaveManager.SaveToFile(false);
+					if (deckInfo != null)
+					{
+						deckInfo?.ModifyCard(val, new() { singletonId = EmissionMod });
+						SaveManager.SaveToFile(false);
+					}
                     return Result.Altered;
                 }
             }
@@ -98,8 +104,11 @@ public static class DrawCardInfo
             if (GUILayout.Button("Unforce Alt Portrait", Array.Empty<GUILayoutOption>()))
             {
                 val.Mods.Remove(portraitMod);
-                deckInfo.UpdateModDictionary();
-                SaveManager.SaveToFile(false);
+				if (deckInfo != null)
+				{
+					deckInfo?.UpdateModDictionary();
+					SaveManager.SaveToFile(false);
+				}
 				return Result.Altered;
             }
         }
@@ -107,8 +116,11 @@ public static class DrawCardInfo
         {
             if (GUILayout.Button("Force Alt Portrait", Array.Empty<GUILayoutOption>()))
             {
-                deckInfo.ModifyCard(val, new() { singletonId = PortraitMod });
-                SaveManager.SaveToFile(false);
+				if (deckInfo != null)
+				{
+                    deckInfo.ModifyCard(val, new() { singletonId = PortraitMod });
+                    SaveManager.SaveToFile(false);
+                }
                 return Result.Altered;
             }
         }
@@ -171,9 +183,9 @@ public static class DrawCardInfo
                 GUILayout.Label(cardInfo.PixelAlternatePortrait().texture, options);
         }
     }
-	private static void NewCardMod(DeckInfo deckInfo, CardInfo card, int attackAdjustment = 0, int healthAdjustment = 0, 
-		Ability ability = 0, Ability negateAbility = 0, 
-		int bloodCostAdjustment = 0, int boneCostAdjustment = 0, int energyCostAdjustment = 0, 
+	private static void NewCardMod(DeckInfo deckInfo, CardInfo card, int attackAdjustment = 0, int healthAdjustment = 0,
+		Ability ability = 0, Ability negateAbility = 0,
+		int bloodCostAdjustment = 0, int boneCostAdjustment = 0, int energyCostAdjustment = 0,
 		SpecialTriggeredAbility specialAbility = 0, SpecialTriggeredAbility removeSpecialAbility = 0,
 		List<GemType> addGemCost = null, bool? gemified = null)
 	{
@@ -188,7 +200,7 @@ public static class DrawCardInfo
 		{
 			val.negateAbilities.Add(negateAbility);
 		}
-		
+
 		val.bloodCostAdjustment = bloodCostAdjustment;
 		val.bonesCostAdjustment = boneCostAdjustment;
 		val.energyCostAdjustment = energyCostAdjustment;
@@ -197,12 +209,12 @@ public static class DrawCardInfo
 		{
 			val.addGemCost = addGemCost;
 		}
-		
+
 		if (gemified.HasValue)
 		{
 			val.gemify = gemified.Value;
 		}
-		
+
 		if ((int)specialAbility > 0)
 		{
 			val.specialAbilities.Add(specialAbility);
@@ -217,10 +229,12 @@ public static class DrawCardInfo
 				}
 			}
 		}
-		deckInfo.ModifyCard(card, val);
-		SaveManager.SaveToFile(false);
+		if (deckInfo != null)
+		{
+			deckInfo.ModifyCard(card, val);
+			SaveManager.SaveToFile(false);
+		}
 	}
-
 	private static void HandleCost(CardInfo currentCard, DeckInfo deckInfo)
 	{
 		GUILayout.BeginHorizontal(Array.Empty<GUILayoutOption>());
@@ -261,8 +275,11 @@ public static class DrawCardInfo
 			if (GUILayout.Button("Ungemify", Array.Empty<GUILayoutOption>()))
 			{
 				currentCard.Mods.Remove(gemifiedMod);
-				deckInfo.UpdateModDictionary();
-				SaveManager.SaveToFile(false);
+				if (deckInfo != null)
+				{
+					deckInfo.UpdateModDictionary();
+					SaveManager.SaveToFile(false);
+				}
 			}
 		}
 		else if (GUILayout.Button("Gemify", Array.Empty<GUILayoutOption>()))
@@ -281,8 +298,11 @@ public static class DrawCardInfo
 				if (GUILayout.Button("-"))
 				{
 					currentCard.Mods.Remove(gemMod);
-					deckInfo.UpdateModDictionary();
-					SaveManager.SaveToFile(false);
+					if (deckInfo != null)
+					{
+						deckInfo.UpdateModDictionary();
+						SaveManager.SaveToFile(false);
+					}
 				}
 			}
 			else

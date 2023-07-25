@@ -35,7 +35,20 @@ public class TriggerCardBattleSequenceWindow : BaseWindow
 	private EncounterBlueprintData m_blueprintData = null;
 	private Opponent.Type m_opponent = Opponent.Type.ProspectorBoss;
 
-	public override void OnGUI()
+    private ButtonDisabledData DisableCard() => new()
+    {
+        Disabled = m_selectedBattleType == BattleType.CardBattle
+    };
+    private ButtonDisabledData DisableTotem() => new()
+    {
+        Disabled = m_selectedBattleType == BattleType.TotemBattle
+    };
+    private ButtonDisabledData DisableBoss() => new()
+    {
+        Disabled = m_selectedBattleType == BattleType.BossBattle
+    };
+
+    public override void OnGUI()
 	{
 		base.OnGUI();
 		
@@ -49,7 +62,7 @@ public class TriggerCardBattleSequenceWindow : BaseWindow
 
 		Padding();
 
-		if (Button("Trigger Sequence", disabled:ValidateTriggerButton) && CanTriggerSequence())
+		if (Button("Trigger Sequence", disabled: ValidateTriggerButton) && CanTriggerSequence())
 		{
 			TriggerSequence();
 		}
@@ -75,17 +88,18 @@ public class TriggerCardBattleSequenceWindow : BaseWindow
 	private void DrawTools()
 	{
 		Label("Card Battle Type");
-		if (Button("Card Battle", buttonGroup:"Card Battle"))
+
+        if (Button("Card Battle", disabled: DisableCard))
 		{
 			m_selectedBattleType = BattleType.CardBattle;
 		}
 
-		if (Button("Totem Battle", buttonGroup:"Card Battle"))
+		if (Button("Totem Battle", disabled: DisableTotem))
 		{
 			m_selectedBattleType = BattleType.TotemBattle;
 		}
 
-		if (Button("Boss Battle", buttonGroup:"Card Battle"))
+		if (Button("Boss Battle", disabled: DisableBoss))
 		{
 			m_selectedBattleType = BattleType.BossBattle;
 		}

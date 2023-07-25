@@ -1,5 +1,7 @@
 ﻿using System.Collections;
+using DebugMenu.Scripts.Popups;
 using DiskCardGame;
+using static DebugMenu.Scripts.DrawableGUI;
 
 namespace DebugMenu.Scripts.Acts;
 
@@ -27,40 +29,31 @@ public abstract class BaseCardBattleSequence
 		using (Window.HorizontalScope(3))
 		{
 			if (Window.Button("Draw Card"))
-			{
 				DrawCard();
-			}
 
-			Func<DrawableGUI.ButtonDisabledData> disabled = hasSideDeck ? default : () => new DrawableGUI.ButtonDisabledData("No Side deck in this act");
-			if (Window.Button("Draw Side", disabled:disabled))
-			{
+			Func<ButtonDisabledData> disableSideDeck = hasSideDeck ? null : () => new DrawableGUI.ButtonDisabledData("No Side Deck in this act");
+			if (Window.Button("Draw Side", disabled: disableSideDeck))
 				DrawSideDeck();
-			}
 
-			if (Window.Button("Draw Tutor", disabled: () => new()
-				{
-					Disabled = (SaveManager.SaveFile.IsPart2 && !IsGBCBattle()) || (CardDrawPiles.Instance?.Deck?.CardsInDeck).GetValueOrDefault() == 0
-				}
-			 ))
+			ButtonDisabledData DisableTutorDraw() => new()
 			{
+				Disabled = (SaveManager.SaveFile.IsPart2 && !IsGBCBattle()) || (CardDrawPiles.Instance?.Deck?.CardsInDeck).GetValueOrDefault() == 0
+			};
+
+			if (Window.Button("Draw Tutor", disabled: DisableTutorDraw))
 				Plugin.Instance.StartCoroutine(DrawTutor());
-			}
 		}
 
 		using (Window.HorizontalScope(3))
 		{
 			Window.Label("Bones:\n" + PlayerBones);
 			
-			Func<DrawableGUI.ButtonDisabledData> disabled = hasBones ? default : () => new DrawableGUI.ButtonDisabledData("No bones in this act");
-			if (Window.Button("+5", disabled: disabled))
-			{
+			Func<ButtonDisabledData> disableBones = hasBones ? null : () => new DrawableGUI.ButtonDisabledData("No bones in this act");
+			if (Window.Button("+5", disabled: disableBones))
 				AddBones(5);
-			}
 
-			if (Window.Button("-5", disabled: disabled))
-			{
+			if (Window.Button("-5", disabled: disableBones))
 				RemoveBones(5);
-			}
 		}
 
 		using (Window.HorizontalScope(3))
@@ -68,14 +61,10 @@ public abstract class BaseCardBattleSequence
 			Window.Label("Scales:\n" + ScalesBalance);
 			
 			if (Window.Button("Deal 2 Damage"))
-			{
 				DealDamage(2);
-			}
 
 			if (Window.Button("Take 2 Damage"))
-			{
 				TakeDamage(2);
-			}
 		}
 
 		using (Window.HorizontalScope(4))
@@ -83,19 +72,13 @@ public abstract class BaseCardBattleSequence
 			Window.Label($"Energy: \n{PlayerEnergy}\\{PlayerMaxEnergy}");
 
 			if (Window.Button("-1"))
-			{
 				RemoveEnergy(1);
-			}
 
 			if (Window.Button("+1"))
-			{
 				AddEnergy(1);
-			}
 
 			if (Window.Button("Fill"))
-			{
 				FillEnergy();
-			}
 		}
 
 		using (Window.HorizontalScope(4))
@@ -103,36 +86,27 @@ public abstract class BaseCardBattleSequence
 			Window.Label("Max Energy");
 
 			if (Window.Button("-1"))
-			{
 				RemoveMaxEnergy(1);
-			}
 
 			if (Window.Button("+1"))
-			{
 				AddMaxEnergy(1);
-			}
 
 			if (Window.Button("MAX"))
-			{
 				SetMaxEnergyToMax();
-			}
 		}
-		
-		Window.Padding();
 
-		using (Window.HorizontalScope(2))
+        if (Window.Button("Show Game Board"))
+            Plugin.Instance.ToggleWindow<GameBoardPopup>();
+
+        using (Window.HorizontalScope(2))
 		{
-			if (Window.Button("Auto win battle"))
-			{
+            if (Window.Button("Auto-win battle"))
 				AutoWinBattle();
-			}
 
-			if (Window.Button("Auto lose battle"))
-			{
+			if (Window.Button("Auto-lose battle"))
 				AutoLoseBattle();
-			}
 		}
-	}
+    }
 	
 	public IEnumerator DrawTutor()
 	{

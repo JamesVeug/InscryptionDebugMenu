@@ -26,39 +26,40 @@ public class Act1 : BaseAct
 	public override void OnGUI()
 	{
 		MapNodeManager mapNodeManager = Singleton<MapNodeManager>.m_Instance;
-		if (mapNodeManager == null || mapNodeManager.nodes == null || RunState.Run == null)
-		{
+		if (mapNodeManager?.nodes == null || RunState.Run == null)
 			return;
-		}
 		
 		Window.LabelHeader("Act 1");
 		
 		if (RunState.Run.currentNodeId > 0)
 		{
 			MapNode nodeWithId = mapNodeManager.GetNodeWithId(RunState.Run.currentNodeId);
-			Window.Label("Current Node: " + RunState.Run.currentNodeId + " = " + nodeWithId, new(0, 120));
+			Window.Label("Current Node ID: " + RunState.Run.currentNodeId + "\nCurrent Node: " + nodeWithId, new(0, 120));
 		}
 		
 		if (Window.Button("Replenish Candles"))
 		{
-			RunState.Run.playerLives = RunState.Run.maxPlayerLives;
-		}
+            Plugin.Instance.StartCoroutine(CandleHolder.Instance.ReplenishFlamesSequence(0f));
+            RunState.Run.playerLives = RunState.Run.maxPlayerLives;
+			SaveManager.SaveToFile(false);
+        }
 
-		Window.Padding();
-			
-		using (Window.HorizontalScope(3))
+        Window.LabelHeader("Currency: " + RunState.Run.currency);
+
+        using (Window.HorizontalScope(4))
 		{
-			Window.Label("Currency: \n" + RunState.Run.currency);
-			if (Window.Button("+5"))
-			{
+            if (Window.Button("+1"))
+                RunState.Run.currency ++;
+
+            if (Window.Button("-1"))
+                RunState.Run.currency = Mathf.Max(0, RunState.Run.currency - 1);
+
+            if (Window.Button("+5"))
 				RunState.Run.currency += 5;
-			}
 
 			if (Window.Button("-5"))
-			{
 				RunState.Run.currency = Mathf.Max(0, RunState.Run.currency - 5);
-			}
-		}
+        }
 		
 		DrawItemsGUI();
 		
@@ -129,13 +130,9 @@ public class Act1 : BaseAct
 	public override void Restart()
 	{
 		if (SaveFile.IsAscension)
-		{
 			NewAscensionGame();
-		}
 		else if (SaveManager.SaveFile.IsPart1)
-		{
 			RestartVanilla();
-		}
 	}
 
 	public override void Reload()
@@ -143,13 +140,9 @@ public class Act1 : BaseAct
 		if (SaveFile.IsAscension)
 		{
 			if (AscensionSaveData.Data.currentRun != null)
-			{
 				ReloadKaycees();
-			}
 			else
-			{
 				NewAscensionGame();
-			}
 		}
 		else
 		{

@@ -1,5 +1,27 @@
 # Changelog
 
+## 1.1.1
+### General
+- Fixed 'Auto-Win' and 'Auto-Lose' buttons not working when Opponent or Player damage is disabled, respectively
+- Fixed visual menu error when selecting 'Totem Battle' or 'Boss Battle' from the 'Trigger Sequence' menu
+- Fixed '()' appearing on disabled buttons
+
+## 1.1.0
+### General
+- Added config option to display item buttons vertically rather than horizontally
+- Minor spelling and capitalisation fixes
+- Game Info window now shows both the starting seed and the current seed, if possible
+- Current node information now shows the id and node instance separately
+- Changed card battle difficulty to show the combined total along with the modifier and base difficulties
+- Changed starting console logs to LogLevel 'Debug'
+
+### Act 1
+- 'Replenish Candles' now relights your candles
+
+### All Acts
+- Added Game Board popup for manipulating cards and slots on the board
+- Added +1/-1 buttons for currency, changed currency display
+
 ## 1.0.2
 ### General
 - Added options to force card emissions, switch to alternate portraits

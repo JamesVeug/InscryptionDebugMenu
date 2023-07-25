@@ -28,12 +28,12 @@ public static partial class Helpers
 
 	private static List<ABaseTriggerSequences> GetAllSequences()
 	{
-		List<ABaseTriggerSequences> list = new List<ABaseTriggerSequences>();
+		List<ABaseTriggerSequences> list = new();
 
 		// get all types that override ForceTriggerSequences
 		Assembly[] assemblies = AppDomain.CurrentDomain.GetAssemblies();
-		Dictionary<Assembly, List<Type>> nodeTypes = new Dictionary<Assembly, List<Type>>();
-		Dictionary<Assembly, Type> assemblyToPluginType = new Dictionary<Assembly, Type>();
+		Dictionary<Assembly, List<Type>> nodeTypes = new();
+		Dictionary<Assembly, Type> assemblyToPluginType = new();
 		foreach (Assembly a in assemblies)
 		{
 			foreach (Type type in a.GetTypes())
@@ -100,20 +100,24 @@ public static partial class Helpers
 					// Get the plugin and find their guid
 					// Then add it to the list
 					BaseUnityPlugin plugin = (BaseUnityPlugin)Plugin.Instance.GetComponent(pluginType);
-					ModdedStubSequence sequence = new ModdedStubSequence();
-					sequence.ModGUID = plugin.Info.Metadata.GUID;
-					sequence.type = type;
-					sequence.gameState = GameState.SpecialCardSequence;
+					ModdedStubSequence sequence = new()
+					{
+						ModGUID = plugin.Info.Metadata.GUID,
+						type = type,
+						gameState = GameState.SpecialCardSequence
+					};
 					list.Add(sequence);
 				}
 				else
 				{
 					// This is a vanilla node type
-					StubSequence sequence = new StubSequence();
-					sequence.type = type;
-					sequence.gameState = type.IsAssignableFrom(typeof(CardBattleNodeData))
+					StubSequence sequence = new()
+					{
+						type = type,
+						gameState = type.IsAssignableFrom(typeof(CardBattleNodeData))
 						? GameState.CardBattle
-						: GameState.SpecialCardSequence;
+						: GameState.SpecialCardSequence
+					};
 					list.Add(sequence);
 				}
 			}
@@ -125,9 +129,11 @@ public static partial class Helpers
 			{
 				continue;
 			}
-			
-			APIModdedSequence sequence = new APIModdedSequence();
-			sequence.CustomNodeData = addedNode;
+
+			APIModdedSequence sequence = new()
+			{
+				CustomNodeData = addedNode
+			};
 			list.Add(sequence);
 		}
 
