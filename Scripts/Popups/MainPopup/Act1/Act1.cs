@@ -14,13 +14,8 @@ public class Act1 : BaseAct
 
 	public Act1(DebugWindow window) : base(window)
 	{
-		m_mapSequence = new MapSequence(this);
-		m_cardBattleSequence = new CardBattleSequence(window);
-	}
-
-	public override void Update()
-	{
-		
+		m_mapSequence = new Act1MapSequence(this);
+		m_cardBattleSequence = new Act1CardBattleSequence(window);
 	}
 
 	public override void OnGUI()
@@ -76,9 +71,7 @@ public class Act1 : BaseAct
 	{
 		GameFlowManager gameFlowManager = Singleton<GameFlowManager>.m_Instance;
 		if (gameFlowManager == null)
-		{
 			return;
-		}
 
 		Window.LabelHeader(gameFlowManager.CurrentGameState.ToString());
 		switch (gameFlowManager.CurrentGameState)
@@ -117,9 +110,7 @@ public class Act1 : BaseAct
 		CardSingleChoicesSequencer sequencer = Singleton<SpecialNodeHandler>.Instance.cardChoiceSequencer;
 		Window.Label("Sequencer: " + sequencer, new(0, 80));
 		if (Window.Button("Reroll choices"))
-		{
 			sequencer.OnRerollChoices();
-		}
 	}
 
 	private void OnGUIMap()

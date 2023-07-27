@@ -1,5 +1,16 @@
 # Changelog
 
+## 1.1.2
+### General
+- Fixed last update's 'Auto-Win' and 'Auto-Lose' fix only applying to Act 1
+- 'Remove Max Energy' now uses the API extension method (definitely didn't add it to the API specifically for this update, no sirree)
+- 'Add Energy' now also increases max energy if possible
+- Draw card buttons will now be disabled if there are no remaining cards in the deck
+- 'Deal Damage' and 'Take Damage' now work even if Player/Opponent Damage is disabled
+
+### Act 3
+- Fixed 'Auto-Win' and 'Auto-Lose' buttons causing an error (non-fatal)
+
 ## 1.1.1
 ### General
 - Fixed 'Auto-Win' and 'Auto-Lose' buttons not working when Opponent or Player damage is disabled, respectively

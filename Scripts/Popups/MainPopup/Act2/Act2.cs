@@ -11,13 +11,8 @@ public class Act2 : BaseAct
 {
 	public Act2(DebugWindow window) : base(window)
 	{
-		m_mapSequence = new MapSequence(this);
-		m_cardBattleSequence = new CardBattleSequence(window);
-	}
-
-	public override void Update()
-	{
-		
+		m_mapSequence = new Act2MapSequence(this);
+		m_cardBattleSequence = new Act2CardBattleSequence(window);
 	}
 	
 	public override void OnGUI()
