@@ -23,7 +23,7 @@ public abstract class BaseAct
 		Logger = Plugin.Log;
 	}
 
-	public abstract void Update();
+	public virtual void Update() { }
 	
 	public abstract void OnGUI();
 	public abstract void OnGUIMinimal();
