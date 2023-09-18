@@ -21,6 +21,7 @@ public class Act2CardBattleSequence : BaseCardBattleSequence
 
 	public override void OnGUI()
 	{
+		Window.Label("Turn Number: " + TurnManager.Instance.TurnNumber);
 		base.OnGUI();
 	}
 

@@ -20,6 +20,7 @@ public class MagnificusCardBattleSequence : BaseCardBattleSequence
 	
 	public override void OnGUI()
 	{
-		base.OnGUI();
+        Window.Label("Turn Number: " + TurnManager.Instance.TurnNumber);
+        base.OnGUI();
 	}
 }
