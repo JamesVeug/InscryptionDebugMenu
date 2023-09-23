@@ -115,7 +115,7 @@ public class HotkeyController
 			for (int i = 0; i < Mathf.Min(totalArguments, data.Arguments.Length); i++)
 			{
 				// Convert from string to the type expected by the callback
-				string argumentString = argumentStrings[i] == null ? null : argumentStrings[i].Trim();
+				string argumentString = argumentStrings[i]?.Trim() ?? null;
 				try
 				{
 					if (!string.IsNullOrEmpty(argumentString))
@@ -323,7 +323,6 @@ public class HotkeyController
 		MethodInfo[] methodInfos = typeof(T).GetMethods(flags);
 		foreach (MethodInfo info in methodInfos)
 		{
-            Debug.Log($"name {info.Name} {condition(info)}");
             if (condition != null && !condition(info))
 				continue;
 		
@@ -332,7 +331,7 @@ public class HotkeyController
 				continue;
 			
 			string id = idPrefix + " " + info.Name;
-			Debug.Log($"id: {id}");
+			
 			if (m_functionIDToData.ContainsKey(id))
 				continue;
 				
@@ -347,10 +346,7 @@ public class HotkeyController
 					if (obj != null)
 					{
 						MethodInfo methodInfo = obj.GetType().GetMethod(info.Name);
-						if (methodInfo != null)
-						{
-							methodInfo.Invoke(obj, args);
-						}
+						methodInfo?.Invoke(obj, args);
 					}
 				}
 			};
