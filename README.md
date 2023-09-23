@@ -3,15 +3,15 @@
 Adds a new in-game menu with buttons to quickly skip through the game.
 Also provides additional information if you have trouble debugging your mod!
 
-Features
+Features:
 - Manually trigger map events
-- Edit your Deck
+- Edit your deck and the game board
 - Skip through card battles
 - Skip through dialogue
 - Use hotkeys to speed up debugging
 - View in-game data to help debugging
 
-Supports
+Supports:
 - Act 1
 - Act 2 (Minimal support)
 - Act 3
@@ -32,7 +32,6 @@ Hotkeys
 
 
 ## I want more!
-
 The project is open source and anyone can contribute by making pull request.
 https://github.com/JamesVeug/InscryptionDebugMenu
 
