@@ -2,6 +2,7 @@
 using DebugMenu.Scripts.Acts;
 using DebugMenu.Scripts.Popups;
 using DebugMenu.Scripts.Utils;
+using Sirenix.Serialization.Utilities;
 using UnityEngine;
 
 namespace DebugMenu.Scripts.Hotkeys;
@@ -34,11 +35,11 @@ public class HotkeyController
 
 	public List<FunctionData> AllFunctionData => m_allFunctionData;
 	
-	public List<Hotkey> Hotkeys = new List<Hotkey>();
+	public List<Hotkey> Hotkeys = new();
 	
-	private Dictionary<string, FunctionData> m_functionIDToData = new Dictionary<string, FunctionData>();
-	private List<FunctionData> m_allFunctionData = new List<FunctionData>();
-	private List<KeyCode> m_pressedKeys = new List<KeyCode>();
+	private Dictionary<string, FunctionData> m_functionIDToData = new();
+	private List<FunctionData> m_allFunctionData = new();
+	private List<KeyCode> m_pressedKeys = new();
 	private bool m_hotkeyActivated = false;
 	
 	public HotkeyController()
@@ -47,9 +48,7 @@ public class HotkeyController
 
 		string hotkeys = Configs.Hotkeys.Trim();
 		if (string.IsNullOrEmpty(hotkeys))
-		{
 			return;
-		}
 		
 		string[] hotkeyStrings = hotkeys.Split(',');
 		foreach (string hotkey in hotkeyStrings)
@@ -85,10 +84,10 @@ public class HotkeyController
 		}
 		else if (!m_functionIDToData.TryGetValue(functionID, out data))
 		{
-			functionID = m_allFunctionData[0].ID;
-			data = m_allFunctionData[0];
-			Plugin.Log.LogError($"Bad function id: '{functionID}' for hotkey '{keyCodes.Serialize()}'. Using default: '{functionID}'");
-		}
+			Plugin.Log.LogError($"Bad function id: '{functionID}' for hotkey '{keyCodes.Serialize()}'. Using default: '{m_allFunctionData[0].ID}'");
+            functionID = m_allFunctionData[0].ID;
+            data = m_allFunctionData[0];
+        }
 
 		return functionID;
 	}
@@ -225,9 +224,17 @@ public class HotkeyController
 			{
 				if (m_functionIDToData.TryGetValue(activatedHotkey.FunctionID, out FunctionData data))
 				{
-					data.Invoke(activatedHotkey.Arguments);
-					m_hotkeyActivated = true;
-				}
+					try
+					{
+                        data.Invoke(activatedHotkey.Arguments);
+                        
+                    }
+					catch
+					{
+
+					}
+                    m_hotkeyActivated = true; // do this regardless of invocation to prevent spam
+                }
 				else
 				{
 					Plugin.Log.LogError("Hotkey callback not found: " + activatedHotkey.FunctionID);
@@ -257,7 +264,7 @@ public class HotkeyController
 		
 		// Card Battles
 		AddMethods("Battle", static () => Plugin.Instance.GetWindow<DebugWindow>()?.CurrentAct?.BattleSequence,
-			(info) => info.IsAbstract);
+			(info) => info.IsVirtual && info.Name.Contains("Draw"));
 		
 		// Other
 		Add("AllAct Reload", (args) => Plugin.Instance.GetWindow<DebugWindow>()?.CurrentAct?.Reload());
@@ -283,11 +290,9 @@ public class HotkeyController
 		foreach (Type type in types)
 		{
 			if (type.IsAbstract || !type.IsSubclassOf(typeof(BaseWindow)))
-			{
 				continue;
-			}
 
-			FunctionData functionData = new FunctionData()
+			FunctionData functionData = new()
 			{
 				ID = type.Name + " ToggleWindow",
 				Arguments = Array.Empty<Type>(),
@@ -303,7 +308,7 @@ public class HotkeyController
 
 	public void Add(string id, Action<object[]> callback)
 	{
-		FunctionData functionData = new FunctionData()
+		FunctionData functionData = new()
 		{
 			ID = id,
 			Arguments = Array.Empty<Type>(),
@@ -318,7 +323,8 @@ public class HotkeyController
 		MethodInfo[] methodInfos = typeof(T).GetMethods(flags);
 		foreach (MethodInfo info in methodInfos)
 		{
-			if (condition != null && !condition(info))
+            Debug.Log($"name {info.Name} {condition(info)}");
+            if (condition != null && !condition(info))
 				continue;
 		
 			// ignore properties
@@ -326,10 +332,11 @@ public class HotkeyController
 				continue;
 			
 			string id = idPrefix + " " + info.Name;
+			Debug.Log($"id: {id}");
 			if (m_functionIDToData.ContainsKey(id))
 				continue;
 				
-			FunctionData functionData = new FunctionData()
+			FunctionData functionData = new()
 			{
 				ID = id,
 				Arguments = info.GetParameters().Select((a)=>a.ParameterType).ToArray(),
