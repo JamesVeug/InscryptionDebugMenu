@@ -24,7 +24,7 @@ public class Act1CardBattleSequence : BaseCardBattleSequence
 		{
 			Window.Label($"Difficulty: {cardBattleNodeData.difficulty + RunState.Run.DifficultyModifier} " +
                 $"({cardBattleNodeData.difficulty} + {RunState.Run.DifficultyModifier})" +
-				"Turn Number: " + TurnManager.Instance.TurnNumber);
+				"\nTurn Number: " + TurnManager.Instance.TurnNumber);
 		}
 
 		base.OnGUI();

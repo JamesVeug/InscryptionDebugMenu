@@ -26,7 +26,10 @@ public class Act3CardBattleSequence : BaseCardBattleSequence
         MapNode nodeWithId = mapNodeManager.GetNodeWithId(RunState.Run.currentNodeId);
 
         if (nodeWithId?.Data is CardBattleNodeData cardBattleNodeData)
-			Window.Label($"Difficulty: {cardBattleNodeData.difficulty} + {RunState.Run.DifficultyModifier}");
+		{
+            Window.Label($"Difficulty: {cardBattleNodeData.difficulty} + {RunState.Run.DifficultyModifier}");
+            Window.Label($"Turn Number: {TurnManager.Instance.TurnNumber}");
+        }
 
         base.OnGUI();
 	}

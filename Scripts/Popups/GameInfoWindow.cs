@@ -25,7 +25,10 @@ public class GameInfoPopup : BaseWindow
 		{
 			Label("Current Seed: " + SaveManager.SaveFile.GetCurrentRandomSeed());
 		}
-		catch { }
+		catch
+		{
+            Label("Current Seed: N/A");
+        }
 
         if (Button("Show Resource Bank"))
 		{
@@ -35,8 +38,12 @@ public class GameInfoPopup : BaseWindow
 		{
 			Plugin.Instance.ToggleWindow<DialogueEventPopup>();
 		}
+        if (Button("Show AbilityInfos"))
+        {
+            Plugin.Instance.ToggleWindow<AbilityInfoPopup>();
+        }
 
-		int sceneCount = SceneManager.sceneCount;		
+        int sceneCount = SceneManager.sceneCount;		
 		LabelHeader($"Scenes {sceneCount}");
 		Scene activeScene = SceneManager.GetActiveScene();
 

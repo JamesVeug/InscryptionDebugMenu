@@ -29,7 +29,7 @@ public class Act1 : BaseAct
 		if (RunState.Run.currentNodeId > 0)
 		{
 			MapNode nodeWithId = mapNodeManager.GetNodeWithId(RunState.Run.currentNodeId);
-			Window.Label("Current Node ID: " + RunState.Run.currentNodeId + "\nCurrent Node: " + nodeWithId, new(0, 120));
+			Window.Label("Current Node ID: " + RunState.Run.currentNodeId + "\nCurrent Node: " + nodeWithId.name, new(0, 120));
 		}
 		
 		if (Window.Button("Replenish Candles"))

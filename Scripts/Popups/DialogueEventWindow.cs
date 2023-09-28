@@ -102,7 +102,7 @@ public class DialogueEventPopup : BaseWindow
         {
             PrintModdedEventsToLog();
         }
-        if (Button("Printed Events by Selected GUID"))
+        if (Button("Print Events by Selected GUID"))
         {
             Dictionary<DialogueEvent, string> dictionary = new();
             foreach (DialogueEvent e in AllEvents)
@@ -115,7 +115,7 @@ public class DialogueEventPopup : BaseWindow
             }
             PrintSelectedEventsToLog(dictionary, "GUID");
         }
-        if (Button("Printed Events by Selected Group"))
+        if (Button("Print Events by Selected Group"))
         {
             Dictionary<DialogueEvent, string> dictionary2 = new();
             foreach (DialogueEvent allEvent in AllEvents)

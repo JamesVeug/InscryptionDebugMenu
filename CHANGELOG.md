@@ -1,5 +1,16 @@
 # Changelog
 
+## 1.1.3
+### General
+- Acts 2, 3, Grimora, and Magnificus now display the current turn number during combat
+- Fixed DrawCard and DrawSideCard hotkey functions not being properly bound during Awake()
+- Fixed hotkey function error message not correctly displaying what functionId is erroring
+- Added 'Show AbilityInfos' submenu under Game Info menu
+
+### Act 1
+- Fixed Turn Number being on the same line as Difficulty
+- Improved readability of CurrentNode information
+
 ## 1.1.2
 ### General
 - Fixed last update's 'Auto-Win' and 'Auto-Lose' fix only applying to Act 1

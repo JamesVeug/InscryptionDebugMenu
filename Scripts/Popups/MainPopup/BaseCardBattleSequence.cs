@@ -143,8 +143,7 @@ public abstract class BaseCardBattleSequence
         {
             if (CardDrawPiles.Deck.cards.Count > 0)
             {
-				if (CardDrawPiles3D != null)
-                    CardDrawPiles3D.pile.Draw();
+                CardDrawPiles3D?.pile.Draw();
 
                 Plugin.Instance.StartCoroutine(CardDrawPiles.DrawCardFromDeck());
             }
