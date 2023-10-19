@@ -54,8 +54,11 @@ public class Act1MapSequence : BaseMapSequence
 	public override void ToggleAllNodes()
 	{
 		Act1.ActivateAllMapNodesActive = !Act1.ActivateAllMapNodesActive;
-		MapNode node = Singleton<MapNodeManager>.Instance.ActiveNode;
-		Singleton<MapNodeManager>.Instance.SetActiveNode(node);
+		if (MapNodeManager.m_Instance != null)
+		{
+            MapNode node = Singleton<MapNodeManager>.Instance.ActiveNode;
+            Singleton<MapNodeManager>.Instance.SetActiveNode(node);
+        }
 	}
 
 	private Tuple<List<string>, List<string>> RegionNameList()

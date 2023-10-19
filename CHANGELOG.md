@@ -1,5 +1,18 @@
 # Changelog
 
+## 1.2.0
+### General
+- Game Board menu:
+	- Added ability to modify cards
+	- Added buttons for damaging/healing cards
+	- Minor visual improvements
+- GameInfo menu:
+	- Added 'Debug Tools' button for manipulating built-in debug options (debug keys and disable KCM oil painting)
+	- Minor tweaks to Scenes list and count to improve readability
+
+### Act 1
+- Fixed minor error spam when moving to a new region
+
 ## 1.1.3
 ### General
 - Acts 2, 3, Grimora, and Magnificus now display the current turn number during combat

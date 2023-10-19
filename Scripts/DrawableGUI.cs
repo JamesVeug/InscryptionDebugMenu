@@ -21,9 +21,9 @@ public abstract class DrawableGUI
 
 	public struct LayoutScope : IDisposable
 	{
-		public bool Horizontal => horizontal;
-		public int TotalElements => totalElements;
-		public Vector2 CurrentSize => currentSize;
+		public readonly bool Horizontal => horizontal;
+		public readonly int TotalElements => totalElements;
+		public readonly Vector2 CurrentSize => currentSize;
 
 		private readonly float originalX;
 		private readonly Vector2 currentSize;
@@ -69,12 +69,18 @@ public abstract class DrawableGUI
 	// these can only be set to the correct values from within OnGUI
 	// since they reference GUI for their style
 	public GUIStyle LabelHeaderStyle = GUIStyle.none;
+    public GUIStyle LabelHeaderStyleLeft = GUIStyle.none;
     public GUIStyle LabelBoldStyle = GUIStyle.none;
     public GUIStyle ButtonStyle = GUIStyle.none;
     public GUIStyle ButtonDisabledStyle = GUIStyle.none;
 
 	public virtual void OnGUI()
 	{
+        LabelHeaderStyleLeft = new(GUI.skin.label)
+        {
+            fontSize = 17,
+            fontStyle = FontStyle.Bold
+        };
         LabelHeaderStyle = new(GUI.skin.label)
         {
             fontSize = 17,
@@ -198,10 +204,10 @@ public abstract class DrawableGUI
 		GUI.Label(new Rect(x, y,w,h), text);
 	}
 
-	public virtual void LabelHeader(string text, Vector2? size = null)
+	public virtual void LabelHeader(string text, Vector2? size = null, bool leftAligned = false)
 	{
 		(float x, float y, float w, float h) = GetPosition(size);
-		GUI.Label(new Rect(x,y,w,h), text, LabelHeaderStyle);
+		GUI.Label(new Rect(x,y,w,h), text, leftAligned ? LabelHeaderStyleLeft : LabelHeaderStyle);
 	}
     public virtual void LabelBold(string text, Vector2? size = null)
     {

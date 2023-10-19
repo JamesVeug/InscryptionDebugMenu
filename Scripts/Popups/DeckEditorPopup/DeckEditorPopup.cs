@@ -60,8 +60,7 @@ public class DeckEditorPopup : BaseWindow
 
         if (result == DrawCardInfo.Result.Removed)
 		{
-			currentDeckEditorSelection =
-				Mathf.Min(currentDeckEditorSelection, CurrentDeck.Cards.Count - 1);
+			currentDeckEditorSelection = Mathf.Min(currentDeckEditorSelection, CurrentDeck.Cards.Count - 1);
 		}
 		else if (result == DrawCardInfo.Result.Altered)
 		{
