@@ -36,7 +36,7 @@ public static class DrawCardInfo
 		Removed,
 		Altered
 	}
-	
+
 	public static Result OnGUI(CardInfo val, DeckInfo deckInfo = null)
 	{
 		if (val == null)
@@ -59,7 +59,7 @@ public static class DrawCardInfo
 			}
 			
 			SaveManager.SaveToFile(false);
-			return Result.None;
+			return Result.Altered;
 		}
 
         GUILayout.EndHorizontal();
@@ -197,47 +197,38 @@ public static class DrawCardInfo
 		SpecialTriggeredAbility specialAbility = 0, SpecialTriggeredAbility removeSpecialAbility = 0,
 		List<GemType> addGemCost = null, bool? gemified = null)
 	{
-		CardModificationInfo val = new();
-		val.attackAdjustment = attackAdjustment;
-		val.healthAdjustment = healthAdjustment;
-		if ((int)ability > 0)
-		{
-			val.abilities.Add(ability);
-		}
-		if ((int)negateAbility > 0)
-		{
-			val.negateAbilities.Add(negateAbility);
-		}
+		CardModificationInfo val = new()
+        {
+            attackAdjustment = attackAdjustment,
+            healthAdjustment = healthAdjustment,
+            bloodCostAdjustment = bloodCostAdjustment,
+            bonesCostAdjustment = boneCostAdjustment,
+            energyCostAdjustment = energyCostAdjustment
+        };
+        if (ability != Ability.None)
+            val.abilities.Add(ability);
 
-		val.bloodCostAdjustment = bloodCostAdjustment;
-		val.bonesCostAdjustment = boneCostAdjustment;
-		val.energyCostAdjustment = energyCostAdjustment;
+        if (negateAbility != Ability.None)
+            val.negateAbilities.Add(negateAbility);
 
-		if (addGemCost != null)
-		{
-			val.addGemCost = addGemCost;
-		}
+        if (addGemCost != null)
+            val.addGemCost = addGemCost;
 
-		if (gemified.HasValue)
-		{
-			val.gemify = gemified.Value;
-		}
+        if (gemified.HasValue)
+            val.gemify = gemified.Value;
 
-		if ((int)specialAbility > 0)
-		{
-			val.specialAbilities.Add(specialAbility);
-		}
-		if ((int)removeSpecialAbility > 0)
-		{
-			foreach (CardModificationInfo mod in card.Mods)
-			{
-				if (mod.specialAbilities.Contains(removeSpecialAbility))
-				{
-					mod.specialAbilities.Remove(removeSpecialAbility);
-				}
-			}
-		}
-		if (deckInfo != null)
+        if (specialAbility != SpecialTriggeredAbility.None)
+            val.specialAbilities.Add(specialAbility);
+
+        if (removeSpecialAbility != SpecialTriggeredAbility.None)
+        {
+            foreach (CardModificationInfo mod in card.Mods)
+            {
+                if (mod.specialAbilities.Contains(removeSpecialAbility))
+                    mod.specialAbilities.Remove(removeSpecialAbility);
+            }
+        }
+        if (deckInfo != null)
 		{
 			deckInfo.ModifyCard(card, val);
 			SaveManager.SaveToFile(false);
@@ -648,5 +639,4 @@ public static class DrawCardInfo
 		GUILayout.EndVertical();
 		page = num;
 	}
-
 }

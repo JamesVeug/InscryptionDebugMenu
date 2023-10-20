@@ -1,4 +1,5 @@
-﻿using DebugMenu.Scripts.Utils;
+﻿using DebugMenu.Scripts.Popups.DeckEditorPopup;
+using DebugMenu.Scripts.Utils;
 using DiskCardGame;
 using InscryptionAPI.Card;
 using InscryptionAPI.Helpers.Extensions;
@@ -43,9 +44,8 @@ public class GameBoardPopup : BaseWindow
         StartNewColumn();
         StartNewColumn();
 
-        Label("Card Slots: " + BoardManager.Instance.AllSlotsCopy.Count);
-        Label("Occupied Slots: " + BoardManager.Instance.AllSlotsCopy.Count(x => x.Card != null));
-        LabelHeader("Current Selection");
+        Label("Total Card Slots: " + BoardManager.Instance.AllSlotsCopy.Count + "\nOccupied Slots: " + BoardManager.Instance.AllSlotsCopy.Count(x => x.Card != null));
+        LabelHeader("Current Selection", leftAligned: true);
 
         if (currentSelection == null)
         {
@@ -56,29 +56,51 @@ public class GameBoardPopup : BaseWindow
         PlayableCard card = currentSelection.Item1;
         CardSlot slot = currentSelection.Item2;
         bool replace = false;
-        if (selectedQueue)
-            Label("Queue Slot");
-        else if (slot.IsPlayerSlot)
-            Label("Player Slot");
-        else
-            Label("Opponent Slot");
-        Label("Slot Index: " + slot.Index);
+        string label = (selectedQueue ? "Queue" : (slot.IsPlayerSlot ? "Player" : "Opponent")) + " Slot";
+        
+        Label(label + "  |  Slot Index: " + slot.Index);
         Label("Card: " + (card != null ? card.Info.DisplayedNameLocalized : "N/A"));
         if (card != null)
         {
             replace = true;
-            if (Button("Kill card"))
+            using (HorizontalScope(3))
             {
-                Plugin.Instance.StartCoroutine(card.Die(false));
-                currentSelection = new(null, slot);
-                return;
+                Label("Damage card");
+                if (Button("-1 HP"))
+                    card.TakeDamage(1, null);
+                if (Button("-5 HP"))
+                    card.TakeDamage(5, null);
+            }
+            using (HorizontalScope(3))
+            {
+                Label("Heal card");
+                if (Button("+1 HP"))
+                    card.HealDamage(1);
+                if (Button("+5 HP"))
+                    card.HealDamage(5);
+            }
+            using (HorizontalScope(3))
+            {
+                Label("Kill card");
+                if (Button("Triggers"))
+                {
+                    Plugin.Instance.StartCoroutine(card.Die(false));
+                    currentSelection = new(null, slot);
+                    return;
+                }
+
+                if (Button("No triggers"))
+                {
+                    Plugin.Instance.StartCoroutine(KillCardTriggerless(card));
+                    currentSelection = new(null, slot);
+                    return;
+                }
             }
 
-            if (Button("Kill card (triggerless)"))
+            if (Button("Modify card"))
             {
-                Plugin.Instance.StartCoroutine(KillCardTriggerless(card));
-                currentSelection = new(null, slot);
-                return;
+                var window = Plugin.Instance.ToggleWindow<BoardCardEditorPopup>();
+                window.currentSelection = currentSelection.Item1;
             }
         }
         OnGUICardSearcher(slot, replace);
