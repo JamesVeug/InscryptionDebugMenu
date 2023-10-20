@@ -7,7 +7,7 @@ namespace DebugMenu.Scripts.Popups;
 public class GameInfoPopup : BaseWindow
 {
 	public override string PopupName => "Game Info";
-	public override Vector2 Size => new Vector2(220, 500);
+	public override Vector2 Size => new(220, 500);
 
 	public float updateInterval = 0.5F;
  
@@ -18,17 +18,12 @@ public class GameInfoPopup : BaseWindow
 	public override void OnGUI()
 	{
 		base.OnGUI();
+        string currentSeed;
+        try { currentSeed = "Current Seed: " + SaveManager.SaveFile.GetCurrentRandomSeed(); }
+        catch { currentSeed = "Current Seed: N/A"; }
 
-		Label("FPS: " + fps);
-		Label("Random Seed: " + SaveManager.SaveFile.randomSeed);
-		try
-		{
-			Label("Current Seed: " + SaveManager.SaveFile.GetCurrentRandomSeed());
-		}
-		catch
-		{
-            Label("Current Seed: N/A");
-        }
+        Label("FPS: " + fps);
+        Label("Random Seed: " + SaveManager.SaveFile.randomSeed + "\n" + currentSeed);
 
         if (Button("Show Resource Bank"))
 		{
@@ -42,9 +37,12 @@ public class GameInfoPopup : BaseWindow
         {
             Plugin.Instance.ToggleWindow<AbilityInfoPopup>();
         }
-
+		if (Button("Debug Tools"))
+		{
+			Plugin.Instance.ToggleWindow<ScriptDebugPopup>();
+		}
         int sceneCount = SceneManager.sceneCount;		
-		LabelHeader($"Scenes {sceneCount}");
+		LabelHeader($"Scenes ({sceneCount})");
 		Scene activeScene = SceneManager.GetActiveScene();
 
 		for (int i = 0; i < sceneCount; i++)
@@ -52,7 +50,7 @@ public class GameInfoPopup : BaseWindow
 			Scene scene = SceneManager.GetSceneAt(i);
 			if (scene == activeScene)
 			{
-				Label($"{i} {scene.name} Active");
+				Label($"{i} {scene.name} (Active)");
 			}
 			else
 			{
