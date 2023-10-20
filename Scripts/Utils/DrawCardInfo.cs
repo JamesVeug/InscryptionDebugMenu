@@ -130,6 +130,7 @@ public static class DrawCardInfo
         }
 
         HandleCost(val, deckInfo);
+        HandleTribes(val, deckInfo);
 		
 		GUILayout.BeginHorizontal(Array.Empty<GUILayoutOption>());
 		HandlePortrait(val);
@@ -146,6 +147,13 @@ public static class DrawCardInfo
 		}
 
 		return Result.None;
+	}
+
+	private static void HandleTribes(CardInfo card, DeckInfo deckInfo)
+	{
+		GUILayout.BeginHorizontal(Array.Empty<GUILayoutOption>());
+		GUILayout.Label("Tribes: " + string.Join(",", card.tribes.Select(Helpers.GetTribeName)));
+		GUILayout.EndHorizontal();
 	}
 
 	private static void HandlePortrait(CardInfo cardInfo)

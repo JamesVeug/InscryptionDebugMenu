@@ -199,6 +199,22 @@ public static partial class Helpers
 		return new Tuple<List<string>, List<string>>(names, values);
 	}
 
+	public static string GetTribeName(Tribe tribe)
+	{
+		if(tribe >= Tribe.None && tribe <= Tribe.NUM_TRIBES)
+			return tribe.ToString();
+
+		foreach (TribeManager.TribeInfo info in TribeManager.NewTribes)
+		{
+			if (info.tribe == tribe)
+			{
+				return info.name;
+			}
+		}
+
+		return tribe.ToString();
+	}
+	
 	public static void DrawAbilitysGUI(TriggerCardBattleSequenceWindow window, Action<Ability> callback)
 	{
 		m_selectedAbility = callback;
