@@ -46,6 +46,6 @@ Create an issue on the github page and mention it on the Inscryption modding dis
 
 
 ## Thanks To:
-- Peaiece for Speed Tweaks (This mod uses code from it since its deprecated)
-- Peaiece for Deck Editor (This mod uses code from it since it is no longer supported)
+- Peaiece for Speed Tweaks (This mod uses code from it since it's deprecated)
+- Peaiece for Deck Editor (This mod uses code from it since it's no longer supported)
 - Keks307 for bug reporting
