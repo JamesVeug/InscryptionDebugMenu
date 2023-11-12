@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.2.1
+### General
+- Fixed 'Deal Damage' options in Game Board menu not working
+
+### Grimora
+- Slightly condensed card battle information
+
 ## 1.2.0
 ### General
 - Game Board menu:

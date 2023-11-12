@@ -67,9 +67,9 @@ public class GameBoardPopup : BaseWindow
             {
                 Label("Damage card");
                 if (Button("-1 HP"))
-                    card.TakeDamage(1, null);
+                    Plugin.Instance.StartCoroutine(card.TakeDamage(1, null));
                 if (Button("-5 HP"))
-                    card.TakeDamage(5, null);
+                    Plugin.Instance.StartCoroutine(card.TakeDamage(5, null));
             }
             using (HorizontalScope(3))
             {
