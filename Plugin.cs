@@ -14,7 +14,7 @@ namespace DebugMenu
     {
 	    public const string PluginGuid = "jamesgames.inscryption.debugmenu";
 	    public const string PluginName = "Debug Menu";
-	    public const string PluginVersion = "1.2.1";
+	    public const string PluginVersion = "1.2.2";
 
 	    public static Plugin Instance;
 	    public static ManualLogSource Log;

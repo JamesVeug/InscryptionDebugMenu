@@ -1,64 +1,47 @@
 ﻿using DiskCardGame;
 using InscryptionAPI.Card;
 using UnityEngine;
-using static UnityEngine.GraphicsBuffer;
 using Object = System.Object;
 
 namespace DebugMenu.Scripts.Utils;
 
 public static class DrawCardInfo
 {
-	private static readonly string[] sigilsAbilities = new string[2] { "Sigils", "Special Abilities" };
+    private static bool HasModFromCardMerge(CardInfo cardInfo, PlayableCard playableCard)
+    {
+        return cardInfo.HasModFromCardMerge() || (playableCard != null && playableCard.TemporaryMods.Exists(x => x.fromCardMerge));
+    }
 
-	private static readonly string[] abilityManagementTabs = new string[2] { "Remove", "Add" };
-	private static readonly string[] specialAbilitySelectorList = new string[2] { "Remove", "Add" };
-	private static readonly float overrideSquareWidth = 150;
-	private static readonly float overrideSquareHeight = 40;
-	
-	private static int selectedTab = 0;
-	private static int abilityManagerIndex = 0;
-	private static string abilitySearch = "";
-	private static string abilityGUIDSearch = "";
-	private static string specialAbilitySearch = "";
-	private static string specialAbilityGUIDSearch = "";
-	private static int currentPageEdit = 0;
-	private static int currentPageAdd = 0;
-	private static int specialAbilitySelector = 0;
-	private static Vector2 specialAbilityListVector2 = Vector2.zero;
-	private static Vector2 specialAbilityListVector = Vector2.zero;
-
-	public static readonly string EmissionMod = "DebugMenu:EmissionMod";
-    public static readonly string PortraitMod = "DebugMenu:PortraitMod";
-
-    public enum Result
+	public static Result OnGUI(CardInfo cardInfo, PlayableCard playableCard = null, DeckInfo deckInfo = null)
 	{
-		None,
-		Removed,
-		Altered
-	}
-
-	public static Result OnGUI(CardInfo val, DeckInfo deckInfo = null)
-	{
-		if (val == null)
+		if (cardInfo == null)
 			return Result.None;
-		
+
+        bool onBoard = playableCard != null;
+
 		GUILayout.BeginHorizontal(Array.Empty<GUILayoutOption>());
-		GUILayout.Label("Card Editor (" + val.name + ")", Array.Empty<GUILayoutOption>());
-		if (deckInfo != null && deckInfo.Cards.Count > 2 && GUILayout.Button("Remove", Array.Empty<GUILayoutOption>()))
+		GUILayout.Label("Card Editor (" + cardInfo.name + ")", Array.Empty<GUILayoutOption>());
+
+        // remove the selected card
+        if (deckInfo != null && deckInfo.Cards.Count > 2 && GUILayout.Button("Remove", Array.Empty<GUILayoutOption>()))
 		{
-			deckInfo.RemoveCard(val);
+			deckInfo.RemoveCard(cardInfo);
 			SaveManager.SaveToFile(false);
 			return Result.Removed;
 		}
 
-		if (val.HasModFromCardMerge() && GUILayout.Button("Clear Merge Data", Array.Empty<GUILayoutOption>()))
+        // clear card merge data (remove patches)
+        if (HasModFromCardMerge(cardInfo, playableCard) && GUILayout.Button("Clear Merge Data", Array.Empty<GUILayoutOption>()))
 		{
-			foreach (CardModificationInfo mod in val.Mods)
-			{
-				mod.fromCardMerge = false;
-			}
-			
-			SaveManager.SaveToFile(false);
+            cardInfo.Mods.ForEach(x => x.fromCardMerge = false);
+            if (onBoard)
+            {
+                playableCard.TemporaryMods.ForEach(x => x.fromCardMerge = false);
+            }
+            else
+            {
+                SaveManager.SaveToFile(false);
+            }
 			return Result.Altered;
 		}
 
@@ -70,12 +53,12 @@ public static class DrawCardInfo
         }
 		else
 		{
-            CardModificationInfo emissionMod = val.Mods.Find(a => a.singletonId == EmissionMod);
+            CardModificationInfo emissionMod = cardInfo.Mods.Find(a => a.singletonId == EmissionMod);
             if (emissionMod != null)
             {
                 if (GUILayout.Button("Unforce Emission", Array.Empty<GUILayoutOption>()))
                 {
-                    val.Mods.Remove(emissionMod);
+                    cardInfo.Mods.Remove(emissionMod);
 					if (deckInfo != null)
 					{
 						deckInfo?.UpdateModDictionary();
@@ -88,22 +71,27 @@ public static class DrawCardInfo
             {
                 if (GUILayout.Button("Force Emission", Array.Empty<GUILayoutOption>()))
                 {
-					if (deckInfo != null)
+                    CardModificationInfo emission = new() { singletonId = EmissionMod };
+                    if (deckInfo != null)
 					{
-						deckInfo?.ModifyCard(val, new() { singletonId = EmissionMod });
+						deckInfo.ModifyCard(cardInfo, emission);
 						SaveManager.SaveToFile(false);
 					}
+                    else
+                    {
+                        cardInfo.Mods.Add(emission);
+                    }
                     return Result.Altered;
                 }
             }
         }
 
-        CardModificationInfo portraitMod = val.Mods.Find(a => a.singletonId == PortraitMod);
+        CardModificationInfo portraitMod = cardInfo.Mods.Find(a => a.singletonId == PortraitMod);
         if (portraitMod != null)
         {
             if (GUILayout.Button("Unforce Alt Portrait", Array.Empty<GUILayoutOption>()))
             {
-                val.Mods.Remove(portraitMod);
+                cardInfo.Mods.Remove(portraitMod);
 				if (deckInfo != null)
 				{
 					deckInfo?.UpdateModDictionary();
@@ -112,14 +100,19 @@ public static class DrawCardInfo
 				return Result.Altered;
             }
         }
-        else if (SaveManager.SaveFile.IsPart2 ? val.HasPixelAlternatePortrait() : val.HasAlternatePortrait())
+        else if (SaveManager.SaveFile.IsPart2 ? cardInfo.HasPixelAlternatePortrait() : cardInfo.HasAlternatePortrait())
         {
             if (GUILayout.Button("Force Alt Portrait", Array.Empty<GUILayoutOption>()))
             {
-				if (deckInfo != null)
+                CardModificationInfo portrait = new() { singletonId = PortraitMod };
+                if (deckInfo != null)
 				{
-                    deckInfo.ModifyCard(val, new() { singletonId = PortraitMod });
+                    deckInfo.ModifyCard(cardInfo, portrait);
                     SaveManager.SaveToFile(false);
+                }
+                else
+                {
+                    cardInfo.Mods.Add(portrait);
                 }
                 return Result.Altered;
             }
@@ -129,34 +122,57 @@ public static class DrawCardInfo
 			GUILayout.Button("No Alt Portrait");
         }
 
-        HandleCost(val, deckInfo);
-        HandleTribes(val, deckInfo);
-		
-		GUILayout.BeginHorizontal(Array.Empty<GUILayoutOption>());
-		HandlePortrait(val);
+		// cost modifications
+		if (HandleCost(cardInfo, playableCard, deckInfo))
+			return Result.Altered;
+
+        HandleTribes(cardInfo, playableCard, deckInfo);
+
+        // shows the default and alternate portraits (none of the API portraits)
+        GUILayout.BeginHorizontal(Array.Empty<GUILayoutOption>());
+		DisplayPortraits(cardInfo);
 		GUILayout.EndHorizontal();
 
-		HandleStats(val, deckInfo);
-		selectedTab = GUILayout.Toolbar(selectedTab, sigilsAbilities, Array.Empty<GUILayoutOption>());
-		if (val != null)
-		{
-			if (selectedTab == 0)
-				ManageAbilities(val, deckInfo);
-			else
-				ManageSpecialAbilities(val, deckInfo);
-		}
+        // stat modifications
+        if (HandleStats(cardInfo, playableCard, deckInfo))
+			return Result.Altered;
 
-		return Result.None;
+        if (cardInfo == null)
+            return Result.None;
+
+        int correctTab;
+        if (onBoard)
+        {
+            boardSelectedTab = GUILayout.Toolbar(boardSelectedTab, sigilsAbilities, Array.Empty<GUILayoutOption>());
+            correctTab = boardSelectedTab;
+        }
+        else
+        {
+            selectedTab = GUILayout.Toolbar(selectedTab, sigilsAbilities, Array.Empty<GUILayoutOption>());
+            correctTab = selectedTab;
+        }
+
+        // manage adding/removing abilities and specials
+        // special abilities are invisible so no need to update the render
+        if (correctTab == 0)
+        {
+            if (ManageAbilities(cardInfo, playableCard, deckInfo))
+                return Result.Altered;
+        }
+        else
+            ManageSpecialAbilities(cardInfo, playableCard, deckInfo);
+
+        return Result.None;
 	}
 
-	private static void HandleTribes(CardInfo card, DeckInfo deckInfo)
+    private static bool HandleTribes(CardInfo cardInfo, PlayableCard playableCard, DeckInfo deckInfo)
 	{
 		GUILayout.BeginHorizontal(Array.Empty<GUILayoutOption>());
-		GUILayout.Label("Tribes: " + string.Join(",", card.tribes.Select(Helpers.GetTribeName)));
+		GUILayout.Label("Tribes: " + string.Join(",", cardInfo.tribes.Select(Helpers.GetTribeName)));
 		GUILayout.EndHorizontal();
+		return false;
 	}
-
-	private static void HandlePortrait(CardInfo cardInfo)
+    private static void DisplayPortraits(CardInfo cardInfo)
 	{
 		bool isAct2 = Helpers.GetCurrentSavedAct() == Helpers.Acts.Act2;
 		GUILayoutOption[] options = new GUILayoutOption[] { GUILayout.Width(114), GUILayout.Height(94)};
@@ -191,7 +207,8 @@ public static class DrawCardInfo
                 GUILayout.Label(cardInfo.PixelAlternatePortrait().texture, options);
         }
     }
-	private static void NewCardMod(DeckInfo deckInfo, CardInfo card, int attackAdjustment = 0, int healthAdjustment = 0,
+
+	private static bool NewCardMod(DeckInfo deckInfo, CardInfo cardInfo, PlayableCard playableCard = null, int attackAdjustment = 0, int healthAdjustment = 0,
 		Ability ability = 0, Ability negateAbility = 0,
 		int bloodCostAdjustment = 0, int boneCostAdjustment = 0, int energyCostAdjustment = 0,
 		SpecialTriggeredAbility specialAbility = 0, SpecialTriggeredAbility removeSpecialAbility = 0,
@@ -222,71 +239,98 @@ public static class DrawCardInfo
 
         if (removeSpecialAbility != SpecialTriggeredAbility.None)
         {
-            foreach (CardModificationInfo mod in card.Mods)
+            IEnumerable<CardModificationInfo> allMods = cardInfo.Mods;
+            if (playableCard != null)
+                allMods.Concat(playableCard.TemporaryMods);
+
+            foreach (CardModificationInfo mod in allMods)
             {
                 if (mod.specialAbilities.Contains(removeSpecialAbility))
+                {
                     mod.specialAbilities.Remove(removeSpecialAbility);
+                    if (playableCard)
+                    {
+                        playableCard.TriggerHandler.specialAbilities.Remove(playableCard.TriggerHandler.specialAbilities.Find(x => x.Item1 == removeSpecialAbility));
+                        RemoveSpecialAbility<SpecialCardBehaviour>(removeSpecialAbility.ToString(), playableCard.gameObject);
+                    }
+                }
             }
         }
-        if (deckInfo != null)
+        if (playableCard != null)
+        {
+            playableCard.AddTemporaryMod(val);
+            foreach (var special in val.specialAbilities)
+            {
+                playableCard.TriggerHandler.permanentlyAttachedBehaviours.Add(AddSpecialAbility<SpecialCardBehaviour>(special.ToString(), playableCard.gameObject));
+            }
+        }
+        else if (deckInfo != null)
 		{
-			deckInfo.ModifyCard(card, val);
+			deckInfo.ModifyCard(cardInfo, val);
 			SaveManager.SaveToFile(false);
 		}
+		return true;
 	}
-	private static void HandleCost(CardInfo currentCard, DeckInfo deckInfo)
+    
+    private static bool HandleCost(CardInfo currentCardInfo, PlayableCard currentCard, DeckInfo deckInfo)
 	{
 		GUILayout.BeginHorizontal(Array.Empty<GUILayoutOption>());
-		
-		// Blood
-		GUILayout.Label("Blood " + currentCard.BloodCost, Array.Empty<GUILayoutOption>());
+
+        // Blood
+        int blood = currentCard != null ? currentCard.BloodCost() : currentCardInfo.BloodCost;
+        int bones = currentCard != null ? currentCard.BonesCost() : currentCardInfo.BonesCost;
+        int energy = currentCard != null ? currentCard.EnergyCost : currentCardInfo.EnergyCost;
+        List<GemType> gems = currentCard != null ? currentCard.GemsCost() : currentCardInfo.GemsCost;
+
+        GUILayout.Label("Blood " + blood, Array.Empty<GUILayoutOption>());
 		if (GUILayout.Button("-", Array.Empty<GUILayoutOption>()))
-			NewCardMod(deckInfo, currentCard, 0, 0, 0, 0, (currentCard.BloodCost > 0) ? (-1) : 0);
+			return NewCardMod(deckInfo, currentCardInfo, currentCard, 0, 0, 0, 0, (blood > 0) ? (-1) : 0);
 
 		if (GUILayout.Button("+", Array.Empty<GUILayoutOption>()))
-			NewCardMod(deckInfo, currentCard, 0, 0, 0, 0, 1);
+            return NewCardMod(deckInfo, currentCardInfo, currentCard, 0, 0, 0, 0, 1);
 		
 		// Bone
-		GUILayout.Label("Bone " + currentCard.BonesCost, Array.Empty<GUILayoutOption>());
+		GUILayout.Label("Bone " + bones, Array.Empty<GUILayoutOption>());
 		if (GUILayout.Button("-", Array.Empty<GUILayoutOption>()))
-			NewCardMod(deckInfo, currentCard, 0, 0, 0, 0, 0, (currentCard.BonesCost > 0) ? (-1) : 0);
+			return NewCardMod(deckInfo, currentCardInfo, currentCard, 0, 0, 0, 0, 0, (bones > 0) ? (-1) : 0);
 
 		if (GUILayout.Button("+", Array.Empty<GUILayoutOption>()))
-			NewCardMod(deckInfo, currentCard, 0, 0, 0, 0, 0, 1);
+			return NewCardMod(deckInfo, currentCardInfo, currentCard, 0, 0, 0, 0, 0, 1);
 		
 		// Energy
-		GUILayout.Label("Energy " + currentCard.EnergyCost, Array.Empty<GUILayoutOption>());
+		GUILayout.Label("Energy " + energy, Array.Empty<GUILayoutOption>());
 		if (GUILayout.Button("-", Array.Empty<GUILayoutOption>()))
-			NewCardMod(deckInfo, currentCard, 0, 0, 0, 0, 0, 0, (currentCard.EnergyCost > 0) ? (-1) : 0);
+			return NewCardMod(deckInfo, currentCardInfo, currentCard, 0, 0, 0, 0, 0, 0, (energy > 0) ? (-1) : 0);
 
 		if (GUILayout.Button("+", Array.Empty<GUILayoutOption>()))
-			NewCardMod(deckInfo, currentCard, 0, 0, 0, 0, 0, 0, 1);
+			return NewCardMod(deckInfo, currentCardInfo, currentCard, 0, 0, 0, 0, 0, 0, 1);
 
 		GUILayout.EndHorizontal();
 		
 		// Gems
 		GUILayout.BeginHorizontal(Array.Empty<GUILayoutOption>());
-		GUILayout.Label("Gems " + string.Join(",", currentCard.GemsCost), Array.Empty<GUILayoutOption>());
+		GUILayout.Label("Gems " + string.Join(",", gems), Array.Empty<GUILayoutOption>());
 		
-		CardModificationInfo gemifiedMod = currentCard.Mods.Find((a) => a.gemify);
+		CardModificationInfo gemifiedMod = currentCardInfo.Mods.Find((a) => a.gemify);
 		if (gemifiedMod != null)
 		{
 			if (GUILayout.Button("Ungemify", Array.Empty<GUILayoutOption>()))
 			{
-				currentCard.Mods.Remove(gemifiedMod);
+                currentCardInfo.Mods.Remove(gemifiedMod);
 				if (deckInfo != null)
 				{
 					deckInfo.UpdateModDictionary();
 					SaveManager.SaveToFile(false);
 				}
+				return true;
 			}
 		}
 		else if (GUILayout.Button("Gemify", Array.Empty<GUILayoutOption>()))
         {
-            NewCardMod(deckInfo, currentCard, gemified: true);
+            return NewCardMod(deckInfo, currentCardInfo, currentCard, gemified: true);
         }
 		
-		List<CardModificationInfo> gemMods = currentCard.Mods.FindAll((a) => a.addGemCost != null);
+		List<CardModificationInfo> gemMods = currentCardInfo.Mods.FindAll((a) => a.addGemCost != null);
 		foreach (GemType gemType in Enum.GetValues(typeof(GemType)))
 		{
 			CardModificationInfo gemMod = gemMods.Find((a)=>a.addGemCost.Contains(gemType));
@@ -296,81 +340,138 @@ public static class DrawCardInfo
 				GUILayout.Label("+");
 				if (GUILayout.Button("-"))
 				{
-					currentCard.Mods.Remove(gemMod);
+					currentCardInfo.Mods.Remove(gemMod);
 					if (deckInfo != null)
 					{
 						deckInfo.UpdateModDictionary();
 						SaveManager.SaveToFile(false);
 					}
-				}
+					return true;
+                }
 			}
 			else
 			{
 				if (GUILayout.Button("+"))
-					NewCardMod(deckInfo, currentCard, addGemCost: new List<GemType>() { gemType });
+					return NewCardMod(deckInfo, currentCardInfo, currentCard, addGemCost: new List<GemType>() { gemType });
 				
 				GUILayout.Label("-");
 			}
 		}
 		GUILayout.EndHorizontal();
+		return false;
 	}
-
-	private static void HandleStats(CardInfo currentCard, DeckInfo deckInfo)
+    private static bool HandleStats(CardInfo currentCardInfo, PlayableCard currentCard, DeckInfo deckInfo)
 	{
-		GUILayout.BeginHorizontal(Array.Empty<GUILayoutOption>());
-		GUILayout.Label("Atk " + currentCard.Attack, Array.Empty<GUILayoutOption>());
-		GUILayout.Label("HP " + currentCard.Health, Array.Empty<GUILayoutOption>());
+        int attack = currentCard != null ? currentCard.Attack : currentCardInfo.Attack;
+        int health = currentCard != null ? currentCard.Health : currentCardInfo.Health;
+
+        GUILayout.BeginHorizontal(Array.Empty<GUILayoutOption>());
+		GUILayout.Label("Atk " + attack, Array.Empty<GUILayoutOption>());
+		GUILayout.Label("HP " + health, Array.Empty<GUILayoutOption>());
 		GUILayout.EndHorizontal();
-		GUILayout.BeginHorizontal(Array.Empty<GUILayoutOption>());
+		
+        GUILayout.BeginHorizontal(Array.Empty<GUILayoutOption>());
+
 		if (GUILayout.Button("-", Array.Empty<GUILayoutOption>()))
-		{
-			NewCardMod(deckInfo, currentCard, (currentCard.Attack > 0) ? (-1) : 0);
-		}
+			return NewCardMod(deckInfo, currentCardInfo, currentCard, (attack > 0) ? (-1) : 0);
+
 		if (GUILayout.Button("+", Array.Empty<GUILayoutOption>()))
-		{
-			NewCardMod(deckInfo, currentCard, 1);
-		}
+            return NewCardMod(deckInfo, currentCardInfo, currentCard, 1);
+
 		if (GUILayout.Button("-", Array.Empty<GUILayoutOption>()))
-		{
-			NewCardMod(deckInfo, currentCard, 0, (currentCard.Health > 0) ? (-1) : 0);
-		}
+            return NewCardMod(deckInfo, currentCardInfo, currentCard, 0, (health > 0) ? (-1) : 0);
+
 		if (GUILayout.Button("+", Array.Empty<GUILayoutOption>()))
-		{
-			NewCardMod(deckInfo, currentCard, 0, 1);
-		}
+			return NewCardMod(deckInfo, currentCardInfo, currentCard, 0, 1);
+
 		GUILayout.EndHorizontal();
+		return false;
 	}
 
-	
-	private static void ManageAbilities(CardInfo currentCard, DeckInfo deckInfo)
+    private static bool ManageAbilities(CardInfo currentCardInfo, PlayableCard currentCard, DeckInfo deckInfo)
 	{
-		abilityManagerIndex = GUILayout.Toolbar(abilityManagerIndex, abilityManagementTabs, Array.Empty<GUILayoutOption>());
-		if (abilityManagerIndex == 0)
-		{
-			EditAbilities(currentCard, deckInfo);
-		}
-		else
-		{
-			AddAbilities(currentCard, deckInfo);
-		}
-	}
+        if (currentCard != null)
+        {
+            boardAbilityManagerIndex = GUILayout.Toolbar(boardAbilityManagerIndex, abilityManagementTabs, Array.Empty<GUILayoutOption>());
+            GUILayout.Label("Sigils", Array.Empty<GUILayoutOption>());
+            if (currentCardInfo == null)
+            {
+                GUILayout.Label("No Card Selected!", Array.Empty<GUILayoutOption>());
+                return false;
+            }
+            if (boardAbilityManagerIndex == 0)
+                return EditAbilities(currentCard);
 
-	private static void EditAbilities(CardInfo currentCard, DeckInfo deckInfo)
+            else
+                return AddAbilities(currentCard);
+
+        }
+        else
+        {
+            abilityManagerIndex = GUILayout.Toolbar(abilityManagerIndex, abilityManagementTabs, Array.Empty<GUILayoutOption>());
+            GUILayout.Label("Sigils", Array.Empty<GUILayoutOption>());
+            if (currentCardInfo == null)
+            {
+                GUILayout.Label("No Card Selected!", Array.Empty<GUILayoutOption>());
+                return false;
+            }
+            if (abilityManagerIndex == 0)
+                return EditAbilities(currentCardInfo, deckInfo);
+
+            else
+                return AddAbilities(currentCardInfo, deckInfo);
+
+        }
+	}
+    private static bool AddAbilities(CardInfo currentCardInfo, DeckInfo deckInfo)
+    {
+        bool flag = false;
+        var cardAbilityList = GetAbilitiesThatContain(AbilityManager.AllAbilities, false);
+        NewPager(ref currentPageAdd, (cardAbilityList.Count - 1) / 8);
+        int num = 0, num2 = currentPageAdd * 8;
+
+        while (num2 < currentPageAdd * 8 + 8 && num2 < cardAbilityList.Count)
+        {
+            AbilityManager.FullAbility ability = cardAbilityList[num2];
+            if (num % 2 == 0)
+            {
+                GUILayout.BeginHorizontal(Array.Empty<GUILayoutOption>());
+                flag = true;
+            }
+
+            Texture val = AbilitiesUtil.LoadAbilityIcon(ability.Id.ToString());
+            if (val == null)
+            {
+                if (GUILayout.Button(ability.Info.rulebookName, GUILayout.Width(overrideSquareWidth), GUILayout.Height(overrideSquareHeight)))
+                    return NewCardMod(deckInfo, currentCardInfo, ability: ability.Id);
+            }
+            else if (GUILayout.Button(val, GUILayout.Width(overrideSquareWidth), GUILayout.Height(overrideSquareHeight)))
+            {
+                return NewCardMod(deckInfo, currentCardInfo, ability: ability.Id);
+            }
+
+            if (num % 2 != 0)
+            {
+                GUILayout.EndHorizontal();
+                flag = false;
+            }
+            num2++;
+            num++;
+        }
+
+        if (flag)
+            GUILayout.EndHorizontal();
+
+        return false;
+    }
+    private static bool EditAbilities(CardInfo currentCardInfo, DeckInfo deckInfo)
 	{
-		GUILayout.Label("Sigils", Array.Empty<GUILayoutOption>());
-		
-		if (currentCard == null)
-		{
-			GUILayout.Label("No Card", Array.Empty<GUILayoutOption>());
-			return;
-		}
-		
-		List<AbilityManager.FullAbility> abilities = AbilityManager.AllAbilities.FindAll((a)=>currentCard.Abilities.Contains(a.Id));
-		var cardAbilityList = GetAbilitiesThatContain(abilities);
+		List<AbilityManager.FullAbility> abilities = AbilityManager.AllAbilities.FindAll(a => currentCardInfo.Abilities.Contains(a.Id));
+		var cardAbilityList = GetAbilitiesThatContain(abilities, false);
 		if (cardAbilityList.Count <= 0)
 		{
 			GUILayout.Label("No Sigils", Array.Empty<GUILayoutOption>());
-			return;
+			return false;
 		}
 		
 		bool flag = false;
@@ -394,7 +495,7 @@ public static class DrawCardInfo
 					GUILayout.Height((float)overrideSquareHeight)
 				}))
 				{
-					NewCardMod(deckInfo, currentCard, 0, 0, 0, negateAbility.Id);
+					return NewCardMod(deckInfo, currentCardInfo, negateAbility: negateAbility.Id);
 				}
 			}
 			else if (GUILayout.Button(val, new GUILayoutOption[2]
@@ -403,7 +504,7 @@ public static class DrawCardInfo
 				         GUILayout.Height((float)overrideSquareHeight)
 			         }))
 			{
-				NewCardMod(deckInfo, currentCard, 0, 0, 0, negateAbility.Id);
+				return NewCardMod(deckInfo, currentCardInfo, negateAbility: negateAbility.Id);
 			}
 			if (num % 2 != 0)
 			{
@@ -414,48 +515,222 @@ public static class DrawCardInfo
 			num++;
 		}
 		if (flag)
-		{
 			GUILayout.EndHorizontal();
-		}
+
+		return false;
 	}
 
-	private static List<SpecialTriggeredAbilityManager.FullSpecialTriggeredAbility> GetSpecialAbilitiesThatContain(List<SpecialTriggeredAbilityManager.FullSpecialTriggeredAbility> searchingList)
-	{
-		if (!Filter(ref specialAbilitySearch, ref specialAbilityGUIDSearch))
-		{
-			return searchingList;
-		}
+    private static bool AddAbilities(PlayableCard currentCard)
+    {
+        bool flag = false;
+        var cardAbilityList = GetAbilitiesThatContain(AbilityManager.AllAbilities, true);
 
-		var results = new List<SpecialTriggeredAbilityManager.FullSpecialTriggeredAbility>();
-		foreach (SpecialTriggeredAbilityManager.FullSpecialTriggeredAbility searching in searchingList)
-		{
-			SpecialTriggeredAbilityManager.FullSpecialTriggeredAbility current = searching;
-			if (specialAbilityGUIDSearch != "")
-			{
-				if (current.ModGUID == null || !current.ModGUID.Contains(specialAbilityGUIDSearch))
-				{
-					continue;
-				}
-			}
+        NewPager(ref boardCurrentPageAdd, (cardAbilityList.Count - 1) / 8);
+        int num = 0, num2 = boardCurrentPageAdd * 8;
 
-			if (specialAbilitySearch != "")
-			{
-				string rulebookName = current.AbilityName;
-				string abilityName = current.Id.ToString();
-				if ((rulebookName == null || !rulebookName.ToLower().Contains(specialAbilitySearch.ToLower())) &&
-				    !abilityName.Contains(specialAbilitySearch.ToLower()))
-				{
-					continue;
-				}
-			}
+        while (num2 < boardCurrentPageAdd * 8 + 8 && num2 < cardAbilityList.Count)
+        {
+            AbilityManager.FullAbility ability = cardAbilityList[num2];
+            if (num % 2 == 0)
+            {
+                GUILayout.BeginHorizontal(Array.Empty<GUILayoutOption>());
+                flag = true;
+            }
 
-			results.Add(current);
-		}
+            Texture val = AbilitiesUtil.LoadAbilityIcon(ability.Id.ToString());
+            if (val == null)
+            {
+                if (GUILayout.Button(ability.Info.rulebookName, GUILayout.Width(overrideSquareWidth), GUILayout.Height(overrideSquareHeight)))
+                    return NewCardMod(null, null, currentCard, ability: ability.Id);
+            }
+            else if (GUILayout.Button(val, GUILayout.Width(overrideSquareWidth), GUILayout.Height(overrideSquareHeight)))
+            {
+                return NewCardMod(null, null, currentCard, ability: ability.Id);
+            }
 
-		return results;
-	}
+            if (num % 2 != 0)
+            {
+                GUILayout.EndHorizontal();
+                flag = false;
+            }
+            num2++;
+            num++;
+        }
 
-	private static bool Filter(ref string nameString, ref string guidString)
+        if (flag)
+            GUILayout.EndHorizontal();
+
+        return false;
+    }
+    private static bool EditAbilities(PlayableCard currentCard)
+    {
+        List<AbilityManager.FullAbility> abilities = AbilityManager.AllAbilities.FindAll((a) => currentCard.AllAbilities().Contains(a.Id));
+        var cardAbilityList = GetAbilitiesThatContain(abilities, true);
+        if (cardAbilityList.Count <= 0)
+        {
+            GUILayout.Label("No Sigils", Array.Empty<GUILayoutOption>());
+            return false;
+        }
+
+        bool flag = false;
+        NewPager(ref boardCurrentPageEdit, (cardAbilityList.Count - 1) / 8);
+        int num = 0;
+        int num2 = boardCurrentPageEdit * 8;
+        while (num2 < boardCurrentPageEdit * 8 + 8 && num2 < cardAbilityList.Count)
+        {
+            AbilityManager.FullAbility negateAbility = cardAbilityList[num2];
+            if (num % 2 == 0)
+            {
+                GUILayout.BeginHorizontal(Array.Empty<GUILayoutOption>());
+                flag = true;
+            }
+            Texture val = AbilitiesUtil.LoadAbilityIcon(negateAbility.Id.ToString(), false, false);
+            if (val == (Object)null)
+            {
+                if (GUILayout.Button(negateAbility.Info.rulebookName, new GUILayoutOption[2]
+                {
+                    GUILayout.Width((float)overrideSquareWidth),
+                    GUILayout.Height((float)overrideSquareHeight)
+                }))
+                {
+                    return NewCardMod(null, null, currentCard, negateAbility: negateAbility.Id);
+                }
+            }
+            else if (GUILayout.Button(val, new GUILayoutOption[2]
+                     {
+                         GUILayout.Width((float)overrideSquareWidth),
+                         GUILayout.Height((float)overrideSquareHeight)
+                     }))
+            {
+                return NewCardMod(null, null, currentCard, negateAbility: negateAbility.Id);
+            }
+            if (num % 2 != 0)
+            {
+                GUILayout.EndHorizontal();
+                flag = false;
+            }
+            num2++;
+            num++;
+        }
+        if (flag)
+            GUILayout.EndHorizontal();
+
+        return false;
+    }
+
+    private static void ManageSpecialAbilities(CardInfo currentCardInfo, PlayableCard currentCard, DeckInfo deckInfo)
+    {
+        if (currentCard != null)
+        {
+            boardSpecialAbilitySelector = GUILayout.Toolbar(boardSpecialAbilitySelector, specialAbilitySelectorList);
+            GUILayout.Label("Special Abilities", Array.Empty<GUILayoutOption>());
+            if (boardSpecialAbilitySelector == 0)
+                RemoveSpecialAbility(currentCard);
+            else
+                AddSpecialAbility(currentCard);
+        }
+        else
+        {
+            specialAbilitySelector = GUILayout.Toolbar(specialAbilitySelector, specialAbilitySelectorList);
+            GUILayout.Label("Special Abilities", Array.Empty<GUILayoutOption>());
+            if (specialAbilitySelector == 0)
+                RemoveSpecialAbility(currentCardInfo, deckInfo);
+            else
+                AddSpecialAbility(currentCardInfo, deckInfo);
+        }
+    }
+    private static void AddSpecialAbility(CardInfo currentCard, DeckInfo deckInfo)
+    {
+        var abilities = SpecialTriggeredAbilityManager.AllSpecialTriggers;
+        var result = GetSpecialAbilitiesThatContain(abilities, true);
+
+        specialAbilityListVector = GUILayout.BeginScrollView(specialAbilityListVector);
+        foreach (SpecialTriggeredAbilityManager.FullSpecialTriggeredAbility allSpecialAbility in result)
+        {
+            if (GUILayout.Button(allSpecialAbility.AbilityName, Array.Empty<GUILayoutOption>()))
+            {
+                NewCardMod(deckInfo, currentCard, specialAbility: allSpecialAbility.Id);
+            }
+        }
+        GUILayout.EndScrollView();
+    }
+    private static void RemoveSpecialAbility(CardInfo currentCard, DeckInfo deckInfo)
+    {
+        var abilities = SpecialTriggeredAbilityManager.AllSpecialTriggers.FindAll((a) => currentCard.SpecialAbilities.Contains(a.Id));
+        var result = GetSpecialAbilitiesThatContain(abilities, false);
+
+        if (result.Count <= 0)
+        {
+            GUILayout.Label("No Special Abilities", Array.Empty<GUILayoutOption>());
+            return;
+        }
+
+        specialAbilityListVector2 = GUILayout.BeginScrollView(specialAbilityListVector2);
+        foreach (SpecialTriggeredAbilityManager.FullSpecialTriggeredAbility specialAbility2 in result)
+        {
+            SpecialTriggeredAbilityManager.FullSpecialTriggeredAbility current = specialAbility2;
+            if (GUILayout.Button(current.AbilityName, Array.Empty<GUILayoutOption>()))
+            {
+                NewCardMod(deckInfo, currentCard, removeSpecialAbility: current.Id);
+            }
+        }
+        GUILayout.EndScrollView();
+    }
+
+    private static void AddSpecialAbility(PlayableCard currentCard)
+    {
+        var abilities = SpecialTriggeredAbilityManager.AllSpecialTriggers;
+        var result = GetSpecialAbilitiesThatContain(abilities, true);
+
+        boardSpecialAbilityListVector = GUILayout.BeginScrollView(boardSpecialAbilityListVector);
+        foreach (SpecialTriggeredAbilityManager.FullSpecialTriggeredAbility allSpecialAbility in result)
+        {
+            if (GUILayout.Button(allSpecialAbility.AbilityName, Array.Empty<GUILayoutOption>()))
+            {
+                NewCardMod(null, null, currentCard, specialAbility: allSpecialAbility.Id);
+            }
+        }
+        GUILayout.EndScrollView();
+    }
+    private static void RemoveSpecialAbility(PlayableCard currentCard)
+    {
+        var abilities = SpecialTriggeredAbilityManager.AllSpecialTriggers.FindAll((a) => currentCard.AllSpecialAbilities().Contains(a.Id));
+        var result = GetSpecialAbilitiesThatContain(abilities, true);
+
+        if (result.Count <= 0)
+        {
+            GUILayout.Label("No Special Abilities", Array.Empty<GUILayoutOption>());
+            return;
+        }
+
+        boardSpecialAbilityListVector2 = GUILayout.BeginScrollView(boardSpecialAbilityListVector2);
+        foreach (SpecialTriggeredAbilityManager.FullSpecialTriggeredAbility specialAbility2 in result)
+        {
+            SpecialTriggeredAbilityManager.FullSpecialTriggeredAbility current = specialAbility2;
+            if (GUILayout.Button(current.AbilityName, Array.Empty<GUILayoutOption>()))
+            {
+                NewCardMod(null, null, currentCard, removeSpecialAbility: current.Id);
+            }
+        }
+        GUILayout.EndScrollView();
+    }
+
+    private static T AddSpecialAbility<T>(string typeString, GameObject obj) where T : TriggerReceiver
+    {
+        Type type = CardTriggerHandler.GetType(typeString);
+        return obj.GetComponent(type) as T ?? obj.AddComponent(type) as T;
+    }
+    private static void RemoveSpecialAbility<T>(string typeString, GameObject obj) where T : TriggerReceiver
+    {
+        Type type = CardTriggerHandler.GetType(typeString);
+        T val = obj.GetComponent(type) as T;
+        if (val != null)
+        {
+            UnityEngine.Object.Destroy(val);
+        }
+    }
+
+    private static bool Filter(ref string nameString, ref string guidString)
 	{
 		using (new GUILayout.HorizontalScope())
 		{
@@ -466,160 +741,72 @@ public static class DrawCardInfo
 			guidString = GUILayout.TextField(guidString, Array.Empty<GUILayoutOption>());
 		}
 
-		if (nameString == "" && guidString == "")
-		{
+		if (string.IsNullOrEmpty(nameString) && string.IsNullOrEmpty(guidString))
 			return false;
-		}
 
 		return true;
 	}
-
-	private static List<AbilityManager.FullAbility> GetAbilitiesThatContain(List<AbilityManager.FullAbility> searchingList)
+	private static List<AbilityManager.FullAbility> GetAbilitiesThatContain(List<AbilityManager.FullAbility> searchingList, bool board)
 	{
-		if (!Filter(ref abilitySearch, ref abilityGUIDSearch))
-		{
+        // modify search strings here
+		if (board ? !Filter(ref boardAbilitySearch, ref boardAbilityGUIDSearch) : !Filter(ref abilitySearch, ref abilityGUIDSearch))
 			return searchingList;
-		}
-        		
+
+        // grab the latest search strings here for reference
+        string search = board ? boardAbilitySearch : abilitySearch;
+        string searchGUID = board ? boardAbilityGUIDSearch : abilityGUIDSearch;
+
 		var results = new List<AbilityManager.FullAbility>();
 		foreach (AbilityManager.FullAbility searching in searchingList)
 		{
-			AbilityManager.FullAbility current = searching;
-			if (abilityGUIDSearch != "")
+			if (searchGUID != "")
 			{
-				if (current.ModGUID == null || !current.ModGUID.Contains(abilityGUIDSearch))
-				{
+				if (searching.ModGUID == null || !searching.ModGUID.Contains(searchGUID))
 					continue;
-				}
 			}
 
-			if (abilitySearch != "")
+			if (search != "")
 			{
-				string rulebookName = current.Info?.rulebookName;
-				string abilityName = current.Id.ToString();
-				if ((rulebookName == null || !rulebookName.ToLower().Contains(abilitySearch.ToLower())) &&
-				    !abilityName.Contains(abilitySearch.ToLower()))
-				{
-					continue;
-				}
-			}
+                if (searching.Info == null)
+                    continue;
 
-			results.Add(current);
+				string rulebookName = searching.Info.rulebookName.ToLowerInvariant();
+				string abilityName = searching.Info.name.ToLowerInvariant();
+				if (!rulebookName.Contains(search.ToLowerInvariant()) && !abilityName.Contains(search.ToLowerInvariant()))
+					continue;
+			}
+			results.Add(searching);
 		}
-
 		return results;
 	}
-	
-	private static void AddAbilities(CardInfo currentCard, DeckInfo deckInfo)
-	{
-		GUILayout.Label("Sigils", Array.Empty<GUILayoutOption>());
+    private static List<SpecialTriggeredAbilityManager.FullSpecialTriggeredAbility> GetSpecialAbilitiesThatContain(List<SpecialTriggeredAbilityManager.FullSpecialTriggeredAbility> searchingList, bool board)
+    {
+        // modify search strings here
+        if (board ? !Filter(ref boardSpecialAbilitySearch, ref boardSpecialAbilityGUIDSearch) : !Filter(ref specialAbilitySearch, ref specialAbilityGUIDSearch))
+            return searchingList;
 
-		if (currentCard == (Object)null)
-		{
-			GUILayout.Label("No Card", Array.Empty<GUILayoutOption>());
-			return;
-		}
-		
-		var cardAbilityList = GetAbilitiesThatContain(GetAllAbilities());
-		
-		bool flag = false;
-		NewPager(ref currentPageAdd, (cardAbilityList.Count - 1) / 8);
-		int num = 0;
-		int num2 = currentPageAdd * 8;
-		while (num2 < currentPageAdd * 8 + 8 && num2 < cardAbilityList.Count)
-		{
-			AbilityManager.FullAbility ability = cardAbilityList[num2];
-			if (num % 2 == 0)
-			{
-				GUILayout.BeginHorizontal(Array.Empty<GUILayoutOption>());
-				flag = true;
-			}
-			Texture val = AbilitiesUtil.LoadAbilityIcon(ability.Id.ToString());
-			if (val == (Object)null)
-			{
-				if (GUILayout.Button(ability.Info.rulebookName, GUILayout.Width(overrideSquareWidth), GUILayout.Height(overrideSquareHeight)))
-				{
-					NewCardMod(deckInfo, currentCard, 0, 0, ability.Id);
-				}
-			}
-			else if (GUILayout.Button(val, GUILayout.Width(overrideSquareWidth), GUILayout.Height(overrideSquareHeight)))
-			{
-				NewCardMod(deckInfo, currentCard, 0, 0, ability.Id);
-			}
-			if (num % 2 != 0)
-			{
-				GUILayout.EndHorizontal();
-				flag = false;
-			}
-			num2++;
-			num++;
-		}
-		if (flag)
-		{
-			GUILayout.EndHorizontal();
-		}
-	}
+        // grab the latest search strings here for reference
+        string search = board ? boardSpecialAbilitySearch : specialAbilitySearch;
+        string searchGUID = board ? boardSpecialAbilityGUIDSearch : specialAbilityGUIDSearch;
 
-	private static List<AbilityManager.FullAbility> GetAllAbilities()
-	{
-		return AbilityManager.AllAbilities;
-	}
+        var results = new List<SpecialTriggeredAbilityManager.FullSpecialTriggeredAbility>();
+        foreach (SpecialTriggeredAbilityManager.FullSpecialTriggeredAbility searching in searchingList)
+        {
+            if (searchGUID != "")
+            {
+                if (searching.ModGUID == null || !searching.ModGUID.Contains(searchGUID))
+                    continue;
+            }
 
-	private static void ManageSpecialAbilities(CardInfo currentCard, DeckInfo deckInfo)
-	{
-		specialAbilitySelector = GUILayout.Toolbar(specialAbilitySelector, specialAbilitySelectorList);
-		if (specialAbilitySelector == 0)
-		{
-			RemoveSpecialAbility(currentCard, deckInfo);
-		}
-		else
-		{
-			AddSpecialAbility(currentCard, deckInfo);
-		}
-	}
-
-	private static void AddSpecialAbility(CardInfo currentCard, DeckInfo deckInfo)
-	{
-		GUILayout.Label("Special Abilities", Array.Empty<GUILayoutOption>());
-		
-		var abilities = SpecialTriggeredAbilityManager.AllSpecialTriggers;
-		var result = GetSpecialAbilitiesThatContain(abilities);
-		
-		specialAbilityListVector = GUILayout.BeginScrollView(specialAbilityListVector);
-		foreach (SpecialTriggeredAbilityManager.FullSpecialTriggeredAbility allSpecialAbility in result)
-		{
-			if (GUILayout.Button(allSpecialAbility.AbilityName, Array.Empty<GUILayoutOption>()))
-			{
-				NewCardMod(deckInfo, currentCard, specialAbility:allSpecialAbility.Id);
-			}
-		}
-		GUILayout.EndScrollView();
-	}
-
-	private static void RemoveSpecialAbility(CardInfo currentCard, DeckInfo deckInfo)
-	{
-		GUILayout.Label("Special Abilities", Array.Empty<GUILayoutOption>());
-		
-		var abilities = SpecialTriggeredAbilityManager.AllSpecialTriggers.FindAll((a)=>currentCard.SpecialAbilities.Contains(a.Id));
-		var result = GetSpecialAbilitiesThatContain(abilities);
-		
-		if (result.Count <= 0)
-		{
-			GUILayout.Label("No Special Abilities", Array.Empty<GUILayoutOption>());
-			return;
-		}
-
-		specialAbilityListVector2 = GUILayout.BeginScrollView(specialAbilityListVector2);
-		foreach (SpecialTriggeredAbilityManager.FullSpecialTriggeredAbility specialAbility2 in result)
-		{
-			SpecialTriggeredAbilityManager.FullSpecialTriggeredAbility current = specialAbility2;
-			if (GUILayout.Button(current.AbilityName, Array.Empty<GUILayoutOption>()))
-			{
-				NewCardMod(deckInfo, currentCard, removeSpecialAbility:current.Id);
-			}
-		}
-		GUILayout.EndScrollView();
-	}
+            if (search != "")
+            {
+                if (!searching.AbilityName.ToLowerInvariant().Contains(search.ToLowerInvariant()))
+                    continue;
+            }
+            results.Add(searching);
+        }
+        return results;
+    }
 
 	private static void NewPager(ref int page, int max, int min = 0)
 	{
@@ -639,4 +826,46 @@ public static class DrawCardInfo
 		GUILayout.EndVertical();
 		page = num;
 	}
+
+    private static readonly string[] sigilsAbilities = new string[2] { "Sigils", "Special Abilities" };
+    private static readonly string[] abilityManagementTabs = new string[2] { "Remove", "Add" };
+    private static readonly string[] specialAbilitySelectorList = new string[2] { "Remove", "Add" };
+    private static readonly float overrideSquareWidth = 150;
+    private static readonly float overrideSquareHeight = 40;
+
+    private static int selectedTab = 0;
+    private static int abilityManagerIndex = 0;
+    private static string abilitySearch = "";
+    private static string abilityGUIDSearch = "";
+    private static string specialAbilitySearch = "";
+    private static string specialAbilityGUIDSearch = "";
+    private static int currentPageEdit = 0;
+    private static int currentPageAdd = 0;
+    private static int specialAbilitySelector = 0;
+    private static Vector2 specialAbilityListVector2 = Vector2.zero;
+    private static Vector2 specialAbilityListVector = Vector2.zero;
+
+    // these exist so the two menus don't interact with each other
+    // yes, it's a straight copy-paste job, no I don't care
+    private static int boardSelectedTab = 0;
+    private static int boardAbilityManagerIndex = 0;
+    private static string boardAbilitySearch = "";
+    private static string boardAbilityGUIDSearch = "";
+    private static string boardSpecialAbilitySearch = "";
+    private static string boardSpecialAbilityGUIDSearch = "";
+    private static int boardCurrentPageEdit = 0;
+    private static int boardCurrentPageAdd = 0;
+    private static int boardSpecialAbilitySelector = 0;
+    private static Vector2 boardSpecialAbilityListVector2 = Vector2.zero;
+    private static Vector2 boardSpecialAbilityListVector = Vector2.zero;
+
+    public static readonly string EmissionMod = "DebugMenu:EmissionMod";
+    public static readonly string PortraitMod = "DebugMenu:PortraitMod";
+
+    public enum Result
+    {
+        None,
+        Removed,
+        Altered
+    }
 }

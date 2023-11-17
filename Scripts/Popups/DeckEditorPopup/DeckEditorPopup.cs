@@ -47,6 +47,28 @@ public class DeckEditorPopup : BaseWindow
 		
 	}
 
+	private void UpdateDeckReviewDisplay(bool amountChanged, CardInfo currentSelection)
+	{
+        DeckReviewSequencer sequence = UnityEngine.Object.FindObjectOfType<DeckReviewSequencer>();
+		if (sequence == null)
+			return;
+
+		if (amountChanged)
+		{
+			ViewManager.Instance.CurrentView = View.Board;
+			sequence.SetDeckReviewShown(false);
+            ViewManager.Instance.CurrentView = View.MapDeckReview;
+            sequence.SetDeckReviewShown(true);
+        }
+		else
+		{
+			SelectableCard card = sequence.cardArray.displayedCards.Find(x => x.Info == currentSelection);
+            card.RenderInfo.attack = card.Info.Attack;
+            card.RenderInfo.health = card.Info.Health;
+            card.RenderInfo.energyCost = card.Info.EnergyCost;
+            card.RenderCard();
+        }
+    }
 	private void OnGUICardEditor()
 	{
 		if (currentDeckEditorSelection - 1 >= CurrentDeck.Cards.Count)
@@ -56,12 +78,16 @@ public class DeckEditorPopup : BaseWindow
 			return;
 
 		CardInfo val = CurrentDeck.Cards[currentDeckEditorSelection - 1];
-		DrawCardInfo.Result result = DrawCardInfo.OnGUI(val, CurrentDeck);
+		DrawCardInfo.Result result = DrawCardInfo.OnGUI(val, null, CurrentDeck);
 
         if (result == DrawCardInfo.Result.Removed)
 		{
 			currentDeckEditorSelection = Mathf.Min(currentDeckEditorSelection, CurrentDeck.Cards.Count - 1);
-		}
+            if (ViewManager.m_Instance?.CurrentView == View.MapDeckReview)
+            {
+				UpdateDeckReviewDisplay(true, null);
+            }
+        }
 		else if (result == DrawCardInfo.Result.Altered)
 		{
 			// if the board exists, update player cards
@@ -85,15 +111,7 @@ public class DeckEditorPopup : BaseWindow
             // update cards in deck review
             if (ViewManager.m_Instance?.CurrentView == View.MapDeckReview)
 			{
-				DeckReviewSequencer sequence = UnityEngine.Object.FindObjectOfType<DeckReviewSequencer>();
-				if (sequence != null)
-				{
-					foreach (SelectableCard selectableCard in sequence.cardArray.displayedCards)
-					{
-						if (selectableCard?.Info == val)
-							selectableCard.RenderCard();
-					}
-				}
+				UpdateDeckReviewDisplay(false, val);
 			}
 			// can't figure out how to update the GBC collection info dynamically, maybe later if requested
 /*            if (SaveManager.SaveFile.IsPart2)
@@ -161,6 +179,8 @@ public class DeckEditorPopup : BaseWindow
                     CurrentDeck.AddCard(obj);
 					SaveManager.SaveToFile(false);
 					currentDeckEditorSelection = CurrentDeck.Cards.Count;
+					if (ViewManager.m_Instance.CurrentView == View.MapDeckReview)
+						UpdateDeckReviewDisplay(true, obj);
 				}
 			}
 		}
