@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.2.2
+### General
+- Using the deck editor while viewing your deck will now properly update the displayed card(s)
+- Fixed the deck editor ability search not returning sigils with matching internal names
+
 ## 1.2.1
 ### General
 - Fixed 'Deal Damage' options in Game Board menu not working
