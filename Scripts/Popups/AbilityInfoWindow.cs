@@ -90,6 +90,26 @@ public class AbilityInfoPopup : BaseWindow
         {
             PrintModdedAbilitiesToLog();
         }
+
+        using (HorizontalScope(2))
+        {
+            if (Button("Learn All", null, null, () => new("No ability infos")
+                {
+                    Disabled = ModdedInfos == null || ModdedInfos.Count == 0
+                }))
+            {
+                LearnAllAbilities(true);
+            }
+
+            if (Button("Unlearn All", null, null, () => new("No ability infos")
+                {
+                    Disabled = ModdedInfos == null || ModdedInfos.Count == 0
+                }))
+            {
+                LearnAllAbilities(false);
+            }
+        }
+
         if (Button("Print Ability Infos by Selected GUID"))
         {
             Dictionary<AbilityInfo, string> dictionary = new();
@@ -230,6 +250,19 @@ public class AbilityInfoPopup : BaseWindow
                 row = 0;
             }
             row++;
+        }
+    }
+
+    private void LearnAllAbilities(bool learnAll)
+    {
+        if(learnAll)
+        {
+            var names = AllInfos.Where((a)=>!ProgressionData.Data.learnedAbilities.Contains(a.ability));
+            ProgressionData.Data.learnedAbilities.AddRange(names.Select((a)=>a.ability));
+        }
+        else
+        {
+            ProgressionData.Data.learnedAbilities.Clear();
         }
     }
 
