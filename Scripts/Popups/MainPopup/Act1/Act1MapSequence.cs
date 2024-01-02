@@ -13,7 +13,7 @@ namespace DebugMenu.Scripts.Act1;
 public class Act1MapSequence : BaseMapSequence
 {
 	public static bool RegionOverride = false;
-	public static string RegionNameOverride = "";  
+	public static string RegionNameOverride = "No region selected";  
 	
 	private readonly Act1 Act = null;
 	private readonly DebugWindow Window = null;
@@ -34,17 +34,15 @@ public class Act1MapSequence : BaseMapSequence
 		if (Window.Toggle("Activate all Map nodes", ref activateAllNodes))
 			ToggleAllNodes();
 
-		Act.DrawSequencesGUI();
+        Window.Toggle("Toggle Map Override", ref RegionOverride);
+        Act.DrawSequencesGUI();
 		
-		Window.Padding();
-
-		Window.Label("Override Region");
-		ButtonListPopup.OnGUI(Window, RegionNameOverride, "Override Region", RegionNameList, static (_, value, _)=>
-		{
-			RegionNameOverride = value;
-		});
-		Window.Toggle("Toggle Map Override", ref RegionOverride);
-	}
+        Window.LabelHeader("<b>Override Region</b>");
+        ButtonListPopup.OnGUI(Window, RegionNameOverride, "Override Region", RegionNameList, static (_, value, _) =>
+        {
+            RegionNameOverride = value;
+        });
+    }
 
 	public override void ToggleSkipNextNode()
 	{
@@ -57,6 +55,9 @@ public class Act1MapSequence : BaseMapSequence
 		if (MapNodeManager.m_Instance != null)
 		{
             MapNode node = Singleton<MapNodeManager>.Instance.ActiveNode;
+			if (node == null)
+				return;
+
             Singleton<MapNodeManager>.Instance.SetActiveNode(node);
         }
 	}

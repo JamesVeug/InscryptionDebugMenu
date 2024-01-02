@@ -8,7 +8,7 @@ namespace DebugMenu.Scripts.Popups;
 public class ResourceBankPopup : BaseWindow
 {
 	public override string PopupName => "Resource Bank";
-	public override Vector2 Size => new Vector2(1000, 1000);
+	public override Vector2 Size => new(1050, 1000);
 
 	private string resourceBankInfo;
 	private string filterText;
@@ -25,20 +25,20 @@ public class ResourceBankPopup : BaseWindow
 		ResourceBank resourceBank = ResourceBank.instance;
 		if (resourceBank == null)
 		{
-			Label($"null resourceBank");
+			LabelHeader($"ResourceBank is null");
 			return;
-		}
-
-		if (Button("Copy All To Clipboard"))
-		{
-			GUIUtility.systemCopyBuffer = resourceBankInfo;
 		}
 		
 		Label("Filter", new(0, RowHeight / 2));
 		filterText = TextField(filterText, new(0, RowHeight / 2));
 
-		Label(""); // padding
-		
+        if (Button("Copy All To Clipboard"))
+        {
+            GUIUtility.systemCopyBuffer = resourceBankInfo;
+        }
+
+        StartNewColumn();
+
 		resourceBankInfo = "";
 		int resourcesCount = resourceBank.resources.Count;
 		int row = 0;
@@ -52,21 +52,15 @@ public class ResourceBankPopup : BaseWindow
 			}
 
 			string resourcePath = path + "\n";
-
-			string assetString = null;
 			Object resourceAsset = resource.asset;
-			if(resourceAsset == null)
-			{
-				assetString = "null";
-			}
+
+            string assetString;
+			if (resourceAsset == null)
+				assetString = "(null)";
 			else if (resourceAsset is GameObject)
-			{
-				assetString = $"GameObject";
-			}
+				assetString = "(GameObject)";
 			else
-			{
-				assetString = $"{resourceAsset.GetType()}";
-			}
+				assetString = $"({resourceAsset.GetType()})";
 
 			resourcePath += assetString;
 			if (Button(resourcePath, new(0, 60)))
@@ -75,13 +69,12 @@ public class ResourceBankPopup : BaseWindow
 			}
 			resourceBankInfo += "\n" + resourcePath + "\n";
 
-			if (row > 10)
+            row++;
+            if (row == 15)
 			{
-				StartNewColumn();
-				row = 0;
+                row = 0;
+                StartNewColumn();
 			}
-
-			row++;
 		}
 		
 	}

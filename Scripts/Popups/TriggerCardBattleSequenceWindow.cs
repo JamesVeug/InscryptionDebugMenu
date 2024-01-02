@@ -17,7 +17,7 @@ public class TriggerCardBattleSequenceWindow : BaseWindow
 	}
 	
 	public override string PopupName => "Trigger Card Battle";
-	public override Vector2 Size => new Vector2(630, 600);
+	public override Vector2 Size => new(630, 600);
 
 	public BattleType SelectedBattleType
 	{
@@ -52,7 +52,7 @@ public class TriggerCardBattleSequenceWindow : BaseWindow
 	{
 		base.OnGUI();
 		
-		LabelHeader(PopupName);
+		LabelHeader(PopupName, leftAligned: true);
 		
 		DrawTools();
 
@@ -87,7 +87,7 @@ public class TriggerCardBattleSequenceWindow : BaseWindow
 
 	private void DrawTools()
 	{
-		Label("Card Battle Type");
+		Label("<b>Card Battle Types</b>");
 
         if (Button("Card Battle", disabled: DisableCard))
 		{
@@ -128,43 +128,45 @@ public class TriggerCardBattleSequenceWindow : BaseWindow
 
 	private void DrawSequenceDetails()
 	{
-		Label("Type " + m_selectedBattleType);
-		Label("Difficulty " + difficulty);
+		Label("<b>Type:</b> " + m_selectedBattleType);
+		Label("<b>Difficulty:</b> " + difficulty);
 
 		if (m_selectedBattleType == BattleType.BossBattle)
 		{
-			Label("Opponent " + m_opponent);
+			Label("<b>Opponent:</b> " + m_opponent);
 		}
 		else
 		{
-			Label("Blueprint " + (m_blueprintData != null ? m_blueprintData.name : "null"));
+			Label("<b>Blueprint:</b> " + (m_blueprintData != null ? m_blueprintData.name : "null"));
 
 			if (m_selectedBattleType == BattleType.TotemBattle)
 			{
-				Label("Totem Top: " + m_totemTop);
-				Label("Totem Bottom: " + m_totemBottom);
+				Label("<b>Totem Top:</b> " + m_totemTop);
+				Label("<b>Totem Bottom:</b> " + m_totemBottom);
 			}
 		}
 	}
 
 	private void TriggerSequence()
 	{
-		CardBattleNodeData bossBattleNodeData = null;
+		CardBattleNodeData bossBattleNodeData;
 		switch (m_selectedBattleType)
 		{
 			case BattleType.CardBattle:
-				bossBattleNodeData = new CardBattleNodeData();
-				bossBattleNodeData.blueprint = m_blueprintData;
-				break;
+                bossBattleNodeData = new CardBattleNodeData
+                {
+                    blueprint = m_blueprintData
+                };
+                break;
 			case BattleType.TotemBattle:
-				TotemBattleNodeData data = new TotemBattleNodeData();
+				TotemBattleNodeData data = new();
 				bossBattleNodeData = data;
 				data.blueprint = m_blueprintData;
 				EncounterTotemTopOverride = m_totemTop;
 				EncounterTotemBottomOverride = m_totemBottom;
 				break;
 			case BattleType.BossBattle:
-				BossBattleNodeData battleNodeData = new BossBattleNodeData();
+				BossBattleNodeData battleNodeData = new();
 				bossBattleNodeData = battleNodeData;
 				battleNodeData.bossType = m_opponent;
 				bossBattleNodeData.specialBattleId = BossBattleSequencer.GetSequencerIdForBoss(m_opponent);
@@ -181,14 +183,12 @@ public class TriggerCardBattleSequenceWindow : BaseWindow
 
 	private bool CanTriggerSequence()
 	{
-		switch (m_selectedBattleType)
-		{
-			case BattleType.BossBattle:
-				return true;
-			default:
-				return m_blueprintData != null;
-		}
-	}
+        return m_selectedBattleType switch
+        {
+            BattleType.BossBattle => true,
+            _ => m_blueprintData != null,
+        };
+    }
 }
 
 
@@ -207,7 +207,7 @@ internal class TriggerCardBattleSequenceWindow_Patches
 
 		// ===
         
-		List<CodeInstruction> codes = new List<CodeInstruction>(instructions);
+		List<CodeInstruction> codes = new(instructions);
 		
 		MethodInfo BuildOpponentTotem = AccessTools.Method(typeof(EncounterBuilder), nameof(EncounterBuilder.BuildOpponentTotem));
 		MethodInfo OverrideTotemData = AccessTools.Method(typeof(TriggerCardBattleSequenceWindow_Patches), nameof(TriggerCardBattleSequenceWindow_Patches.OverrideTotemData));

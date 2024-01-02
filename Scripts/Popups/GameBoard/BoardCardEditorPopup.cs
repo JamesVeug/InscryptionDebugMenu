@@ -11,7 +11,7 @@ namespace DebugMenu.Scripts.Popups.DeckEditorPopup;
 public class BoardCardEditorPopup : BaseWindow
 {
     public override string PopupName => "Card Editor";
-    public override Vector2 Size => new(512f, 768f);
+    public override Vector2 Size => new(600f, 768f);
 
     public PlayableCard currentSelection = null;
 

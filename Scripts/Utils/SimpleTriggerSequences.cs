@@ -28,7 +28,7 @@ public class APIModdedSequence : ABaseTriggerSequences, IModdedSequence
 
 	public override void Sequence()
 	{
-		CustomSpecialNodeData nodeData = new CustomSpecialNodeData(CustomNodeData);
+		CustomSpecialNodeData nodeData = new(CustomNodeData);
 		Singleton<GameFlowManager>.Instance.TransitionToGameState(GameState.SpecialCardSequence, nodeData);
 	}
 
@@ -155,9 +155,11 @@ public abstract class ThreeCardChoiceSequences : SimpleTriggerSequences
 	{
 		get
 		{
-			CardChoicesNodeData data = new CardChoicesNodeData();
-			data.choicesType = ChoiceType;
-			return data;
+            CardChoicesNodeData data = new()
+            {
+                choicesType = ChoiceType
+            };
+            return data;
 		}
 	}
 }

@@ -13,11 +13,11 @@ namespace DebugMenu.Scripts.Popups;
 public class GameBoardPopup : BaseWindow
 {
 	public override string PopupName => "Game Board";
-	public override Vector2 Size => new(950f, 600f);
+	public override Vector2 Size => new(900f, 600f);
 	private Vector2 buttonSize = new(width, 134f);
     private const float width = 100f;
     
-	private Tuple<PlayableCard, CardSlot> currentSelection = null;
+	private Tuple<PlayableCard, CardSlot> currentSelection = new(null, null);
     private bool selectedQueue = false;
 
     private string lastCardSearch = "";
@@ -27,27 +27,46 @@ public class GameBoardPopup : BaseWindow
     public override void OnGUI()
 	{
 		base.OnGUI();
+        if (BoardManager.m_Instance == null)
+            return;
 
         int slotsPerSide = BoardManager.Instance.PlayerSlotsCopy.Count;
 
+        // create buttons for each card slot (plus the queue slots which aren't technically card slots? okay)
         LabelHeader("Queue Slots", new(width * slotsPerSide, RowHeight));
-        DisplayPlayableCards(slotsPerSide, GetAllQueueCards(slotsPerSide));
+        DisplayCardSlots(slotsPerSide, GetAllQueueSlots(slotsPerSide), true);
         Padding(new(width * slotsPerSide, width));
+
         LabelHeader("Opponent Slots", new(width * slotsPerSide, RowHeight));
-        DisplayCardSlots(slotsPerSide, BoardManager.Instance.OpponentSlotsCopy);
+        DisplayCardSlots(slotsPerSide, BoardManager.Instance.OpponentSlotsCopy, false);
         Padding(new(width * slotsPerSide, width));
+
         LabelHeader("Player Slots", new(width * slotsPerSide, RowHeight));
-        DisplayCardSlots(slotsPerSide, BoardManager.Instance.PlayerSlotsCopy);
+        DisplayCardSlots(slotsPerSide, BoardManager.Instance.PlayerSlotsCopy, false);
 
         // create enough space to accommodate 5 buttons
         StartNewColumn();
         StartNewColumn();
         StartNewColumn();
 
-        Label("Total Card Slots: " + BoardManager.Instance.AllSlotsCopy.Count + "\nOccupied Slots: " + BoardManager.Instance.AllSlotsCopy.Count(x => x.Card != null));
+        using (HorizontalScope(2))
+        {
+            Label("<b>Total Slots:</b> " + BoardManager.Instance.AllSlots.Count);
+            Label("<b>Occupied Slots:</b> " + BoardManager.Instance.AllSlotsCopy.Count(x => x.Card != null));
+        }
+        
+        using (HorizontalScope(2))
+        {
+            if (Button("Clear Board"))
+                Plugin.Instance.StartCoroutine(BoardManager.Instance.ClearBoard());
+
+            if (Button("Clear Queue"))
+                Plugin.Instance.StartCoroutine(TurnManager.Instance.Opponent.ClearQueue());
+        }
+
         LabelHeader("Current Selection", leftAligned: true);
 
-        if (currentSelection == null)
+        if (currentSelection.Item2 == null)
         {
             Label("Nothing selected");
             return;
@@ -55,11 +74,11 @@ public class GameBoardPopup : BaseWindow
 
         PlayableCard card = currentSelection.Item1;
         CardSlot slot = currentSelection.Item2;
-        bool replace = false;
-        string label = (selectedQueue ? "Queue" : (slot.IsPlayerSlot ? "Player" : "Opponent")) + " Slot";
         
-        Label(label + "  |  Slot Index: " + slot.Index);
-        Label("Card: " + (card != null ? card.Info.DisplayedNameLocalized : "N/A"));
+        string label = (selectedQueue ? "Queue" : (slot.IsPlayerSlot ? "Player" : "Opponent")) + " Slot";
+        Label(label + "  |  Slot Index: " + slot.Index + "\nCard: " + (card != null ? card.Info.DisplayedNameLocalized : "N/A"));
+
+        bool replace = false;
         if (card != null)
         {
             replace = true;
@@ -82,7 +101,7 @@ public class GameBoardPopup : BaseWindow
             using (HorizontalScope(3))
             {
                 Label("Kill card");
-                if (Button("Triggers"))
+                if (Button("Activate triggers"))
                 {
                     Plugin.Instance.StartCoroutine(card.Die(false));
                     currentSelection = new(null, slot);
@@ -144,26 +163,7 @@ public class GameBoardPopup : BaseWindow
                 if (GUILayout.Button($"{lastSearched.DisplayedNameLocalized}\n({lastSearched.name})"))
                 {
                     CardInfo obj = lastSearched.Clone() as CardInfo;
-                    // kill the card we're replacing to make room
-                    if (replacingCard)
-                    {
-                        PlayableCard cardToReplace = slot.Card;
-                        if (selectedQueue)
-                            cardToReplace = QueuedCardFromSlot(slot);
-
-                        Plugin.Instance.StartCoroutine(KillCardTriggerless(cardToReplace));
-                    }
-                    // create the card in selected slot and then update the selection
-                    if (selectedQueue)
-                    {
-                        // do it this way since there's a delay when queuing a card
-                        Plugin.Instance.StartCoroutine(QueueCardAndUpdateCurrentSelection(obj, slot));
-                    }
-                    else
-                    {
-                        Plugin.Instance.StartCoroutine(BoardManager.Instance.CreateCardInSlot(obj, slot));
-                        currentSelection = new(slot.Card, slot);
-                    }
+                    Plugin.Instance.StartCoroutine(FillChosenSlot(slot, obj, selectedQueue, replacingCard));
                     return;
                 }
             }
@@ -176,29 +176,44 @@ public class GameBoardPopup : BaseWindow
         GUILayout.EndArea();
     }
 
-    private IEnumerator QueueCardAndUpdateCurrentSelection(CardInfo info, CardSlot slot)
+    private IEnumerator FillChosenSlot(CardSlot slot, CardInfo info, bool queueSlot, bool replacingCard)
     {
-        yield return TurnManager.Instance.Opponent.QueueCard(info, slot);
-        currentSelection = new(QueuedCardFromSlot(slot), slot);
+        if (replacingCard) // kill the card we're replacing to make room
+        {
+            PlayableCard cardToKill = queueSlot ? QueuedCardFromSlot(slot) : slot.Card;
+            yield return KillCardTriggerless(cardToKill);
+        }
+        
+        if (queueSlot)
+        {
+            yield return TurnManager.Instance.Opponent.QueueCard(info, slot);
+            currentSelection = new(QueuedCardFromSlot(slot), slot);
+        }
+        else
+        {
+            yield return BoardManager.Instance.CreateCardInSlot(info, slot);
+            currentSelection = new(slot.Card, slot);
+        }
     }
+
     private bool GetCardsThatContain(string cardName, out List<int> results)
     {
         string lower = cardName.ToLower();
-        bool result = false;
+        bool atLeastOneResult = false;
         results = new List<int>();
         for (int i = 0; i < CardManager.AllCardsCopy.Count; i++)
         {
             CardInfo allCard = CardManager.AllCardsCopy[i];
             string name = allCard.name;
             string displayedName = allCard.displayedName;
-            if (name != null && name.ToLower().Contains(lower) || displayedName != null && displayedName.ToLower().Contains(lower))
+            if ((name != null && name.ToLower().Contains(lower)) || (displayedName != null && displayedName.ToLower().Contains(lower)))
             {
                 results.Add(i);
-                result = true;
+                atLeastOneResult = true;
             }
         }
 
-        return result;
+        return atLeastOneResult;
     }
 
     private bool GetCardByName(string cardName, out int index)
@@ -244,51 +259,39 @@ public class GameBoardPopup : BaseWindow
             card.StartCoroutine(card.DestroyWhenStackIsClear());
         }
     }
-    private PlayableCard QueuedCardFromSlot(CardSlot slot)
-    {
-        return TurnManager.Instance.Opponent.Queue.Find(x => x.QueuedSlot == slot);
-    }
-    private void DisplayCardSlots(int numToDisplay, List<CardSlot> slots)
+    private PlayableCard QueuedCardFromSlot(CardSlot slot) => TurnManager.Instance.Opponent.Queue.Find(x => x.QueuedSlot == slot);
+    private void DisplayCardSlots(int numToDisplay, List<CardSlot> slots, bool fromQueue)
 	{
 		using (HorizontalScope(numToDisplay))
 		{
             for (int i = 0; i < numToDisplay; i++)
 			{
-				PlayableCard card = slots[i].Card;
-				string cardName = card != null ? $"{card.Info.DisplayedNameLocalized}\n{card.Info.name}" : "Empty";
-				if (Button($"Slot {i}\n{cardName}", buttonSize))
-                {
-                    currentSelection = new(card, slots[i]);
-                    selectedQueue = false;
-                }
+				PlayableCard card = slots[i]?.Card;
+                DisplayPlayableCard(i, card, slots[i], fromQueue);
 			}
         }
 	}
-    private void DisplayPlayableCards(int numToDisplay, List<PlayableCard> cards)
+    private void DisplayPlayableCard(int index, PlayableCard card, CardSlot slot, bool fromQueue)
     {
-        using (HorizontalScope(numToDisplay))
+        string cardName = card == null ? "Empty" : $"{card.Info.name}\n({card.Info.DisplayedNameLocalized})";
+        if (Button($"<b>Slot {index}</b>\n{cardName}", buttonSize))
         {
-            for (int i = 0; i < numToDisplay; i++)
-            {
-                PlayableCard card = cards[i];
-                string cardName = card != null ? $"{card.Info.DisplayedNameLocalized}\n({card.Info.name})" : "Empty";
-                if (Button($"Slot {i}\n{cardName}", buttonSize))
-                {
-                    currentSelection = new(card, cards[i]?.QueuedSlot ?? BoardManager.Instance.OpponentSlotsCopy.Find(x => x.Index == i));
-                    selectedQueue = true;
-                }
-            }
+            selectedQueue = fromQueue;
+            if (selectedQueue)
+                currentSelection = new(card, card?.QueuedSlot ?? BoardManager.Instance.OpponentSlotsCopy.Find(x => x.Index == index));
+            else
+                currentSelection = new(card, slot);
         }
     }
 
     // returns a list of all queued slots plus null placeholders for empty queue slots
-    private List<PlayableCard> GetAllQueueCards(int count)
+    private List<CardSlot> GetAllQueueSlots(int count)
 	{
-		List<PlayableCard> result = new();
+		List<CardSlot> result = new();
 		for (int i = 0; i < count; i++)
 		{
 			PlayableCard queuedCard = QueuedCardFromSlot(BoardManager.Instance.OpponentSlotsCopy[i]);
-			result.Add(queuedCard);
+			result.Add(queuedCard?.QueuedSlot ?? null);
 		}
 		return result;
 	}

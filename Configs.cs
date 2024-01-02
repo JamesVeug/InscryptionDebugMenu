@@ -4,6 +4,17 @@ namespace DebugMenu;
 
 public static class Configs
 {
+    public enum WindowSizes
+    {
+        OneQuarter,
+        Half,
+        ThreeQuarters,
+        Default,
+        OneAndAQuarter,
+        OneAndAHalf,
+        OneAndThreeQuarters,
+        Double
+    }
 	public static bool DisableAllInput
 	{
 		get => m_disableDialogue.Value;
@@ -60,10 +71,20 @@ public static class Configs
             Plugin.Instance.Config.Save();
         }
     }
+    public static WindowSizes WindowSize
+    {
+        get => m_windowSize.Value;
+        set
+        {
+            m_windowSize.Value = value;
+            Plugin.Instance.Config.Save();
+        }
+    }
 
     public static ConfigEntry<bool> m_disableDialogue = Bind("General", "Disable Dialogue", false, "Should all dialogue be disabled?");
     public static ConfigEntry<bool> m_disablePlayerDamage = Bind("General", "Disable Player Damage", false, "Should the player be immune to direct damage?");
     public static ConfigEntry<bool> m_disableOpponentDamage = Bind("General", "Disable Opponent Damage", false, "Should the opponent be immune to direct damage?");
+    public static ConfigEntry<WindowSizes> m_windowSize = Bind("General", "Window Scale", WindowSizes.Default, "How big the menu windows should be.");
     public static ConfigEntry<string> m_hotkeys = Bind("General", "Hotkeys",
         "F1:AllAct SetTimeScale:1," +
         "LeftControl+F1:AllAct SetTimeScale:10," +

@@ -1,5 +1,28 @@
 # Changelog
 
+## 1.3.0
+### General
+- Fixed 'Reload Act' and 'Restart Act' buttons' functionality being reversed
+- Fixed Boss Battle opponent selection menu altering OpponentManager.AllOpponents
+- Added config option (and buttons) to rescale menu window sizes
+- Boss Battle opponent selection menu now shows the name of custom bosses instead of the enum number
+- Improved UI
+
+### Deck Editor
+- Sigil buttons now display their rulebook name next to their icon
+- Sigils on cards now indicate if they're from a card mod info
+- Can now display the custom API alternate portraits and force them to display
+- Can now nullify gem costs and remove them individually
+- Can now display custom costs added through the API
+
+### Game Board
+- Fixed error spam when the menu is open outside of a battle
+- Fixed error when using the menu to replace a card on the board
+- Added buttons to clear the board and queue to the menu
+
+### Act 2
+- Fixed error spam during intro animation and during various sections like opening card packs or entering card battles
+
 ## 1.2.2
 ### General
 - Using the deck editor while viewing your deck will now properly update the displayed card(s)

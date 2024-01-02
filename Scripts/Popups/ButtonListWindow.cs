@@ -8,16 +8,16 @@ namespace DebugMenu.Scripts.Popups;
 public class ButtonListPopup : BaseWindow
 {
 	public override string PopupName => popupNameOverride;
-	public override Vector2 Size => new Vector2(630, 600);
+	public override Vector2 Size => new(630, 600);
 
 	private string header = "";
 	private string filterText = "";
-	private List<string> buttonNames = new List<string>();
-	private List<string> buttonValues = new List<string>();
+	private List<string> buttonNames = new();
+	private List<string> buttonValues = new();
 	private string popupNameOverride = "Button List";
 	private Action<int, string, string> callback;
 	private Vector2 position;
-	private string metaData;
+	private string disableMatch;
 
 	public override void OnGUI()
 	{
@@ -26,8 +26,8 @@ public class ButtonListPopup : BaseWindow
 		int namesCount = buttonNames.Count; // 20
 		int rows = Mathf.Max(Mathf.FloorToInt(Size.y / RowHeight) - 2, 1); // 600 / 40 = 15 
 		int columns = Mathf.CeilToInt((float)namesCount / rows) + 1; // 20 / 15 = 4
-		Rect scrollableAreaSize = new Rect(new Vector2(0, 0), new Vector2(columns *  ColumnWidth + (columns - 1) * 10, rows * RowHeight));
-		Rect scrollViewSize = new Rect(new Vector2(0, 0), Size - new Vector2(10, 25));
+		Rect scrollableAreaSize = new(new Vector2(0, 0), new Vector2(columns *  ColumnWidth + (columns - 1) * 10, rows * RowHeight));
+		Rect scrollViewSize = new(new Vector2(0, 0), Size - new Vector2(10, 25));
 		position = GUI.BeginScrollView(scrollViewSize, position, scrollableAreaSize);
 		
 		LabelHeader(header);
@@ -55,10 +55,10 @@ public class ButtonListPopup : BaseWindow
 			
 			if(!IsFiltered(buttonName, buttonValue))
 				continue;
-			
-			if (Button(buttonName))
+
+			if (Button(buttonName, disabled: () => new() { Disabled = buttonValue == disableMatch }))
 			{
-				callback(i, buttonValue, metaData);
+				callback(i, buttonValue, disableMatch);
 				Plugin.Instance.ToggleWindow<ButtonListPopup>();
 			}
 
@@ -83,7 +83,7 @@ public class ButtonListPopup : BaseWindow
 		
 	}
 
-	public static bool OnGUI(DrawableGUI gui, string buttonText, string headerText, Func<Tuple<List<string>, List<string>>> GetDataCallback, Action<int, string, string> OnChoseButtonCallback, string metaData=null)
+	public static bool OnGUI(DrawableGUI gui, string buttonText, string headerText, Func<Tuple<List<string>, List<string>>> GetDataCallback, Action<int, string, string> OnChoseButtonCallback, string disableMatch = null)
 	{
 		if (gui.Button(buttonText))
 		{
@@ -98,7 +98,7 @@ public class ButtonListPopup : BaseWindow
 			buttonListPopup.buttonValues = data.Item2;
 			buttonListPopup.header = headerText;
 			buttonListPopup.filterText = "";
-			buttonListPopup.metaData = metaData;
+			buttonListPopup.disableMatch = disableMatch;
 			return true;
 		}
 

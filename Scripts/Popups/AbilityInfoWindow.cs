@@ -31,7 +31,7 @@ public class AbilityInfoPopup : BaseWindow
 
     private static bool FilterByMagnificus = false;
 
-    private const int numElements = 30;
+    private const int numElements = 45;
 
     public static int pageNum = 0;
 
@@ -52,7 +52,7 @@ public class AbilityInfoPopup : BaseWindow
 
     public override string PopupName => "Ability Infos";
 
-    public override Vector2 Size => new(1100f, 1000f);
+    public override Vector2 Size => new(1050f, 950f);
 
     public AbilityInfoPopup()
     {

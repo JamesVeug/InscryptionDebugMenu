@@ -248,10 +248,22 @@ internal class EmissionAndPortraitPatches
         if (__instance == null || renderInfo?.baseInfo == null)
             return;
 
-        // the check for HasAlternatePortrait is done before adding this mod to the card
-        if (renderInfo.baseInfo.Mods.Exists(x => x.singletonId == DrawCardInfo.PortraitMod))
+        List<CardModificationInfo> mods = renderInfo.baseInfo.Mods;
+        if (mods.Exists(x => x.singletonId == DrawCardInfo.PortraitMod))
         {
             __instance.SetPortrait(renderInfo.baseInfo.alternatePortrait);
+        }
+        else if (mods.Exists(x => x.singletonId == DrawCardInfo.ShieldPortraitMod))
+        {
+            __instance.SetPortrait(renderInfo.baseInfo.BrokenShieldPortrait());
+        }
+        else if (mods.Exists(x => x.singletonId == DrawCardInfo.SacrificePortraitMod))
+        {
+            __instance.SetPortrait(renderInfo.baseInfo.SacrificablePortrait());
+        }
+        else if (mods.Exists(x => x.singletonId == DrawCardInfo.TrapPortraitMod))
+        {
+            __instance.SetPortrait(renderInfo.baseInfo.SteelTrapPortrait());
         }
     }
     [HarmonyPostfix, HarmonyPatch(typeof(PixelCardDisplayer), nameof(PixelCardDisplayer.DisplayInfo))]
@@ -260,9 +272,22 @@ internal class EmissionAndPortraitPatches
         if (__instance == null || renderInfo?.baseInfo == null)
             return;
 
-        if (renderInfo.baseInfo.Mods.Exists(x => x.singletonId == DrawCardInfo.PortraitMod))
+        List<CardModificationInfo> mods = renderInfo.baseInfo.Mods;
+        if (mods.Exists(x => x.singletonId == DrawCardInfo.PortraitMod))
         {
             __instance.SetPortrait(renderInfo.baseInfo.PixelAlternatePortrait());
+        }
+        else if (mods.Exists(x => x.singletonId == DrawCardInfo.ShieldPortraitMod))
+        {
+            __instance.SetPortrait(renderInfo.baseInfo.PixelBrokenShieldPortrait());
+        }
+        else if (mods.Exists(x => x.singletonId == DrawCardInfo.SacrificePortraitMod))
+        {
+            __instance.SetPortrait(renderInfo.baseInfo.PixelSacrificablePortrait());
+        }
+        else if (mods.Exists(x => x.singletonId == DrawCardInfo.TrapPortraitMod))
+        {
+            __instance.SetPortrait(renderInfo.baseInfo.PixelSteelTrapPortrait());
         }
     }
 }
