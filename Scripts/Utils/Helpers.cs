@@ -117,8 +117,8 @@ public static partial class Helpers
 	private static Tuple<List<string>, List<string>> GetAllBlueprints()
 	{
 		List<EncounterBlueprintData> list = EncounterManager.AllEncountersCopy;
-		List<string> names = new List<string>(list.Count);
-		List<string> values = new List<string>(list.Count);
+		List<string> names = new(list.Count);
+		List<string> values = new(list.Count);
 		for (int i = 0; i < list.Count; i++)
 		{
 			names.Add(list[i].name);
@@ -131,28 +131,35 @@ public static partial class Helpers
 	public static void DrawOpponentsGUI(DrawableGUI window, Action<Opponent.Type> OnOpponentSelected)
 	{
 		m_selectedOpponentType = OnOpponentSelected;
-		ButtonListPopup.OnGUI(window, "Select Opponent", "Select Opponent", GetAllOpponents, OnChoseOpponentButtonCallback);
+		ButtonListPopup.OnGUI(window, "Select Opponent", "Select Opponent", GetAllOpponents, OnChoseOpponentButtonCallback, Opponent.Type.NUM_TYPES.ToString());
 	}
 
 	public static void OnChoseOpponentButtonCallback(int chosenIndex, string chosenValue, string metaData)
 	{
-		List<OpponentManager.FullOpponent> list = OpponentManager.AllOpponents;
+		List<OpponentManager.FullOpponent> list = new(OpponentManager.AllOpponents);
 		if (chosenIndex < 0 || chosenIndex >= list.Count)
-		{
 			return;
-		}
 
 		m_selectedOpponentType(list[chosenIndex].Id);
 	}
 
 	private static Tuple<List<string>, List<string>> GetAllOpponents()
 	{
-		List<OpponentManager.FullOpponent> list = OpponentManager.AllOpponents;
-		List<string> names = new List<string>(list.Count);
-		List<string> values = new List<string>(list.Count);
+		List<OpponentManager.FullOpponent> list = new(OpponentManager.AllOpponents);
+		List<string> names = new(list.Count);
+		List<string> values = new(list.Count);
 		for (int i = 0; i < list.Count; i++)
 		{
-			names.Add(list[i].Id.ToString());
+            string name;
+            if (list[i].Opponent != null && int.TryParse(list[i].Id.ToString(), out _))
+			{
+				name = list[i].Opponent.Name.Replace("Opponent", "") + $"\n({list[i].Id})";
+			}
+			else
+			{
+				name = list[i].Id.ToString();
+			}
+			names.Add(name);
 			values.Add(list[i].Id.ToString());
 		}
 
@@ -178,7 +185,7 @@ public static partial class Helpers
 
 	public static List<Tribe> AllTribes()
 	{
-		List<Tribe> tribes = new List<Tribe>();
+		List<Tribe> tribes = new();
 		tribes.AddRange(Enum.GetValues(typeof(Tribe)).Cast<Tribe>());
 		tribes.AddRange(TribeManager.NewTribes.Select((a)=>a.tribe));
 
@@ -188,8 +195,8 @@ public static partial class Helpers
 	private static Tuple<List<string>, List<string>> GetAllTribes()
 	{
 		List<Tribe> list = AllTribes();
-		List<string> names = new List<string>(list.Count);
-		List<string> values = new List<string>(list.Count);
+		List<string> names = new(list.Count);
+		List<string> values = new(list.Count);
 		foreach (Tribe tribe in list)
 		{
 			names.Add(tribe.ToString());
@@ -235,8 +242,8 @@ public static partial class Helpers
 	private static Tuple<List<string>, List<string>> GetAllAbilitys()
 	{
 		List<AbilityManager.FullAbility> list = AbilityManager.AllAbilities;
-		List<string> names = new List<string>(list.Count);
-		List<string> values = new List<string>(list.Count);
+		List<string> names = new(list.Count);
+		List<string> values = new(list.Count);
 		foreach (AbilityManager.FullAbility ability in list)
 		{
 			names.Add(ability.Info.rulebookName);
@@ -253,7 +260,7 @@ public static partial class Helpers
 			return "null";
 		}
 
-		Dictionary<string, string> data = new Dictionary<string, string>();
+		Dictionary<string, string> data = new();
 
 		Type type = o.GetType();
 		foreach (FieldInfo field in type.GetFields())
@@ -382,6 +389,49 @@ public static partial class Helpers
 		literal.Append("\"");
 		return literal.ToString();
 	}
+
+	public static GUIStyle ButtonWidth(float width, GUIStyle original = null)
+	{
+		GUIStyle retval = original ?? new(GUI.skin.button);
+		retval.fixedWidth = width;
+		retval.stretchWidth = true;
+		return retval;
+	}
+    public static GUIStyle DisabledButtonStyle()
+    {
+        GUIStyle style = new(GUI.skin.button)
+        {
+            fontStyle = FontStyle.Bold,
+            wordWrap = true
+        };
+        style.normal.background = style.active.background;
+        style.hover.background = style.active.background;
+        style.onNormal.background = style.active.background;
+        style.onHover.background = style.active.background;
+        style.onActive.background = style.active.background;
+        style.onFocused.background = style.active.background;
+        style.normal.textColor = Color.black;
+        return style;
+    }
+    public static GUIStyle HeaderLabelStyle()
+    {
+        GUIStyle style = new(GUI.skin.label)
+        {
+            fontSize = 17,
+            fontStyle = FontStyle.Bold
+        };
+        return style;
+    }
+    public static GUIStyle HeaderLabelStyleRight()
+    {
+        GUIStyle style = new(GUI.skin.label)
+        {
+            fontSize = 17,
+            fontStyle = FontStyle.Bold,
+			alignment = TextAnchor.MiddleRight
+        };
+        return style;
+    }
 }
 
 public static class KeyCodeExtensions

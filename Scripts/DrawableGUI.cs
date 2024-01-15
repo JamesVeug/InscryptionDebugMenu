@@ -1,4 +1,5 @@
 ﻿using BepInEx.Configuration;
+using DebugMenu.Scripts.Utils;
 using UnityEngine;
 
 namespace DebugMenu.Scripts;
@@ -74,13 +75,24 @@ public abstract class DrawableGUI
     public GUIStyle ButtonStyle = GUIStyle.none;
     public GUIStyle ButtonDisabledStyle = GUIStyle.none;
 
-	public virtual void OnGUI()
-	{
-        LabelHeaderStyleLeft = new(GUI.skin.label)
+    internal static float GetDisplayScalar()
+    {
+        return Configs.WindowSize switch
         {
-            fontSize = 17,
-            fontStyle = FontStyle.Bold
+            Configs.WindowSizes.OneQuarter => 0.25f,
+            Configs.WindowSizes.Half => 0.5f,
+            Configs.WindowSizes.ThreeQuarters => 0.75f,
+            Configs.WindowSizes.OneAndAQuarter => 1.25f,
+            Configs.WindowSizes.OneAndAHalf => 1.5f,
+            Configs.WindowSizes.OneAndThreeQuarters => 1.75f,
+            Configs.WindowSizes.Double => 2f,
+            _ => 1f,
         };
+    }
+
+    public virtual void OnGUI()
+	{
+		LabelHeaderStyleLeft = Helpers.HeaderLabelStyle();
         LabelHeaderStyle = new(GUI.skin.label)
         {
             fontSize = 17,
@@ -89,24 +101,13 @@ public abstract class DrawableGUI
         };
         LabelBoldStyle = new(GUI.skin.label)
         {
-            //fontSize = 14,
             fontStyle = FontStyle.Bold
         };
         ButtonStyle = new(GUI.skin.button)
         {
             wordWrap = true
         };
-        ButtonDisabledStyle = new GUIStyle(ButtonStyle)
-		{
-			fontStyle = FontStyle.Bold
-		};
-		ButtonDisabledStyle.normal.background = ButtonDisabledStyle.active.background;
-		ButtonDisabledStyle.hover.background = ButtonDisabledStyle.active.background;
-		ButtonDisabledStyle.onNormal.background = ButtonDisabledStyle.active.background;
-		ButtonDisabledStyle.onHover.background = ButtonDisabledStyle.active.background;
-		ButtonDisabledStyle.onActive.background = ButtonDisabledStyle.active.background;
-		ButtonDisabledStyle.onFocused.background = ButtonDisabledStyle.active.background;
-		ButtonDisabledStyle.normal.textColor = Color.black;
+		ButtonDisabledStyle = Helpers.DisabledButtonStyle();
 
 		Reset();
 	}

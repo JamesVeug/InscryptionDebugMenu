@@ -10,18 +10,17 @@ namespace DebugMenu.Scripts.Popups.DeckEditorPopup;
 
 public class BoardCardEditorPopup : BaseWindow
 {
-    public override string PopupName => "Card Editor";
-    public override Vector2 Size => new(512f, 768f);
+    public override string PopupName => "Board Card Editor";
+    public override Vector2 Size => new(600f, 768f);
 
     public PlayableCard currentSelection = null;
 
     public override void OnGUI()
     {
         base.OnGUI();
-
         if (currentSelection == null)
         {
-            GUILayout.Label("No card selected.");
+            GUILayout.Label("No card selected!", Helpers.HeaderLabelStyle());
             return;
         }
 

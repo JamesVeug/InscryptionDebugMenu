@@ -18,7 +18,6 @@ public class Act2 : BaseAct
 	public override void OnGUI()
 	{
 		Window.LabelHeader("Act 2");
-		
 		Window.Padding();
 
 		using (Window.HorizontalScope(3))
@@ -41,7 +40,7 @@ public class Act2 : BaseAct
 	
 	private void OnGUICurrentNode()
 	{
-		if (GBCEncounterManager.Instance.EncounterOccurring)
+		if (GBCEncounterManager.Instance?.EncounterOccurring ?? false)
 		{
 			Window.LabelHeader("Encounter");
 			m_cardBattleSequence.OnGUI();

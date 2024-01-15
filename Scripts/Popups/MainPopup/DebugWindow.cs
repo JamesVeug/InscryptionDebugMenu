@@ -16,7 +16,7 @@ public class DebugWindow : BaseWindow
 	}
 	
 	public override string PopupName => "Debug Menu";
-	public override Vector2 Size => new Vector2(700, 420);
+	public override Vector2 Size => new(650, 420);
 	public override bool ClosableWindow => false;
 	public BaseAct CurrentAct => currentAct;
 	public AllActs AllActs => allActs;
@@ -55,57 +55,42 @@ public class DebugWindow : BaseWindow
 			Helpers.Acts.MagnificusAct => actMagnificus,
 			_ => null,
 		};
-
-		if (currentAct != null)
-			currentAct.Update();
-	}
+        currentAct?.Update();
+    }
 
 	public override void OnGUI()
 	{
 		float scrollAreaWidth = Mathf.Max(TotalWidth, windowRect.width);
 		float scrollAreaHeight = Mathf.Max(Height, windowRect.y);
-		Rect contentSize = new Rect(new Vector2(0, 0), new Vector2(scrollAreaWidth, scrollAreaHeight));
-		Rect viewportSize = new Rect(new Vector2(0, 0), Size - new Vector2(10, 0));
+		Rect contentSize = new(new Vector2(0, 0), new Vector2(scrollAreaWidth, scrollAreaHeight));
+		Rect viewportSize = new(new Vector2(0, 0), Size - new Vector2(10, 0));
 		position = GUI.BeginScrollView(viewportSize, position, contentSize);
 		
 		DrawToggleButtons();
-		
 		if (currentState > ToggleStates.Off)
 		{
 			base.OnGUI();
-
 			if (currentState == ToggleStates.All || currentAct == null)
 			{
 				allActs.OnGUI();
-
 				if (currentAct != null)
 				{
-					currentAct.Window.Padding();
-					
-					if (currentAct.Window.Button("Reload"))
-					{
-						currentAct.Restart();
-					}
+					Padding();
+					if (currentAct.Window.Button("Reload Act"))
+                        currentAct.Reload();
 
-					if (currentAct.Window.Button("Restart"))
-					{
-						currentAct.Reload();
-					}
-				}
+                    if (currentAct.Window.Button("Restart Act"))
+							currentAct.Restart();
+                }
 				StartNewColumn();
 			}
 
 			if (currentAct != null)
 			{
-				
 				if (currentState == ToggleStates.Minimal)
-				{
 					currentAct.OnGUIMinimal();
-				}
 				else
-				{
 					currentAct.OnGUI();
-				}
 			}
 		}
 
@@ -146,7 +131,6 @@ public class DebugWindow : BaseWindow
 				break;
 		}
 		BeginDrawingGUI();
-
 		return false;
 	}
 }

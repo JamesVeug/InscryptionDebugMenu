@@ -1,5 +1,34 @@
 # Changelog
 
+## 1.3.0
+### General
+- Fixed 'Reload Act' and 'Restart Act' buttons' functionality being reversed
+- Fixed Boss Battle opponent selection menu altering OpponentManager.AllOpponents
+- Added config option (and buttons) to rescale menu window sizes
+- Added config option to make the 'Take/Deal Damage' and 'Auto-win/lose' buttons deal scale damage all at once instead of individually
+- Boss Battle opponent selection menu now shows the name of custom bosses instead of the enum number
+- Improved UI
+
+### Deck Editor
+- Fixed searching sigils by name not considering the enum name
+- Added ability to add sigils marked as fromMerge, fromTotem, and/or fromLatch
+- Added ability to mark a card's current sigils as fromMerge, fromTotem, fromLatch
+- Sigil buttons now display their rulebook name next to their icon
+- Sigils displayed in the 'Edit' abilities section now indicate if they're from a card mod or not (and if so, what kind of mod)
+- Buttons for changing pages in the sigils section now wrap around to the beginning and end
+- Can now display the custom API alternate portraits and force them to display
+- Can now nullify gem costs and remove them individually
+- Can now display custom costs added through the API
+
+### Game Board
+- Fixed error spam when the menu is open outside of a battle
+- Fixed error when using the menu to replace a card on the board
+- Fixed the Modify Card button not updating the current selection
+- Added buttons to clear the board and queue to the menu
+
+### Act 2
+- Fixed error spam during intro animation and during various sections like opening card packs or entering card battles
+
 ## 1.2.2
 ### General
 - Using the deck editor while viewing your deck will now properly update the displayed card(s)

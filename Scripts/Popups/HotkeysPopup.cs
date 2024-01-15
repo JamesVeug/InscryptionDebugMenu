@@ -7,7 +7,7 @@ namespace DebugMenu.Scripts.Popups;
 public class HotkeysPopup : BaseWindow
 {
 	public override string PopupName => "Hotkeys";
-	public override Vector2 Size => new Vector2(600, 1000);
+	public override Vector2 Size => new(600, 1000);
 
 	private string filterText;
 	private HotkeyController.Hotkey adjustingHotkeyShortcut = null;
@@ -135,8 +135,8 @@ public class HotkeysPopup : BaseWindow
 
 	private Tuple<List<string>, List<string>> GetListsOfAllFunctions()
 	{
-		List<string> names = new List<string>(Plugin.Hotkeys.AllFunctionData.Count);
-		List<string> ids = new List<string>(Plugin.Hotkeys.AllFunctionData.Count);
+		List<string> names = new(Plugin.Hotkeys.AllFunctionData.Count);
+		List<string> ids = new(Plugin.Hotkeys.AllFunctionData.Count);
 		foreach (HotkeyController.FunctionData pair in Plugin.Hotkeys.AllFunctionData)
 		{
 			names.Add(pair.ID);

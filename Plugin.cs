@@ -14,7 +14,7 @@ namespace DebugMenu
     {
 	    public const string PluginGuid = "jamesgames.inscryption.debugmenu";
 	    public const string PluginName = "Debug Menu";
-	    public const string PluginVersion = "1.2.2";
+	    public const string PluginVersion = "1.3.0";
 
 	    public static Plugin Instance;
 	    public static ManualLogSource Log;
@@ -69,9 +69,7 @@ namespace DebugMenu
         private void OnGUI()
         {
 	        if (!Configs.ShowDebugMenu)
-	        {
 		        return;
-	        }
 	        
 	        for (int i = 0; i < AllWindows.Count; i++)
 	        {
@@ -100,16 +98,21 @@ namespace DebugMenu
 	        return null;
         }
         
-        public T GetWindow<T>() where T : BaseWindow
-        {
-	        for (int i = 0; i < AllWindows.Count; i++)
-	        {
-		        T window = (T)AllWindows[i];
-		        if (window.GetType() == typeof(T))
-			        return window;
-	        }
+        public T GetWindow<T>() where T : BaseWindow, new()
+		{
+			return (T)GetWindow(typeof(T));
+		}
 
-	        return null;
+        public BaseWindow GetWindow(Type t)
+        {
+            for (int i = 0; i < AllWindows.Count; i++)
+            {
+                BaseWindow window = AllWindows[i];
+                if (window.GetType() == t)
+                    return window;
+            }
+
+            return null;
         }
     }
 }

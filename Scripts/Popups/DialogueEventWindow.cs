@@ -35,7 +35,7 @@ public class DialogueEventPopup : BaseWindow
 
     private static bool PlayingDialogue = false;
 
-    private const int numElements = 40;
+    private const int numElements = 60;
 
     public static int pageNum = 0;
 
@@ -57,7 +57,7 @@ public class DialogueEventPopup : BaseWindow
 
     public override string PopupName => "Dialogue Events";
 
-    public override Vector2 Size => new(1100f, 1000f);
+    public override Vector2 Size => new(1050f, 950f);
 
     public DialogueEventPopup()
     {

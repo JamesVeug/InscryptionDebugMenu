@@ -11,7 +11,7 @@ namespace DebugMenu.Scripts.Popups.DeckEditorPopup;
 public class DeckEditorPopup : BaseWindow
 {
 	public override string PopupName => "Deck Editor";
-	public override Vector2 Size => new(512f, 768f);
+	public override Vector2 Size => new(600f, 768f);
 
 	private DeckInfo CurrentDeck => Helpers.CurrentDeck();
 
@@ -29,16 +29,16 @@ public class DeckEditorPopup : BaseWindow
 		DeckInfo currentDeck = CurrentDeck;
 		if (currentDeck == null)
 		{
-			GUILayout.Label("No deck selected.");
+			GUILayout.Label("No deck selected.", LabelHeaderStyleLeft);
 			return;
 		}
 		
-		GUILayout.BeginArea(new Rect(5f, 25f, Size.x - 10f, Size.y / 4f - 25f));
+		GUILayout.BeginArea(new Rect(5f, 0f, Size.x - 10f, Size.y / 4f));
 		OnGUIDeckViewer();
 		GUILayout.EndArea();
 		
-		GUILayout.BeginArea(new Rect(5f, Size.y / 4f, Size.x - 10f, Size.y / 4f * 3f + 5f));
-		if (currentDeckEditorSelection == 0)
+		GUILayout.BeginArea(new Rect(5f, Size.y / 4f, Size.x - 10f, Size.y / 4f * 3f));
+		if (currentDeckEditorSelection == -1)
 			OnGUICardSearcher();
 		else
 			OnGUICardEditor();
@@ -69,20 +69,20 @@ public class DeckEditorPopup : BaseWindow
             card.RenderCard();
         }
     }
-	private void OnGUICardEditor()
+	private void OnGUICardEditor() // currentDeckEditorSelection cannot be -1 here
 	{
-		if (currentDeckEditorSelection - 1 >= CurrentDeck.Cards.Count)
-			currentDeckEditorSelection--;
+		if (currentDeckEditorSelection >= CurrentDeck.Cards.Count)
+			currentDeckEditorSelection = CurrentDeck.Cards.Count - 1;
 
-		if (CurrentDeck.Cards[currentDeckEditorSelection - 1] == null)
+		if (CurrentDeck.Cards[currentDeckEditorSelection] == null)
 			return;
 
-		CardInfo val = CurrentDeck.Cards[currentDeckEditorSelection - 1];
+		CardInfo val = CurrentDeck.Cards[currentDeckEditorSelection];
 		DrawCardInfo.Result result = DrawCardInfo.OnGUI(val, null, CurrentDeck);
 
         if (result == DrawCardInfo.Result.Removed)
 		{
-			currentDeckEditorSelection = Mathf.Min(currentDeckEditorSelection, CurrentDeck.Cards.Count - 1);
+			currentDeckEditorSelection = Mathf.Min(currentDeckEditorSelection, CurrentDeck.Cards.Count);
             if (ViewManager.m_Instance?.CurrentView == View.MapDeckReview)
             {
 				UpdateDeckReviewDisplay(true, null);
@@ -141,9 +141,9 @@ public class DeckEditorPopup : BaseWindow
 
 	private void OnGUICardSearcher()
 	{
-		GUILayout.BeginVertical(Array.Empty<GUILayoutOption>());
-		GUILayout.Label("Card Finder", Array.Empty<GUILayoutOption>());
-		lastCardSearch = GUILayout.TextField(lastCardSearch, Array.Empty<GUILayoutOption>());
+		GUILayout.BeginVertical();
+		GUILayout.Label("Card Finder", Helpers.HeaderLabelStyle());
+		lastCardSearch = GUILayout.TextField(lastCardSearch);
 		lastSearchedList = new List<CardInfo>();
 		if (lastCardSearch != "")
 		{
@@ -168,12 +168,12 @@ public class DeckEditorPopup : BaseWindow
 
 	private void FoundCardList()
 	{
-		foundCardListScrollVector = GUILayout.BeginScrollView(foundCardListScrollVector, Array.Empty<GUILayoutOption>());
+		foundCardListScrollVector = GUILayout.BeginScrollView(foundCardListScrollVector);
 		if (lastSearchedList.Count > 0)
 		{
 			foreach (CardInfo lastSearched in lastSearchedList)
 			{
-				if (GUILayout.Button($"{lastSearched.DisplayedNameLocalized}\n({lastSearched.name})", Array.Empty<GUILayoutOption>()))
+				if (GUILayout.Button($"{lastSearched.DisplayedNameLocalized}\n({lastSearched.name})"))
 				{
 					CardInfo obj = lastSearched.Clone() as CardInfo;
                     CurrentDeck.AddCard(obj);
@@ -186,7 +186,7 @@ public class DeckEditorPopup : BaseWindow
 		}
 		else
 		{
-			GUILayout.Label("No Cards Found...", Array.Empty<GUILayoutOption>());
+			GUILayout.Label("No Cards Found...");
 		}
 		GUILayout.EndScrollView();
 		GUILayout.EndVertical();
@@ -234,17 +234,27 @@ public class DeckEditorPopup : BaseWindow
 
 	private void OnGUIDeckViewer()
 	{
-		GUILayout.Label("Deck Viewer", Array.Empty<GUILayoutOption>());
-		editDeckScrollVector = GUILayout.BeginScrollView(editDeckScrollVector, Array.Empty<GUILayoutOption>());
-		deckCardArray = new string[CurrentDeck.Cards.Count + 1];
-		deckCardArray[0] = "Add Card";
+		bool adding = false;
+		GUILayout.BeginHorizontal();
+		GUILayout.Label("Deck Viewer", LabelHeaderStyleLeft);
+		if (GUILayout.Button("Add Card"))
+		{
+			adding = true;
+			currentDeckEditorSelection = -1;
+		}
+		GUILayout.EndHorizontal();
+
+		editDeckScrollVector = GUILayout.BeginScrollView(editDeckScrollVector);
+		deckCardArray = new string[CurrentDeck.Cards.Count];
 		for (int i = 0; i < CurrentDeck.Cards.Count; i++)
 		{
-			deckCardArray[i + 1] = CurrentDeck.Cards[i].displayedName;
+			deckCardArray[i] = CurrentDeck.Cards[i]?.displayedName ?? "Card not found!";
 		}
 
-		currentDeckEditorSelection =
-			GUILayout.SelectionGrid(currentDeckEditorSelection, deckCardArray, 2, Array.Empty<GUILayoutOption>());
-		GUILayout.EndScrollView();
+		if (!adding)
+		{
+            currentDeckEditorSelection = GUILayout.SelectionGrid(currentDeckEditorSelection, deckCardArray, 2);
+        }
+        GUILayout.EndScrollView();
 	}
 }

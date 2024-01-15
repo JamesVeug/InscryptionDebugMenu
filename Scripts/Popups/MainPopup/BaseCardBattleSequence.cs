@@ -131,11 +131,10 @@ public abstract class BaseCardBattleSequence
 
 	private IEnumerator AddEnergyAndIncreaseLimit(int amount)
 	{
-		ResourcesManager instance = ResourcesManager.Instance;
-		if (instance.PlayerEnergy + amount > instance.PlayerMaxEnergy)
-			yield return instance.AddMaxEnergy(amount);
+		if (ResourcesManager.Instance.PlayerEnergy + amount > ResourcesManager.Instance.PlayerMaxEnergy)
+			yield return ResourcesManager.Instance.AddMaxEnergy(amount);
 
-		yield return instance.AddEnergy(amount);
+		yield return ResourcesManager.Instance.AddEnergy(amount);
 	}
 	public virtual void DrawCard()
 	{
@@ -215,10 +214,10 @@ public abstract class BaseCardBattleSequence
 		{
             lifeManager.PlayerDamage += amount;
 			if (lifeManager.scales != null)
-				Plugin.Instance.StartCoroutine(lifeManager.scales.AddDamage(amount, amount, true, null));
+				Plugin.Instance.StartCoroutine(lifeManager.scales.AddDamage(amount, Configs.InstantScales ? 1 : amount, true, null));
         }
         else
-			Plugin.Instance.StartCoroutine(lifeManager.ShowDamageSequence(amount, 2, true, 0.125f, null, 0f, false));
+			Plugin.Instance.StartCoroutine(lifeManager.ShowDamageSequence(amount, Configs.InstantScales ? 1 : amount, true, 0.125f, null, 0f, false));
     }
     public virtual void DealDamage(int amount)
     {
@@ -227,10 +226,10 @@ public abstract class BaseCardBattleSequence
 		{
 			lifeManager.OpponentDamage += amount;
             if (lifeManager.scales != null)
-                Plugin.Instance.StartCoroutine(lifeManager.scales.AddDamage(amount, amount, false, null));
+                Plugin.Instance.StartCoroutine(lifeManager.scales.AddDamage(amount, Configs.InstantScales ? 1 : amount, false, null));
         }
 		else
-			Plugin.Instance.StartCoroutine(lifeManager.ShowDamageSequence(amount, 2, false, 0.125f, null, 0f, false));
+			Plugin.Instance.StartCoroutine(lifeManager.ShowDamageSequence(amount, Configs.InstantScales ? 1 : amount, false, 0.125f, null, 0f, false));
     }
     public virtual void AutoLoseBattle()
 	{
@@ -239,7 +238,7 @@ public abstract class BaseCardBattleSequence
         if (Configs.DisablePlayerDamage)
             lifeManager.PlayerDamage += lifeLeft;
         else
-            Plugin.Instance.StartCoroutine(lifeManager.ShowDamageSequence(lifeLeft, lifeLeft, true, 0.125f, null, 0f, false));
+            Plugin.Instance.StartCoroutine(lifeManager.ShowDamageSequence(lifeLeft, Configs.InstantScales ? 1 : lifeLeft, true, 0.125f, null, 0f, false));
     }
 	public virtual void AutoWinBattle()
 	{
@@ -248,6 +247,6 @@ public abstract class BaseCardBattleSequence
         if (Configs.DisableOpponentDamage)
             lifeManager.OpponentDamage += lifeLeft;
         else
-            Plugin.Instance.StartCoroutine(lifeManager.ShowDamageSequence(lifeLeft, lifeLeft, false, 0.125f, null, 0f, false));
+            Plugin.Instance.StartCoroutine(lifeManager.ShowDamageSequence(lifeLeft, Configs.InstantScales ? 1 : lifeLeft, false, 0.125f, null, 0f, false));
     }
 }

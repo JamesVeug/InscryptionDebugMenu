@@ -25,22 +25,22 @@ public class GameInfoPopup : BaseWindow
         Label("FPS: " + fps);
         Label("Random Seed: " + SaveManager.SaveFile.randomSeed + "\n" + currentSeed);
 
-        if (Button("Show Resource Bank"))
-		{
-			Plugin.Instance.ToggleWindow<ResourceBankPopup>();
-		}
-		if (Button("Show Dialogue Events"))
-		{
-			Plugin.Instance.ToggleWindow<DialogueEventPopup>();
-		}
+        if (Button("Debug Tools"))
+        {
+            Plugin.Instance.ToggleWindow<ScriptDebugPopup>();
+        }
         if (Button("Show AbilityInfos"))
         {
             Plugin.Instance.ToggleWindow<AbilityInfoPopup>();
         }
-		if (Button("Debug Tools"))
+		if (Button("Show Dialogue Events"))
 		{
-			Plugin.Instance.ToggleWindow<ScriptDebugPopup>();
+			Plugin.Instance.ToggleWindow<DialogueEventPopup>();
 		}
+        if (Button("Show Resource Bank"))
+        {
+            Plugin.Instance.ToggleWindow<ResourceBankPopup>();
+        }
         int sceneCount = SceneManager.sceneCount;		
 		LabelHeader($"Scenes ({sceneCount})");
 		Scene activeScene = SceneManager.GetActiveScene();
@@ -50,11 +50,11 @@ public class GameInfoPopup : BaseWindow
 			Scene scene = SceneManager.GetSceneAt(i);
 			if (scene == activeScene)
 			{
-				Label($"{i} {scene.name} (Active)");
+				Label($"{i}: {scene.name} (Active)");
 			}
 			else
 			{
-				Label($"{i} {scene.name}");
+				Label($"{i}: {scene.name}");
 			}
 		}
 	}
