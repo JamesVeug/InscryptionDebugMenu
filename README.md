@@ -14,8 +14,9 @@ Features:
 Supports:
 - Act 1
 - Act 2 (Minimal support)
-- Act 3
+- Act 3 (PO3)
 - Grimora Act
+- Magnificus (Minimal support)
 
 
 Hotkeys
