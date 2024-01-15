@@ -106,7 +106,7 @@ internal class InputButtons_Buttons
     [HarmonyPostfix]
     private static void Postfix(ref bool __result)
     {
-        if (AllActs.blockAllInput)
+        if (AllActs.IsInputBlocked())
         {
             __result = false;
         }
@@ -125,7 +125,7 @@ internal class InputButtons_Axis
     [HarmonyPostfix]
     private static void Postfix(ref float __result)
     {
-        if (AllActs.blockAllInput)
+        if (AllActs.IsInputBlocked())
         {
             __result = 0.0f;
         }

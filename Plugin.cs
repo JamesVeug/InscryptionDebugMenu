@@ -5,6 +5,7 @@ using DebugMenu.Scripts.Hotkeys;
 using DebugMenu.Scripts.Popups;
 using HarmonyLib;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace DebugMenu
 {
@@ -25,6 +26,10 @@ namespace DebugMenu
 
 	    public static List<BaseWindow> AllWindows = new();
 	    
+	    private GameObject blockerParent = null;
+	    private Canvas blockerParentCanvas = null;
+	    private List<WindowBlocker> activeRectTransforms = new List<WindowBlocker>();
+	    private List<WindowBlocker> rectTransformPool = new List<WindowBlocker>();
 
         private void Awake()
         {
@@ -35,6 +40,15 @@ namespace DebugMenu
 	        
             PluginDirectory = this.Info.Location.Replace("DebugMenu.dll", "");
 
+            blockerParent = new GameObject("DebugMenuBlocker");
+            blockerParent.layer = LayerMask.NameToLayer("UI");
+            blockerParentCanvas = blockerParent.AddComponent<Canvas>();
+            blockerParentCanvas.renderMode = RenderMode.ScreenSpaceOverlay;
+            blockerParentCanvas.sortingOrder = 32767;
+            blockerParent.AddComponent<CanvasScaler>();
+            blockerParent.AddComponent<GraphicRaycaster>();
+            DontDestroyOnLoad(blockerParent);
+            
             new Harmony(PluginGuid).PatchAll();
 
             // Get all types of BaseWindow, instntiate them and add them to allwindows
@@ -113,6 +127,46 @@ namespace DebugMenu
             }
 
             return null;
+        }
+
+        public WindowBlocker CreateWindowBlocker()
+        {
+	        GameObject myGO = new GameObject("WindowBlocker", typeof(RectTransform), typeof(WindowBlocker));
+	        myGO.transform.SetParent(blockerParent.transform);
+	        myGO.layer = LayerMask.NameToLayer("UI");
+		        
+	        Image image = myGO.AddComponent<Image>();
+	        Color color = Color.magenta;
+	        color.a = 0; // Uncomment to hide the visuals of this image
+	        image.color = color;
+		        
+	        RectTransform blocker = myGO.GetComponent<RectTransform>();
+	        blocker.sizeDelta = new Vector2(Screen.width / 4, Screen.height / 4);
+	        blocker.anchoredPosition = Vector2.zero;
+	        blocker.pivot = new Vector2(0.0f, 1.0f);
+	        blocker.anchorMin = Vector2.zero;
+	        blocker.anchorMax = Vector2.zero;
+
+		        
+	        WindowBlocker windowBlocker = myGO.GetComponent<WindowBlocker>();
+	        activeRectTransforms.Add(windowBlocker);
+	        return windowBlocker;
+        }
+
+        public bool IsInputBlocked()
+        {
+	        if (!Configs.ShowDebugMenu)
+		        return false;
+	        
+	        foreach (WindowBlocker rectTransform in activeRectTransforms)
+	        {
+		        if (rectTransform.isHovered)
+		        {
+			        return true;
+		        }
+	        }
+
+	        return false;
         }
     }
 }

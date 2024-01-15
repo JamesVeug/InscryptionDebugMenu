@@ -7,7 +7,15 @@ namespace DebugMenu.Scripts.All;
 
 public class AllActs : BaseAct
 {
-	public static bool blockAllInput = false;
+	private static bool blockAllInput = false;
+
+	public static bool IsInputBlocked()
+	{
+		if(blockAllInput)
+			return true;
+
+		return Plugin.Instance.IsInputBlocked();
+	}
 	
 	public AllActs(DebugWindow window) : base(window)
 	{

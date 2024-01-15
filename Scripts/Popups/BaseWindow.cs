@@ -8,12 +8,32 @@ public abstract class BaseWindow : DrawableGUI
 	public abstract string PopupName { get; } 
 	public abstract Vector2 Size { get; }
 
-	public virtual bool ClosableWindow => true; 
-	
-	public bool IsActive = false;
-	
+	public virtual bool ClosableWindow => true;
+
+	public bool IsActive
+	{
+		get
+		{
+			return isActive;
+		}
+		set
+		{
+			isActive = value;
+			windowBlocker.gameObject.SetActive(value);
+		}
+	}
+
+	protected bool isActive = false;
 	protected Rect windowRect = new(20f, 20f, 512f, 512f);
 	protected bool isOpen = true;
+	protected WindowBlocker windowBlocker;
+
+	protected BaseWindow()
+	{
+		windowBlocker = Plugin.Instance.CreateWindowBlocker();
+		windowBlocker.gameObject.name = $"{PopupName} Window Blocker";
+		IsActive = false;
+	}
 
 	~BaseWindow()
 	{
@@ -37,6 +57,11 @@ public abstract class BaseWindow : DrawableGUI
 		SetMatrixGUI();
         int id = this.GetType().GetHashCode() + 100;
 		windowRect = GUI.Window(id, windowRect, OnWindowDraw, PopupName);
+		
+		RectTransform blocker = windowBlocker.RectTransform;
+		blocker.gameObject.name = PopupName + " Blocker";
+		blocker.anchoredPosition = new Vector2(windowRect.position.x, Screen.height - windowRect.position.y);
+		blocker.sizeDelta = windowRect.size;
 	}
 
 	private void OnWindowDraw(int windowID)
