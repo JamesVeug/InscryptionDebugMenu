@@ -13,7 +13,7 @@ namespace DebugMenu.Scripts.Popups;
 public class GameBoardPopup : BaseWindow
 {
 	public override string PopupName => "Game Board";
-	public override Vector2 Size => new(900f, 600f);
+	public override Vector2 Size => new(850f, 600f);
 	private Vector2 buttonSize = new(width, 134f);
     private const float width = 100f;
     
@@ -34,15 +34,15 @@ public class GameBoardPopup : BaseWindow
 
         // create buttons for each card slot (plus the queue slots which aren't technically card slots? okay)
         LabelHeader("Queue Slots", new(width * slotsPerSide, RowHeight));
-        DisplayCardSlots(slotsPerSide, GetAllQueueSlots(slotsPerSide), true);
+        DisplayQueuedCards(slotsPerSide, GetAllQueuedCards(slotsPerSide));
         Padding(new(width * slotsPerSide, width));
 
         LabelHeader("Opponent Slots", new(width * slotsPerSide, RowHeight));
-        DisplayCardSlots(slotsPerSide, BoardManager.Instance.OpponentSlotsCopy, false);
+        DisplayCardSlots(slotsPerSide, BoardManager.Instance.OpponentSlotsCopy);
         Padding(new(width * slotsPerSide, width));
 
         LabelHeader("Player Slots", new(width * slotsPerSide, RowHeight));
-        DisplayCardSlots(slotsPerSide, BoardManager.Instance.PlayerSlotsCopy, false);
+        DisplayCardSlots(slotsPerSide, BoardManager.Instance.PlayerSlotsCopy);
 
         // create enough space to accommodate 5 buttons
         StartNewColumn();
@@ -52,19 +52,38 @@ public class GameBoardPopup : BaseWindow
         using (HorizontalScope(2))
         {
             Label("<b>Total Slots:</b> " + BoardManager.Instance.AllSlots.Count);
-            Label("<b>Occupied Slots:</b> " + BoardManager.Instance.AllSlotsCopy.Count(x => x.Card != null));
+            Label("<b>Occupied:</b> " + BoardManager.Instance.AllSlotsCopy.Count(x => x.Card != null));
         }
         
         using (HorizontalScope(2))
         {
             if (Button("Clear Board"))
-                Plugin.Instance.StartCoroutine(BoardManager.Instance.ClearBoard());
+            {
+                foreach (PlayableCard item in BoardManager.Instance.CardsOnBoard)
+                {
+                    if (item != null)
+                    {
+                        SpecialCardBehaviour[] components = item.GetComponents<SpecialCardBehaviour>();
+                        for (int i = 0; i < components.Length; i++)
+                        {
+                            components[i].OnCleanUp();
+                        }
+                        item.ExitBoard(0.3f, Vector3.zero);
+                    }
+                }
+            }
 
             if (Button("Clear Queue"))
-                Plugin.Instance.StartCoroutine(TurnManager.Instance.Opponent.ClearQueue());
+            {
+                foreach (PlayableCard item in TurnManager.Instance.Opponent.Queue)
+                {
+                    item.ExitBoard(0.4f, Vector3.zero);
+                }
+                TurnManager.Instance.Opponent.Queue.Clear();
+            }
         }
 
-        LabelHeader("Current Selection", leftAligned: true);
+        LabelHeader("\nCurrent Selection", leftAligned: true);
 
         if (currentSelection.Item2 == null)
         {
@@ -75,8 +94,8 @@ public class GameBoardPopup : BaseWindow
         PlayableCard card = currentSelection.Item1;
         CardSlot slot = currentSelection.Item2;
         
-        string label = (selectedQueue ? "Queue" : (slot.IsPlayerSlot ? "Player" : "Opponent")) + " Slot";
-        Label(label + "  |  Slot Index: " + slot.Index + "\nCard: " + (card != null ? card.Info.DisplayedNameLocalized : "N/A"));
+        string label = (selectedQueue ? " (Queue" : (slot.IsPlayerSlot ? " (Player" : " (Opponent")) + " Slot)";
+        Label("<b>Slot Index:</b> " + slot.Index + label + "\n<b>Card:</b> " + (card != null ? card.Info.DisplayedNameLocalized : "N/A"));
 
         bool replace = false;
         if (card != null)
@@ -118,8 +137,7 @@ public class GameBoardPopup : BaseWindow
 
             if (Button("Modify card"))
             {
-                var window = Plugin.Instance.ToggleWindow<BoardCardEditorPopup>();
-                window.currentSelection = currentSelection.Item1;
+                Plugin.Instance.ToggleWindow<BoardCardEditorPopup>().currentSelection = currentSelection.Item1;
             }
         }
         OnGUICardSearcher(slot, replace);
@@ -127,7 +145,7 @@ public class GameBoardPopup : BaseWindow
 
     private void OnGUICardSearcher(CardSlot slot, bool replacing)
     {
-        (float x, float y, float w, float h) = GetPosition(new(300f, 300f));
+        (float x, float y, float w, float h) = GetPosition(new(ColumnWidth, 250f));
         GUILayout.BeginArea(new(x, y, w, h));
         GUILayout.Label(replacing ? "Replace Card in Slot" : "Create Card in Slot", LabelHeaderStyle);
         lastCardSearch = GUILayout.TextField(lastCardSearch);
@@ -160,7 +178,7 @@ public class GameBoardPopup : BaseWindow
         {
             foreach (CardInfo lastSearched in lastSearchedList)
             {
-                if (GUILayout.Button($"{lastSearched.DisplayedNameLocalized}\n({lastSearched.name})"))
+                if (GUILayout.Button($"{lastSearched.DisplayedNameLocalized}\n({lastSearched.name})", Helpers.ButtonWidth(ColumnWidth - 10f)))
                 {
                     CardInfo obj = lastSearched.Clone() as CardInfo;
                     Plugin.Instance.StartCoroutine(FillChosenSlot(slot, obj, selectedQueue, replacingCard));
@@ -194,6 +212,8 @@ public class GameBoardPopup : BaseWindow
             yield return BoardManager.Instance.CreateCardInSlot(info, slot);
             currentSelection = new(slot.Card, slot);
         }
+
+        Plugin.Instance.GetWindow<BoardCardEditorPopup>().currentSelection = currentSelection.Item1;
     }
 
     private bool GetCardsThatContain(string cardName, out List<int> results)
@@ -260,17 +280,27 @@ public class GameBoardPopup : BaseWindow
         }
     }
     private PlayableCard QueuedCardFromSlot(CardSlot slot) => TurnManager.Instance.Opponent.Queue.Find(x => x.QueuedSlot == slot);
-    private void DisplayCardSlots(int numToDisplay, List<CardSlot> slots, bool fromQueue)
+    private void DisplayCardSlots(int numToDisplay, List<CardSlot> slots)
 	{
 		using (HorizontalScope(numToDisplay))
 		{
             for (int i = 0; i < numToDisplay; i++)
 			{
 				PlayableCard card = slots[i]?.Card;
-                DisplayPlayableCard(i, card, slots[i], fromQueue);
+                DisplayPlayableCard(i, card, slots[i], false);
 			}
         }
 	}
+    private void DisplayQueuedCards(int numToDisplay, List<PlayableCard> cards)
+    {
+        using (HorizontalScope(numToDisplay))
+        {
+            for (int i = 0; i < numToDisplay; i++)
+            {
+                DisplayPlayableCard(i, cards[i], null, true);
+            }
+        }
+    }
     private void DisplayPlayableCard(int index, PlayableCard card, CardSlot slot, bool fromQueue)
     {
         string cardName = card == null ? "Empty" : $"{card.Info.name}\n({card.Info.DisplayedNameLocalized})";
@@ -278,20 +308,22 @@ public class GameBoardPopup : BaseWindow
         {
             selectedQueue = fromQueue;
             if (selectedQueue)
-                currentSelection = new(card, card?.QueuedSlot ?? BoardManager.Instance.OpponentSlotsCopy.Find(x => x.Index == index));
+                currentSelection = new(card, BoardManager.Instance.OpponentSlotsCopy.Find(x => x.Index == index));
             else
                 currentSelection = new(card, slot);
+
+            Plugin.Instance.GetWindow<BoardCardEditorPopup>().currentSelection = currentSelection.Item1;
         }
     }
 
     // returns a list of all queued slots plus null placeholders for empty queue slots
-    private List<CardSlot> GetAllQueueSlots(int count)
+    private List<PlayableCard> GetAllQueuedCards(int count)
 	{
-		List<CardSlot> result = new();
+		List<PlayableCard> result = new();
 		for (int i = 0; i < count; i++)
 		{
 			PlayableCard queuedCard = QueuedCardFromSlot(BoardManager.Instance.OpponentSlotsCopy[i]);
-			result.Add(queuedCard?.QueuedSlot ?? null);
+			result.Add(queuedCard ?? null);
 		}
 		return result;
 	}

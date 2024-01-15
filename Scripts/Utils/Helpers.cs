@@ -390,6 +390,13 @@ public static partial class Helpers
 		return literal.ToString();
 	}
 
+	public static GUIStyle ButtonWidth(float width, GUIStyle original = null)
+	{
+		GUIStyle retval = original ?? new(GUI.skin.button);
+		retval.fixedWidth = width;
+		retval.stretchWidth = true;
+		return retval;
+	}
     public static GUIStyle DisabledButtonStyle()
     {
         GUIStyle style = new(GUI.skin.button)

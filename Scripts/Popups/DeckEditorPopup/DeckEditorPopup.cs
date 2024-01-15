@@ -37,7 +37,7 @@ public class DeckEditorPopup : BaseWindow
 		OnGUIDeckViewer();
 		GUILayout.EndArea();
 		
-		GUILayout.BeginArea(new Rect(5f, Size.y / 4f, Size.x - 10f, Size.y / 4f * 3f + 5f));
+		GUILayout.BeginArea(new Rect(5f, Size.y / 4f, Size.x - 10f, Size.y / 4f * 3f));
 		if (currentDeckEditorSelection == -1)
 			OnGUICardSearcher();
 		else

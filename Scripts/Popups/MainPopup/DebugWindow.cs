@@ -55,10 +55,8 @@ public class DebugWindow : BaseWindow
 			Helpers.Acts.MagnificusAct => actMagnificus,
 			_ => null,
 		};
-
-		if (currentAct != null)
-			currentAct.Update();
-	}
+        currentAct?.Update();
+    }
 
 	public override void OnGUI()
 	{
@@ -69,7 +67,6 @@ public class DebugWindow : BaseWindow
 		position = GUI.BeginScrollView(viewportSize, position, contentSize);
 		
 		DrawToggleButtons();
-		
 		if (currentState > ToggleStates.Off)
 		{
 			base.OnGUI();
@@ -78,6 +75,7 @@ public class DebugWindow : BaseWindow
 				allActs.OnGUI();
 				if (currentAct != null)
 				{
+					Padding();
 					if (currentAct.Window.Button("Reload Act"))
                         currentAct.Reload();
 

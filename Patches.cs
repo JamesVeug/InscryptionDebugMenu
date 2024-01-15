@@ -236,9 +236,9 @@ internal class DisableDialogue_Patch
 internal class EmissionAndPortraitPatches
 {
     [HarmonyPostfix, HarmonyPatch(typeof(CardDisplayer3D), nameof(CardDisplayer3D.EmissionEnabledForCard))]
-    private static void ForceEmission(CardRenderInfo renderInfo, ref bool __result)
+    private static void ForceEmission(CardRenderInfo renderInfo, PlayableCard playableCard, ref bool __result)
     {
-        if (renderInfo.baseInfo.Mods.Exists(x => x.singletonId == DrawCardInfo.EmissionMod))
+        if (renderInfo.baseInfo.Mods.Exists(x => x.singletonId == DrawCardInfo.EmissionMod) || (playableCard != null && playableCard.temporaryMods.Exists(x => x.fromCardMerge)))
             __result = true;
     }
 
