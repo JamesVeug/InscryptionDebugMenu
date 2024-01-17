@@ -1,10 +1,12 @@
 using System.Reflection;
 using BepInEx;
 using BepInEx.Logging;
+using DebugMenu.Scripts;
 using DebugMenu.Scripts.Hotkeys;
 using DebugMenu.Scripts.Popups;
 using HarmonyLib;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace DebugMenu
 {
@@ -14,7 +16,7 @@ namespace DebugMenu
     {
 	    public const string PluginGuid = "jamesgames.inscryption.debugmenu";
 	    public const string PluginName = "Debug Menu";
-	    public const string PluginVersion = "1.1.1";
+	    public const string PluginVersion = "1.3.0";
 
 	    public static Plugin Instance;
 	    public static ManualLogSource Log;
@@ -25,6 +27,10 @@ namespace DebugMenu
 
 	    public static List<BaseWindow> AllWindows = new();
 	    
+	    private GameObject blockerParent = null;
+	    private Canvas blockerParentCanvas = null;
+	    private List<WindowBlocker> activeRectTransforms = new List<WindowBlocker>();
+	    private List<WindowBlocker> rectTransformPool = new List<WindowBlocker>();
 
         private void Awake()
         {
@@ -35,6 +41,15 @@ namespace DebugMenu
 	        
             PluginDirectory = this.Info.Location.Replace("DebugMenu.dll", "");
 
+            blockerParent = new("DebugMenuBlocker");
+            blockerParent.layer = LayerMask.NameToLayer("UI");
+            blockerParentCanvas = blockerParent.AddComponent<Canvas>();
+            blockerParentCanvas.renderMode = RenderMode.ScreenSpaceOverlay;
+            blockerParentCanvas.sortingOrder = 32767;
+            blockerParent.AddComponent<CanvasScaler>();
+            blockerParent.AddComponent<GraphicRaycaster>();
+            DontDestroyOnLoad(blockerParent);
+            
             new Harmony(PluginGuid).PatchAll();
 
             // Get all types of BaseWindow, instntiate them and add them to allwindows
@@ -69,9 +84,7 @@ namespace DebugMenu
         private void OnGUI()
         {
 	        if (!Configs.ShowDebugMenu)
-	        {
 		        return;
-	        }
 	        
 	        for (int i = 0; i < AllWindows.Count; i++)
 	        {
@@ -100,16 +113,61 @@ namespace DebugMenu
 	        return null;
         }
         
-        public T GetWindow<T>() where T : BaseWindow
+        public T GetWindow<T>() where T : BaseWindow, new()
+		{
+			return (T)GetWindow(typeof(T));
+		}
+
+        public BaseWindow GetWindow(Type t)
         {
-	        for (int i = 0; i < AllWindows.Count; i++)
+            for (int i = 0; i < AllWindows.Count; i++)
+            {
+                BaseWindow window = AllWindows[i];
+                if (window.GetType() == t)
+                    return window;
+            }
+
+            return null;
+        }
+
+        public WindowBlocker CreateWindowBlocker()
+        {
+	        GameObject myGO = new("WindowBlocker", typeof(RectTransform), typeof(WindowBlocker));
+	        myGO.transform.SetParent(blockerParent.transform);
+	        myGO.layer = LayerMask.NameToLayer("UI");
+		        
+	        Image image = myGO.AddComponent<Image>();
+	        Color color = Color.magenta;
+	        color.a = 0; // hides the image
+	        image.color = color;
+
+			RectTransform blocker = myGO.GetComponent<RectTransform>();
+	        blocker.sizeDelta = new Vector2(Screen.width / 4, Screen.height / 4);
+	        blocker.anchoredPosition = Vector2.zero;
+	        blocker.pivot = new Vector2(0f, 1f);
+	        blocker.anchorMin = Vector2.zero;
+	        blocker.anchorMax = Vector2.zero;
+
+		        
+	        WindowBlocker windowBlocker = myGO.GetComponent<WindowBlocker>();
+	        activeRectTransforms.Add(windowBlocker);
+	        return windowBlocker;
+        }
+
+        public bool IsInputBlocked()
+        {
+	        if (!Configs.ShowDebugMenu)
+		        return false;
+	        
+	        foreach (WindowBlocker rectTransform in activeRectTransforms)
 	        {
-		        T window = (T)AllWindows[i];
-		        if (window.GetType() == typeof(T))
-			        return window;
+		        if (rectTransform.isHovered)
+		        {
+			        return true;
+		        }
 	        }
 
-	        return null;
+	        return false;
         }
     }
 }

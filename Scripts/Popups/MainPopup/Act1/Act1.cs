@@ -14,13 +14,8 @@ public class Act1 : BaseAct
 
 	public Act1(DebugWindow window) : base(window)
 	{
-		m_mapSequence = new MapSequence(this);
-		m_cardBattleSequence = new CardBattleSequence(window);
-	}
-
-	public override void Update()
-	{
-		
+		m_mapSequence = new Act1MapSequence(this);
+		m_cardBattleSequence = new Act1CardBattleSequence(window);
 	}
 
 	public override void OnGUI()
@@ -28,22 +23,20 @@ public class Act1 : BaseAct
 		MapNodeManager mapNodeManager = Singleton<MapNodeManager>.m_Instance;
 		if (mapNodeManager?.nodes == null || RunState.Run == null)
 			return;
-		
+
 		Window.LabelHeader("Act 1");
 		
 		if (RunState.Run.currentNodeId > 0)
 		{
-			MapNode nodeWithId = mapNodeManager.GetNodeWithId(RunState.Run.currentNodeId);
-			Window.Label("Current Node ID: " + RunState.Run.currentNodeId + "\nCurrent Node: " + nodeWithId, new(0, 120));
-		}
-		
+            MapNode nodeWithId = mapNodeManager.GetNodeWithId(RunState.Run.currentNodeId);
+            Window.Label("Current Node ID: " + RunState.Run.currentNodeId + "\nCurrent Node: " + nodeWithId?.name, new(0, 120));
+        }
 		if (Window.Button("Replenish Candles"))
 		{
             Plugin.Instance.StartCoroutine(CandleHolder.Instance.ReplenishFlamesSequence(0f));
             RunState.Run.playerLives = RunState.Run.maxPlayerLives;
 			SaveManager.SaveToFile(false);
         }
-
         Window.LabelHeader("Currency: " + RunState.Run.currency);
 
         using (Window.HorizontalScope(4))
@@ -60,12 +53,12 @@ public class Act1 : BaseAct
 			if (Window.Button("-5"))
 				RunState.Run.currency = Mathf.Max(0, RunState.Run.currency - 5);
         }
-		
-		DrawItemsGUI();
-		
-		Window.StartNewColumn();
-		OnGUICurrentNode();
-	}
+
+        DrawItemsGUI();
+        Window.StartNewColumn();
+
+        OnGUICurrentNode();
+    }
 
 	public override void OnGUIMinimal()
 	{
@@ -76,9 +69,7 @@ public class Act1 : BaseAct
 	{
 		GameFlowManager gameFlowManager = Singleton<GameFlowManager>.m_Instance;
 		if (gameFlowManager == null)
-		{
 			return;
-		}
 
 		Window.LabelHeader(gameFlowManager.CurrentGameState.ToString());
 		switch (gameFlowManager.CurrentGameState)
@@ -117,9 +108,7 @@ public class Act1 : BaseAct
 		CardSingleChoicesSequencer sequencer = Singleton<SpecialNodeHandler>.Instance.cardChoiceSequencer;
 		Window.Label("Sequencer: " + sequencer, new(0, 80));
 		if (Window.Button("Reroll choices"))
-		{
 			sequencer.OnRerollChoices();
-		}
 	}
 
 	private void OnGUIMap()

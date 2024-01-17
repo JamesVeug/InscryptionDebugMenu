@@ -10,22 +10,15 @@ public class Act3 : BaseAct
 {
 	public Act3(DebugWindow window) : base(window)
 	{
-		m_mapSequence = new MapSequence(this);
-		m_cardBattleSequence = new CardBattleSequence(window);
-	}
-
-	public override void Update()
-	{
-		
+		m_mapSequence = new Act3MapSequence(this);
+		m_cardBattleSequence = new Act3CardBattleSequence(window);
 	}
 	
 	public override void OnGUI()
 	{
 		MapNodeManager mapNodeManager = Singleton<MapNodeManager>.m_Instance;
 		if (mapNodeManager == null || mapNodeManager.nodes == null || RunState.Run == null)
-		{
 			return;
-		}
 		
 		Window.LabelHeader("Act 3");
 		

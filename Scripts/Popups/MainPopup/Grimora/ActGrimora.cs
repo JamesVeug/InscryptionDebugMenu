@@ -10,8 +10,8 @@ public class ActGrimora : BaseAct
 {
 	public ActGrimora(DebugWindow window) : base(window)
 	{
-		m_mapSequence = new MapSequence(this);
-		m_cardBattleSequence = new CardBattleSequence(window);
+		m_mapSequence = new GrimoraMapSequence(this);
+		m_cardBattleSequence = new GrimoraCardBattleSequence(window);
 	}
 
 	public override void Update()
@@ -44,9 +44,7 @@ public class ActGrimora : BaseAct
 	{
 		GameFlowManager gameFlowManager = Singleton<GameFlowManager>.m_Instance;
 		if (gameFlowManager == null)
-		{
 			return;
-		}
 
 		Window.LabelHeader(gameFlowManager.CurrentGameState.ToString());
 		switch (gameFlowManager.CurrentGameState)

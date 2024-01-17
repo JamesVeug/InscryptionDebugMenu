@@ -35,7 +35,7 @@ public class DialogueEventPopup : BaseWindow
 
     private static bool PlayingDialogue = false;
 
-    private const int numElements = 40;
+    private const int numElements = 60;
 
     public static int pageNum = 0;
 
@@ -57,7 +57,7 @@ public class DialogueEventPopup : BaseWindow
 
     public override string PopupName => "Dialogue Events";
 
-    public override Vector2 Size => new(1100f, 1000f);
+    public override Vector2 Size => new(1050f, 950f);
 
     public DialogueEventPopup()
     {
@@ -102,7 +102,7 @@ public class DialogueEventPopup : BaseWindow
         {
             PrintModdedEventsToLog();
         }
-        if (Button("Printed Events by Selected GUID"))
+        if (Button("Print Events by Selected GUID"))
         {
             Dictionary<DialogueEvent, string> dictionary = new();
             foreach (DialogueEvent e in AllEvents)
@@ -115,7 +115,7 @@ public class DialogueEventPopup : BaseWindow
             }
             PrintSelectedEventsToLog(dictionary, "GUID");
         }
-        if (Button("Printed Events by Selected Group"))
+        if (Button("Print Events by Selected Group"))
         {
             Dictionary<DialogueEvent, string> dictionary2 = new();
             foreach (DialogueEvent allEvent in AllEvents)

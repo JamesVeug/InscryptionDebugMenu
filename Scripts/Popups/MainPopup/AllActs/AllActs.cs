@@ -7,7 +7,15 @@ namespace DebugMenu.Scripts.All;
 
 public class AllActs : BaseAct
 {
-	public static bool blockAllInput = false;
+	private static bool blockAllInput = false;
+
+	public static bool IsInputBlocked()
+	{
+		if(blockAllInput)
+			return true;
+
+		return Plugin.Instance.IsInputBlocked();
+	}
 	
 	public AllActs(DebugWindow window) : base(window)
 	{
@@ -27,7 +35,7 @@ public class AllActs : BaseAct
 
 		using (Window.HorizontalScope(4))
 		{
-			Window.Label("Time Scale:");
+			Window.Label("<b>Time Scale:</b>");
 			
 			if (Window.Button("0.1x"))
 			{
@@ -48,7 +56,12 @@ public class AllActs : BaseAct
 			}
 		}
 
-		if (Window.Button("Show Game Info"))
+        if (Window.Button("Deck Editor"))
+        {
+            Plugin.Instance.ToggleWindow<DeckEditorPopup>();
+        }
+
+        if (Window.Button("Show Game Info"))
 		{
 			Plugin.Instance.ToggleWindow<GameInfoPopup>();
 		}
@@ -57,10 +70,23 @@ public class AllActs : BaseAct
 		{
 			Plugin.Instance.ToggleWindow<HotkeysPopup>();
 		}
-		
-		if (Window.Button("Deck Editor"))
+
+		using (Window.HorizontalScope(4))
 		{
-			Plugin.Instance.ToggleWindow<DeckEditorPopup>();
+			Window.Label("<b>Menu Scale:</b>");
+			Window.Label($"{DrawableGUI.GetDisplayScalar()}");
+
+			int sizeAsInt = (int)Configs.WindowSize;
+            if (Window.Button("-", disabled: () => new() { Disabled = sizeAsInt <= 0 }))
+            {
+                sizeAsInt--;
+                Configs.WindowSize = (Configs.WindowSizes)sizeAsInt;
+            }
+            if (Window.Button("+", disabled: () => new() { Disabled = sizeAsInt > 6 }))
+			{
+				sizeAsInt++;
+				Configs.WindowSize = (Configs.WindowSizes)sizeAsInt;
+			}
 		}
 	}
 

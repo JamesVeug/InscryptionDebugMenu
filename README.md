@@ -3,19 +3,20 @@
 Adds a new in-game menu with buttons to quickly skip through the game.
 Also provides additional information if you have trouble debugging your mod!
 
-Features
+Features:
 - Manually trigger map events
-- Edit your Deck
+- Edit your deck and the game board
 - Skip through card battles
 - Skip through dialogue
 - Use hotkeys to speed up debugging
 - View in-game data to help debugging
 
-Supports
+Supports:
 - Act 1
 - Act 2 (Minimal support)
-- Act 3
+- Act 3 (PO3)
 - Grimora Act
+- Magnificus (Minimal support)
 
 
 Hotkeys
@@ -32,7 +33,6 @@ Hotkeys
 
 
 ## I want more!
-
 The project is open source and anyone can contribute by making pull request.
 https://github.com/JamesVeug/InscryptionDebugMenu
 
@@ -47,6 +47,6 @@ Create an issue on the github page and mention it on the Inscryption modding dis
 
 
 ## Thanks To:
-- Peaiece for Speed Tweaks (This mod uses code from it since its deprecated)
-- Peaiece for Deck Editor (This mod uses code from it since it is no longer supported)
+- Peaiece for Speed Tweaks (This mod uses code from it since it's deprecated)
+- Peaiece for Deck Editor (This mod uses code from it since it's no longer supported)
 - Keks307 for bug reporting

@@ -9,7 +9,7 @@ public class ActMagnificus : BaseAct
 {
 	public ActMagnificus(DebugWindow window) : base(window)
 	{
-		m_cardBattleSequence = new CardBattleSequence(window);
+		m_cardBattleSequence = new MagnificusCardBattleSequence(window);
 	}
 
 	public override void Update()
