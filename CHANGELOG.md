@@ -8,6 +8,7 @@
 - Added config option to make the 'Take/Deal Damage' and 'Auto-win/lose' buttons deal scale damage all at once instead of individually
 - Boss Battle opponent selection menu now shows the name of custom bosses instead of the enum number
 - Improved UI
+- Game elements behind the debug window can no longer be interacted with
 
 ### Deck Editor
 - Fixed searching sigils by name not considering the enum name
@@ -23,7 +24,7 @@
 ### Game Board
 - Fixed error spam when the menu is open outside of a battle
 - Fixed error when using the menu to replace a card on the board
-- Fixed the Modify Card button not updating the current selection
+- Fixed the Modify Card button not updating when changing the current selection
 - Added buttons to clear the board and queue to the menu
 
 ### Act 2

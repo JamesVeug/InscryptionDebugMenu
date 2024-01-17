@@ -147,8 +147,7 @@ internal class RegionManager_GetRandomRegionFromTier
             }
             else
             {
-                __result = new List<RegionData>();
-                __result.Add(data);
+                __result = new() { data };
                 return false;
             }
         }
@@ -171,7 +170,7 @@ internal class MapNodeManager_GetNodeWithId
 [HarmonyPatch]
 internal class DisableDialogue_IEnumerator_Patch
 {
-    public static IEnumerable<MethodBase> TargetMethods()
+    private static IEnumerable<MethodBase> TargetMethods()
     {
         yield return AccessTools.Method(typeof(TextDisplayer), nameof(TextDisplayer.PlayDialogueEvent));
         yield return AccessTools.Method(typeof(TextDisplayer), nameof(TextDisplayer.ShowUntilInput));
@@ -203,17 +202,20 @@ internal class DisablePlayerDamagePatch
     {
         if (Configs.DisablePlayerDamage && toPlayer)
             yield break;
+
         if (Configs.DisableOpponentDamage && !toPlayer)
             yield break;
 
         yield return enumerator;
     }
+
     [HarmonyPostfix]
     [HarmonyPatch(typeof(MagnificusLifeManager), nameof(MagnificusLifeManager.ShowLifeLoss))]
     private static IEnumerator PlayersReceiveNoDamageMagnificus(IEnumerator enumerator, bool player)
     {
         if (Configs.DisablePlayerDamage && player)
             yield break;
+
         if (Configs.DisableOpponentDamage && !player)
             yield break;
 

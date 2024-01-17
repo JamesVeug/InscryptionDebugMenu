@@ -1,6 +1,7 @@
 using System.Reflection;
 using BepInEx;
 using BepInEx.Logging;
+using DebugMenu.Scripts;
 using DebugMenu.Scripts.Hotkeys;
 using DebugMenu.Scripts.Popups;
 using HarmonyLib;
@@ -40,7 +41,7 @@ namespace DebugMenu
 	        
             PluginDirectory = this.Info.Location.Replace("DebugMenu.dll", "");
 
-            blockerParent = new GameObject("DebugMenuBlocker");
+            blockerParent = new("DebugMenuBlocker");
             blockerParent.layer = LayerMask.NameToLayer("UI");
             blockerParentCanvas = blockerParent.AddComponent<Canvas>();
             blockerParentCanvas.renderMode = RenderMode.ScreenSpaceOverlay;
@@ -131,19 +132,19 @@ namespace DebugMenu
 
         public WindowBlocker CreateWindowBlocker()
         {
-	        GameObject myGO = new GameObject("WindowBlocker", typeof(RectTransform), typeof(WindowBlocker));
+	        GameObject myGO = new("WindowBlocker", typeof(RectTransform), typeof(WindowBlocker));
 	        myGO.transform.SetParent(blockerParent.transform);
 	        myGO.layer = LayerMask.NameToLayer("UI");
 		        
 	        Image image = myGO.AddComponent<Image>();
 	        Color color = Color.magenta;
-	        color.a = 0; // Uncomment to hide the visuals of this image
+	        color.a = 0; // hides the image
 	        image.color = color;
-		        
-	        RectTransform blocker = myGO.GetComponent<RectTransform>();
+
+			RectTransform blocker = myGO.GetComponent<RectTransform>();
 	        blocker.sizeDelta = new Vector2(Screen.width / 4, Screen.height / 4);
 	        blocker.anchoredPosition = Vector2.zero;
-	        blocker.pivot = new Vector2(0.0f, 1.0f);
+	        blocker.pivot = new Vector2(0f, 1f);
 	        blocker.anchorMin = Vector2.zero;
 	        blocker.anchorMax = Vector2.zero;
 
