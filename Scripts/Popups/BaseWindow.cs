@@ -45,23 +45,24 @@ public abstract class BaseWindow : DrawableGUI
 		
 	}
 
-	private void SetMatrixGUI()
+	private void SetMatrixGUI(float scalar)
 	{
-		float scalar = GetDisplayScalar();
         Vector3 scale = new (scalar, scalar, 1f);
         GUI.matrix = Matrix4x4.TRS(Vector3.zero, Quaternion.identity, scale);
     }
 
 	public void OnWindowGUI()
 	{
-		SetMatrixGUI();
+		float scalar = GetDisplayScalar();
+        SetMatrixGUI(scalar);
+
         int id = this.GetType().GetHashCode() + 100;
-		windowRect = GUI.Window(id, windowRect, OnWindowDraw, PopupName);
+        windowRect = GUI.Window(id, windowRect, OnWindowDraw, PopupName);
 		
 		RectTransform blocker = windowBlocker.RectTransform;
 		blocker.gameObject.name = PopupName + " Blocker";
-		blocker.anchoredPosition = new Vector2(windowRect.position.x, Screen.height - windowRect.position.y);
-		blocker.sizeDelta = windowRect.size;
+		blocker.anchoredPosition = new(windowRect.position.x * scalar, Screen.height - (windowRect.position.y * scalar));
+		blocker.sizeDelta = windowRect.size * scalar;
 	}
 
 	private void OnWindowDraw(int windowID)
