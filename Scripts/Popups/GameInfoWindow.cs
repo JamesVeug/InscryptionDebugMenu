@@ -1,4 +1,7 @@
-﻿using DiskCardGame;
+﻿using BepInEx;
+using BepInEx.Bootstrap;
+using DebugMenu.Scripts.Utils;
+using DiskCardGame;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -41,6 +44,10 @@ public class GameInfoPopup : BaseWindow
         {
             Plugin.Instance.ToggleWindow<ResourceBankPopup>();
         }
+        if (Button("Show Configs"))
+        {
+	        ShowConfigs();
+        }
         int sceneCount = SceneManager.sceneCount;		
 		LabelHeader($"Scenes ({sceneCount})");
 		Scene activeScene = SceneManager.GetActiveScene();
@@ -71,5 +78,18 @@ public class GameInfoPopup : BaseWindow
 			frames = 0;
 			lastInterval = timeNow;
 		}
+	}
+
+	private void ShowConfigs()
+	{
+		ButtonListPopup.OnGUI(this, "Show Configs", "All Configs", Helpers.GetAllConfigs,
+			(index, value, disableMatch) =>
+			{
+				PluginConfig config = Helpers.GetConfig(value);
+				if (config != null)
+				{
+					ConfigPopup.Show(config);
+				}
+			});
 	}
 }

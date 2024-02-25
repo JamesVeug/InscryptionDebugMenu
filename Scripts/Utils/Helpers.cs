@@ -3,6 +3,7 @@ using System.Reflection;
 using System.Text;
 using BepInEx;
 using BepInEx.Bootstrap;
+using BepInEx.Configuration;
 using DebugMenu.Scripts.Popups;
 using DiskCardGame;
 using GBC;
@@ -27,9 +28,12 @@ public static partial class Helpers
 	public static SpecialNodeData LastSpecialNodeData;
 	
 	private static Dictionary<string, string> m_itemNameToRulebookName = null;
+	private static Dictionary<string, PluginConfig> m_pluginGUIDToConfig = null;
+	private static List<PluginConfig> m_configs = null;
 	private static Action<EncounterBlueprintData> m_selectedBlueprint = null;
 	private static Action<Opponent.Type> m_selectedOpponentType = null;
 	private static Action<Tribe> m_selectedTribe;
+	private static Action<PluginConfig> m_selectedConfig;
 	private static Action<Ability> m_selectedAbility;
 
 	public static bool ContainsText(this string text, string substring, bool caseSensitive = true)
@@ -172,6 +176,12 @@ public static partial class Helpers
 		ButtonListPopup.OnGUI(window, "Select Tribe", "Select Tribe", GetAllTribes, OnChoseTribeButtonCallback);
 	}
 
+	public static void DrawConfigsGUI(ConfigPopup window, Action<PluginConfig> callback)
+	{
+		m_selectedConfig = callback;
+		ButtonListPopup.OnGUI(window, "Select Config", "Select Config", GetAllTribes, OnChoseTribeButtonCallback);
+	}
+
 	private static void OnChoseTribeButtonCallback(int chosenIndex, string chosenValue, string metaData)
 	{
 		List<Tribe> list = AllTribes();
@@ -181,6 +191,51 @@ public static partial class Helpers
 		}
 
 		m_selectedTribe(list[chosenIndex]);
+	}
+
+	public static PluginConfig GetConfig(string guid)
+	{
+		if (m_pluginGUIDToConfig == null)
+		{
+			m_pluginGUIDToConfig = new Dictionary<string, PluginConfig>();
+			foreach (PluginConfig config in AllConfigs())
+			{
+				m_pluginGUIDToConfig[config.PluginGUID] = config;
+			}
+		}
+
+		if (m_pluginGUIDToConfig.TryGetValue(guid, out PluginConfig pluginConfig))
+		{
+			return pluginConfig;
+		}
+
+		Plugin.Log.LogError("[GetConfig] Couldn't find config with guid " + guid);
+		return null;
+	}
+
+	public static List<PluginConfig> AllConfigs()
+	{
+		if (m_configs == null)
+		{
+			var configs = Chainloader.PluginInfos.Values.Select((a) => new PluginConfig(a.Instance));
+			m_configs = new List<PluginConfig>(configs);
+		}
+		
+		return m_configs;
+	}
+
+	public static Tuple<List<string>, List<string>> GetAllConfigs()
+	{
+		List<PluginConfig> list = AllConfigs();
+		List<string> names = new(list.Count);
+		List<string> values = new(list.Count);
+		foreach (PluginConfig tribe in list)
+		{
+			names.Add(tribe.PluginName);
+			values.Add(tribe.PluginGUID);
+		}
+
+		return new Tuple<List<string>, List<string>>(names, values);
 	}
 
 	public static List<Tribe> AllTribes()
