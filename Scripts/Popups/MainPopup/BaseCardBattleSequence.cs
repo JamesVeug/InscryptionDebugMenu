@@ -52,7 +52,7 @@ public abstract class BaseCardBattleSequence
 
         int difficulty = -1;
         int turnNum = TurnManager.Instance.TurnNumber;
-        
+        string dataStr = "";
         if (TurnManager.Instance.Opponent != null)
         {
             difficulty = TurnManager.Instance.Opponent.Difficulty;
@@ -60,11 +60,11 @@ public abstract class BaseCardBattleSequence
             {
                 difficulty = (MapNodeManager.Instance.GetNodeWithId(RunState.Run.currentNodeId)?.Data as CardBattleNodeData)?.difficulty ?? difficulty;
             }
-            Window.LabelCentred(TurnManager.Instance.Opponent.GetType()?.Name + $"\n({TurnManager.Instance.Opponent.Blueprint?.name})", new(0, 50f));
+            dataStr += TurnManager.Instance.Opponent.GetType()?.Name + $"\n({TurnManager.Instance.Opponent.Blueprint?.name})\n";
         }
-
-        Window.Label($"Difficulty: {difficulty + RunState.Run.DifficultyModifier} ({difficulty} + {RunState.Run.DifficultyModifier})" +
-            $"\nTurn Number: {turnNum}");
+        dataStr += $"Difficulty: {difficulty + RunState.Run.DifficultyModifier} ({difficulty} + {RunState.Run.DifficultyModifier})" +
+            $"\nTurn Number: {turnNum}";
+        Window.Label(dataStr, new(0f, 90f));
 
         using (Window.HorizontalScope(4))
         {
@@ -80,8 +80,6 @@ public abstract class BaseCardBattleSequence
             if (Window.Button("Draw New", disabled: () => new(() => SaveManager.SaveFile.IsPart2 && !IsGBCBattle())))
                 Plugin.Instance.ToggleWindow(typeof(DrawCustomCardPopup));
         }
-
-        ManageScaleDamage();
 
         if (hasBones)
         {
@@ -129,6 +127,8 @@ public abstract class BaseCardBattleSequence
                     SetMaxEnergyToMax();
             }
         }
+
+        ManageScaleDamage();
 
         if (Window.Button("Show Game Board"))
             Plugin.Instance.ToggleWindow<GameBoardPopup>();

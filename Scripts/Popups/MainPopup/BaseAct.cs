@@ -265,6 +265,7 @@ public abstract class BaseAct
         sequencer.box.GetComponentInChildren<Animator>().Play("open", 0, 0f);
         AudioController.Instance.PlaySound3D("woodbox_open", MixerGroup.TableObjectsSFX, sequencer.box.transform.position);
         ChallengeActivationUI.TryShowActivation(AscensionChallenge.NoBossRares);
+        yield return new WaitForSeconds(0.3f);
         sequencer.EnableViewDeck(sequencer.viewControlMode, sequencer.basePosition);
 
         rerollingRare = false;
