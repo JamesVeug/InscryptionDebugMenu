@@ -53,7 +53,7 @@ public class ButtonListPopup : BaseWindow
 
             if (Button(buttonName, disabled: () => new() { Disabled = disableMatch.Contains(buttonValue) }))
             {
-                callback(i, buttonName, disableMatch);
+                callback(i, buttonValue, disableMatch);
                 Plugin.Instance.ToggleWindow(this.GetType()); // close window
             }
 

@@ -1,6 +1,7 @@
 ﻿using DebugMenu.Scripts.Popups;
 using DebugMenu.Scripts.Popups.DeckEditorPopup;
 using DiskCardGame;
+using InscryptionAPI;
 using InscryptionAPI.Helpers;
 using System.Collections;
 using UnityEngine;
@@ -130,8 +131,14 @@ public abstract class BaseCardBattleSequence
 
         ManageScaleDamage();
 
-        if (Window.Button("Show Game Board"))
-            Plugin.Instance.ToggleWindow<GameBoardPopup>();
+        using (Window.HorizontalScope(2))
+        {
+            if (Window.Button("Show Board"))
+                Plugin.Instance.ToggleWindow<GameBoardPopup>();
+
+            if (Window.Button("Show Gems"))
+                Plugin.Instance.ToggleWindow<GemManagerPopup>();
+        }
 
         using (Window.HorizontalScope(2))
         {

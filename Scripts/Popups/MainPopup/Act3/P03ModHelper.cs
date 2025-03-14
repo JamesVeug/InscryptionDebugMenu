@@ -43,6 +43,5 @@ public static partial class P03ModHelper
             MenuController.LoadGameFromMenu(newGameGBC: false);
             Singleton<InteractionCursor>.Instance.SetHidden(hidden: true);
         }
-
     }
 }

@@ -53,6 +53,16 @@ public class Act3 : BaseAct
         }
     }
 
+    public override bool OnSpecialCardSequence(string nodeDataName)
+    {
+        if (nodeDataName == "Part3RareCardChoices")
+        {
+            OnGUICardChoiceNodeSequence();
+            return true;
+        }
+        return base.OnSpecialCardSequence(nodeDataName);
+    }
+
     public override void Restart()
     {
 

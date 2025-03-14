@@ -1,4 +1,5 @@
-﻿using DebugMenu.Scripts.Popups;
+﻿using DebugMenu.Scripts.Magnificus;
+using DebugMenu.Scripts.Popups;
 using DiskCardGame;
 using InscryptionAPI.Nodes;
 using System.Collections;
@@ -34,7 +35,7 @@ public abstract class SimpleTriggerSequences : BaseTriggerSequence
     public virtual IEnumerator SequenceCoroutine()
     {
         Singleton<GameFlowManager>.Instance.TransitionToGameState(GameState, NodeData);
-        yield return null;
+        yield break;
     }
 }
 
@@ -53,7 +54,7 @@ public class APIModdedSequence : BaseTriggerSequence
 }
 
 /// <summary>
-/// All other Sequences tha are a simple "Create node and trigger"
+/// All other Sequences that are a simple "Create node and trigger"
 /// </summary>
 public class SimpleStubSequence : SimpleTriggerSequences
 {
@@ -82,6 +83,17 @@ public class SimpleStubSequence : SimpleTriggerSequences
 
     public Type type;
     public GameState gameState;
+
+    public override IEnumerator SequenceCoroutine()
+    {
+        if (MagnificusModHelper.Enabled && SaveManager.SaveFile.IsMagnificus)
+        {
+            MagnificusModHelper.HandleSequences(GameState, NodeData);
+            yield break;
+        }
+
+        yield return base.SequenceCoroutine();
+    }
 }
 
 public class BossSequence : SimpleTriggerSequences
@@ -139,6 +151,17 @@ public abstract class ThreeCardChoiceSequences : SimpleTriggerSequences
             };
             return data;
         }
+    }
+
+    public override IEnumerator SequenceCoroutine()
+    {
+        if (MagnificusModHelper.Enabled && SaveManager.SaveFile.IsMagnificus)
+        {
+            MagnificusModHelper.HandleCardChoices(ChoiceType);
+            yield break;
+        }
+
+        yield return base.SequenceCoroutine();
     }
 }
 

@@ -2,11 +2,20 @@
 
 ## 1.5.0
 ### General
+- Fixed consumable menu being broken
+- Fixed ProgressionData buttons not correctly learning/unlearning entries
+- Fixed AbilityInfo info list having broken formatting
+- Fixed 'Add Card to Hand' discarding temporary mods
 - Added option to reroll rare card choice
+- Added Gems manager popup for card battles
 - Rearranged some elements in the card battle menu
 
-### Magnificus Mod
-- Added support
+### Magnificus Act
+- Added debug support for MagnificusMod
+
+### Part 3
+- Added Fast Travel option to Map menu
+- Removed 'Toggle All Nodes' option due to unintended behaviours and lack of utility
 
 ## 1.4.1
 ### General

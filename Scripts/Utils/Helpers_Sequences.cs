@@ -1,4 +1,5 @@
 ﻿using BepInEx;
+using DebugMenu.Scripts.Magnificus;
 using DebugMenu.Scripts.Sequences;
 using DiskCardGame;
 using InscryptionAPI.Nodes;
@@ -14,6 +15,7 @@ public static partial class Helpers
         Acts.Act1 => GetAct1Sequences(),
         Acts.Act3 => GetAct3Sequences(),
         Acts.GrimoraAct => GetGrimoraSequences(),
+        Acts.MagnificusAct => GetMagnificusSequences(),
         _ => AllSequences
     };
     public static List<BaseTriggerSequence> AllSequences
@@ -27,6 +29,7 @@ public static partial class Helpers
 
     private static List<BaseTriggerSequence> c_sequences = null;
     private static List<BaseTriggerSequence> m_sequences = null;
+
     private static List<BaseTriggerSequence> GetAllSequences()
     {
         List<BaseTriggerSequence> list = new();
@@ -164,6 +167,7 @@ public static partial class Helpers
     private static List<BaseTriggerSequence> m_act1Sequences = null;
     private static List<BaseTriggerSequence> m_act3Sequences = null;
     private static List<BaseTriggerSequence> m_grimoraSequences = null;
+    private static List<BaseTriggerSequence> m_mag_sequences = null;
 
     private static List<BaseTriggerSequence> GetAct1Sequences()
     {
@@ -225,5 +229,25 @@ public static partial class Helpers
             m_grimoraSequences = currentSeq;
         }
         return m_grimoraSequences;
+    }
+
+    private static List<BaseTriggerSequence> GetMagnificusSequences()
+    {
+        if (m_mag_sequences == null)
+        {
+            List<BaseTriggerSequence> sequences = new(AllSequences);
+            List<BaseTriggerSequence> currentSeq = new()
+            {
+                sequences.Find(x => x.SequenceName == "3 Random Choice"),
+                sequences.Find(x => x.SequenceName == "3 Cost Choice"),
+                sequences.Find(x => x.SequenceName == "Card Battle"),
+                sequences.Find(x => x.SequenceName == "Boss Battle"),
+                sequences.Find(x => x.SequenceName == "Choose Rare Card"),
+                sequences.Find(x => x.SequenceName == "Trade Pelts"),
+            };
+            currentSeq.AddRange(sequences.Where(x => x.ModGUID == MagnificusModHelper.Guid));
+            m_mag_sequences = currentSeq;
+        }
+        return m_mag_sequences;
     }
 }

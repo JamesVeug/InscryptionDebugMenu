@@ -181,20 +181,20 @@ public class AbilityInfoPopup : PaginatedWindow
         guid ??= AbilityManager.AllAbilities.Find(x => x.Info == info)?.ModGUID ?? "";
 
         return
-            $"<b>GUID:</b>\n{guid}" +
-            $"\n<b>Ability:</b>\n{info.ability}" +
-            $"\n<b>Rulebook Name:</b>\n{info.rulebookName}" +
-            $"\n<b>Description:</b>\n<i>{info.rulebookDescription}</i>" +
-            $"\n<b>Powerlevel:</b>\n{info.powerLevel}" +
-            $"\n<b>CanStack:</b>\n{info.canStack}" +
-            $"\n<b>OpponentUsable:</b>\n{info.opponentUsable}" +
-            $"\n<b>FlipYIfOpponent</b>\n{info.flipYIfOpponent}" +
-            $"\n<b>Activated:</b>\n{info.activated}" +
-            $"\n<b>Passive:</b>\n{info.passive}" +
-            $"\n<b>Conduit:</b>\n{info.conduit}" +
-            $"\n<b>ConduitCell: {info.conduitCell}" +
-            $"\n<b>HideSingleStack:</b>\n{info.GetHideSingleStacks()}" +
-            $"\n<b>TriggersOncePerStack</b>\n{info.GetTriggersOncePerStack()}";
+            "GUID:\n" + guid +
+            "\nAbility: " + info.ability + 
+            "\nRulebook Name:\n" + info.rulebookName + 
+            "\nDescription:\n" + info.rulebookDescription +
+            "\nPowerlevel: " + info.powerLevel + 
+            "\nCanStack: " + info.canStack + 
+            "\nOpponentUsable: " + info.opponentUsable +
+            "\nFlipYIfOpponent: " + info.flipYIfOpponent +
+            "\nActivated: " + info.activated + 
+            "\nPassive: " + info.passive +
+            "\nConduit: " + info.conduit +
+            "\nConduitCell: " + info.conduitCell + 
+            "\nHideSingleStack: " + info.GetHideSingleStacks() +
+            "\nTriggersOncePerStack " + info.GetTriggersOncePerStack();
     }
     public override void PrintAllInfoToLog()
     {

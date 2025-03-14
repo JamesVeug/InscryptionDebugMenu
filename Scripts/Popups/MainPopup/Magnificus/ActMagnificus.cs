@@ -46,13 +46,38 @@ public class ActMagnificus : BaseAct
         }
     }
 
-    public override void Restart()
+    public override string GetSpecialNodeName(string nodeDataName)
     {
-        // TODO:
+        return nodeDataName switch
+        {
+            "CustomNode1" => nodeDataName + " (ChangeCost)",
+            "CustomNode2" => nodeDataName + " (Shop)",
+            "CustomNode3" => nodeDataName + " (Bleach)",
+            "CustomNode14" => nodeDataName + " (Enchant)",
+            _ => base.GetSpecialNodeName(nodeDataName),
+        };
     }
 
-    public override void Reload()
+    public override bool OnSpecialCardSequence(string nodeDataName)
     {
-        // TODO:
+        if (nodeDataName == "SpellCardChoice")
+        {
+            if (Window.Button("Reroll choices", disabled: () => new(() => MagnificusModHelper.rerolling)))
+            {
+                Plugin.Instance.StartCoroutine(MagnificusModHelper.RerollSpellChoices());
+            }
+            return true;
+        }
+        if (nodeDataName == "CustomNode14 (Enchant)")
+        {
+            MagnificusModHelper.HandleEnchantNode(this.Window);
+            return true;
+        }
+        return false;
+    }
+
+    public override void Restart()
+    {
+        SceneLoader.Load("finale_magnificus");
     }
 }

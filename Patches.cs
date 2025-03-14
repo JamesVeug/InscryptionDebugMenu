@@ -2,6 +2,7 @@
 using DebugMenu.Scripts.Act3;
 using DebugMenu.Scripts.All;
 using DebugMenu.Scripts.Grimora;
+using DebugMenu.Scripts.Magnificus;
 using DebugMenu.Scripts.Utils;
 using DiskCardGame;
 using GBC;
@@ -14,6 +15,19 @@ using UnityEngine;
 
 namespace DebugMenu;
 
+[HarmonyPatch]
+internal class TransitionFromGameState
+{
+    [HarmonyPostfix, HarmonyPatch(typeof(GameFlowManager), nameof(GameFlowManager.TransitionFrom))]
+    private static IEnumerator PassOverBreaks(IEnumerator result, GameState gameState)
+    {
+        if (MagnificusModHelper.Enabled && SaveManager.SaveFile.IsMagnificus)
+        {
+            yield break;
+        }
+        yield return result;
+    }
+}
 [HarmonyPatch(typeof(SpecialNodeHandler), nameof(SpecialNodeHandler.StartSpecialNodeSequence), new Type[] { typeof(SpecialNodeData) })]
 internal class SpecialNodeHandler_StartSpecialNodeSequence
 {
@@ -63,7 +77,7 @@ internal class SaveCardList
     }
 }
 
-[HarmonyPatch(typeof(MapNodeManager), "DoMoveToNewNode")]
+/*[HarmonyPatch(typeof(MapNodeManager), "DoMoveToNewNode")]
 internal class MoveToNode_Debug
 {
     [HarmonyPrefix]
@@ -92,7 +106,7 @@ internal class MoveToNode_Debug
             RunState.Run.currentNodeId = newNode.nodeId;
         });
     }
-}
+}*/
 
 [HarmonyPatch(typeof(MapNode), nameof(MapNode.SetActive), new Type[] { typeof(bool) })]
 internal class MapNode_SetActive

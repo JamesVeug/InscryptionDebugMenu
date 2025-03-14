@@ -1,4 +1,5 @@
-﻿using DebugMenu.Scripts.Utils;
+﻿using DebugMenu.Scripts.Magnificus;
+using DebugMenu.Scripts.Utils;
 using DiskCardGame;
 using HarmonyLib;
 using System.Reflection;
@@ -171,7 +172,14 @@ public class TriggerCardBattleSequenceWindow : BaseWindow
         }
 
         bossBattleNodeData.difficulty = difficulty;
-        Singleton<GameFlowManager>.Instance.TransitionToGameState(GameState.CardBattle, bossBattleNodeData);
+        if (MagnificusModHelper.Enabled && SaveManager.SaveFile.IsMagnificus)
+        {
+            MagnificusModHelper.TransitionToBattle(bossBattleNodeData.specialBattleId);
+        }
+        else
+        {
+            Singleton<GameFlowManager>.Instance.TransitionToGameState(GameState.CardBattle, bossBattleNodeData);
+        }
 
         Plugin.Instance.ToggleWindow<TriggerCardBattleSequenceWindow>();
     }

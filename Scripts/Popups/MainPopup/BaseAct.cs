@@ -1,4 +1,5 @@
 ﻿using BepInEx.Logging;
+using DebugMenu.Scripts.Magnificus;
 using DebugMenu.Scripts.Popups;
 using DebugMenu.Scripts.Sequences;
 using DebugMenu.Scripts.Utils;
@@ -65,7 +66,7 @@ public abstract class BaseAct
         {
             for (int i = 0; i < RunState.Run.MaxConsumables; i++)
             {
-                string consumable = i >= items.Count ? null : items[i];
+                string consumable = i < items.Count ? items[i] : null;
                 string itemRulebookName = Helpers.GetConsumableByName(consumable);
                 string itemName = itemRulebookName ?? (consumable ?? "None");
                 ButtonListPopup.OnGUI<ButtonListPopup>(Window, itemName, "Change Item " + (i + 1), GetListsOfAllItems,
@@ -106,6 +107,8 @@ public abstract class BaseAct
         }
 
         Singleton<ItemsManager>.Instance.UpdateItems(true);
+        if (GameFlowManager.Instance.CurrentGameState != GameState.CardBattle)
+            SaveManager.SaveToFile(false); // don't save mid-battle to avoid unintentional buggery
     }
 
     private Tuple<List<string>, List<string>> GetListsOfAllItems()
@@ -156,7 +159,6 @@ public abstract class BaseAct
             return;
 
         GameState state = instance.CurrentGameState;
-        //Window.LabelHeader(state.ToString());
         switch (state)
         {
             case GameState.CardBattle:
@@ -178,18 +180,18 @@ public abstract class BaseAct
                 }
 
                 Type nodeType = Helpers.LastSpecialNodeData.GetType();
-                string nodeDataName = nodeType.Name.Replace("NodeData", "");
+                string nodeDataName = GetSpecialNodeName(nodeType.Name);
                 Window.LabelHeader(nodeDataName);
-
-                if (nodeType == typeof(CardChoicesNodeData))
-                {
-                    OnGUICardChoiceNodeSequence();
-                    return;
-                }
 
                 if (nodeType == typeof(ChooseRareCardNodeData))
                 {
                     OnGUIRareChoiceNodeSequence();
+                    return;
+                }
+
+                if (nodeType == typeof(CardChoicesNodeData))
+                {
+                    OnGUICardChoiceNodeSequence();
                     return;
                 }
 
@@ -207,19 +209,24 @@ public abstract class BaseAct
         }
     }
 
+    public virtual string GetSpecialNodeName(string nodeDataName)
+    {
+        return nodeDataName.Replace("NodeData", "");
+    }
+
     public virtual bool OnSpecialCardSequence(string nodeDataName)
     {
         return false;
     }
 
-    private void OnGUICardChoiceNodeSequence()
+    protected void OnGUICardChoiceNodeSequence()
     {
         if (Window.Button("Reroll choices"))
         {
             Singleton<SpecialNodeHandler>.Instance.cardChoiceSequencer.OnRerollChoices();
         }
     }
-    private void OnGUIRareChoiceNodeSequence()
+    public virtual void OnGUIRareChoiceNodeSequence()
     {
         if (Window.Button("Reroll choices", disabled: () => new(() => rerollingRare)))
         {
@@ -231,24 +238,54 @@ public abstract class BaseAct
 
     private IEnumerator RerollRareChoices()
     {
-        RareCardChoicesSequencer sequencer = SpecialNodeHandler.Instance.rareCardChoiceSequencer;
-        List<CardChoice> list;
-        int randSeed = SaveManager.SaveFile.GetCurrentRandomSeed() + UnityEngine.Random.Range(1, 99999);
-
         rerollingRare = true;
+        List<CardChoice> list;
+        RareCardChoicesSequencer sequencer = SpecialNodeHandler.Instance.rareCardChoiceSequencer;
+        int randSeed = SaveManager.SaveFile.GetCurrentRandomSeed() + UnityEngine.Random.Range(1, 99999);
+        bool magnificus = MagnificusModHelper.Enabled && SaveManager.SaveFile.IsMagnificus;
 
         sequencer.DisableViewDeck();
         sequencer.CleanupMushrooms();
-        sequencer.box.GetComponentInChildren<Animator>().Play("close", 0, 0f);
-        AudioController.Instance.PlaySound3D("woodbox_close", MixerGroup.TableObjectsSFX, sequencer.box.transform.position);
-        yield return new WaitForSeconds(0.1f);
+
+        if (!magnificus)
+        {
+            sequencer.box.GetComponentInChildren<Animator>().Play("close", 0, 0f);
+            AudioController.Instance.PlaySound3D("woodbox_close", MixerGroup.TableObjectsSFX, sequencer.box.transform.position);
+            yield return new WaitForSeconds(0.1f);
+        }
+
         sequencer.CleanUpCards();
         yield return new WaitForSeconds(0.3f);
 
         Singleton<ViewManager>.Instance.SwitchToView(sequencer.choicesView);
-        sequencer.selectableCards = sequencer.SpawnCards(3, sequencer.box.transform, new Vector3(-1.55f, 0.2f, 0f));
-        list = (!AscensionSaveData.Data.ChallengeIsActive(AscensionChallenge.NoBossRares)) ? sequencer.rareChoiceGenerator.GenerateChoices(randSeed) : sequencer.choiceGenerator.GenerateChoices(new CardChoicesNodeData(), randSeed);       
-        
+        if (MagnificusModHelper.Enabled && SaveManager.SaveFile.IsMagnificus)
+        {
+            list = new();
+            sequencer.selectableCards = sequencer.SpawnCards(3, GameObject.Find("GameTable").transform, new Vector3(-1.55f, 5.01f, 0.5f), 1.5f);
+            List<CardInfo> unlockedCards = CardLoader.GetUnlockedCards(CardMetaCategory.Rare, CardTemple.Wizard);
+            unlockedCards.RemoveAll((CardInfo x) => x.name == "MoxTriple" && x.HasTrait(Trait.Gem));
+            for (int i = 0; i < 3; i++)
+            {
+                CardInfo card = CardLoader.Clone(unlockedCards[SeededRandom.Range(0, unlockedCards.Count, SaveManager.saveFile.randomSeed)]);
+                if (unlockedCards.Count > 2)
+                {
+                    SaveManager.saveFile.randomSeed++;
+                    while (list.Exists((CardChoice x) => x.CardInfo.name == card.name))
+                    {
+                        card = CardLoader.Clone(unlockedCards[SeededRandom.Range(0, unlockedCards.Count, SaveManager.saveFile.randomSeed)]);
+                        SaveManager.saveFile.randomSeed++;
+                    }
+                }
+                list.Add(new() { CardInfo = card });
+            }
+
+        }
+        else
+        {
+            sequencer.selectableCards = sequencer.SpawnCards(3, sequencer.box.transform, new Vector3(-1.55f, 0.2f, 0f));
+            list = (!AscensionSaveData.Data.ChallengeIsActive(AscensionChallenge.NoBossRares)) ? sequencer.rareChoiceGenerator.GenerateChoices(randSeed) : sequencer.choiceGenerator.GenerateChoices(new CardChoicesNodeData(), randSeed);
+        }
+
         for (int i = 0; i < sequencer.selectableCards.Count; i++)
         {
             sequencer.selectableCards[i].gameObject.SetActive(value: true);
@@ -262,8 +299,12 @@ public abstract class BaseAct
             }
         }
 
-        sequencer.box.GetComponentInChildren<Animator>().Play("open", 0, 0f);
-        AudioController.Instance.PlaySound3D("woodbox_open", MixerGroup.TableObjectsSFX, sequencer.box.transform.position);
+        if (!magnificus)
+        {
+            sequencer.box.GetComponentInChildren<Animator>().Play("open", 0, 0f);
+            AudioController.Instance.PlaySound3D("woodbox_open", MixerGroup.TableObjectsSFX, sequencer.box.transform.position);
+        }
+
         ChallengeActivationUI.TryShowActivation(AscensionChallenge.NoBossRares);
         yield return new WaitForSeconds(0.3f);
         sequencer.EnableViewDeck(sequencer.viewControlMode, sequencer.basePosition);

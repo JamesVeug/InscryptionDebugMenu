@@ -228,7 +228,7 @@ public class LearnDataPopup : PaginatedWindow
                 {
                     LearnMechanic(info.mechanicConcept, !info.HasLearnt());
                 }
-                else if (info.HasLearnt())
+                else if (!info.HasLearnt())
                 {
                     LearnString(info.nameKey, shownMenu);
                 }

@@ -189,7 +189,7 @@ public class GameBoardPopup : BaseWindow
         CardInfo info = card.Info.Clone() as CardInfo;
         PlayableCardStatus status = new(card.Status);
         RemoveFromBoard(card);
-        yield return CardSpawner.Instance.SpawnCardToHand(info, null, 0.25f, cardSpawnedCallback: (PlayableCard c) => c.Status = status);
+        yield return CardSpawner.Instance.SpawnCardToHand(info, card.TemporaryMods, 0.25f, cardSpawnedCallback: (PlayableCard c) => c.Status = status);
     }
     private void RemoveFromBoard(PlayableCard card)
     {
