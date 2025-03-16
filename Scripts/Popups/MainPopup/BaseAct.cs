@@ -57,14 +57,15 @@ public abstract class BaseAct
     public void Warning(string log) => Logger.LogWarning($"[{GetType().Name}] {log}");
     public void Error(string log) => Logger.LogError($"[{GetType().Name}] {log}");
 
-    public void DrawItemsGUI()
+    public virtual void DrawItemsGUI()
     {
         Window.LabelHeader("Items");
-        List<string> items = RunState.Run.consumables;
+        int maxConsumables = RunState.Run.MaxConsumables;
+        List<string> items = GetConsumables();
 
-        using (Configs.VerticalItems ? Window.VerticalScope(RunState.Run.MaxConsumables) : Window.HorizontalScope(RunState.Run.MaxConsumables))
+        using (Configs.VerticalItems ? Window.VerticalScope(maxConsumables) : Window.HorizontalScope(maxConsumables))
         {
-            for (int i = 0; i < RunState.Run.MaxConsumables; i++)
+            for (int i = 0; i < maxConsumables; i++)
             {
                 string consumable = i < items.Count ? items[i] : null;
                 string itemRulebookName = Helpers.GetConsumableByName(consumable);
@@ -75,13 +76,14 @@ public abstract class BaseAct
         }
     }
 
+    public static List<string> GetConsumables() => SaveManager.SaveFile.IsPart3 ? Part3SaveData.Data.items : RunState.Run.consumables;
     public static void OnChoseButtonCallback(int chosenIndex, string chosenValue, List<string> inventoryIndex)
     {
-        List<string> currentItems = RunState.Run.consumables;
+        List<string> currentItems = GetConsumables();
         foreach (string s in inventoryIndex)
         {
             int index = int.Parse(s);
-            string selectedItem = index >= RunState.Run.consumables.Count ? null : RunState.Run.consumables[index];
+            string selectedItem = index >= GetConsumables().Count ? null : GetConsumables()[index];
 
             if (chosenValue == null)
             {

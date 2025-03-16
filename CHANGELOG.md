@@ -14,6 +14,7 @@
 - Added debug support for MagnificusMod
 
 ### Part 3
+- Fixed consumables menu displaying and modifying the wrong items
 - Added Fast Travel option to Map menu
 - Removed 'Toggle All Nodes' option due to unintended behaviours and lack of utility
 
