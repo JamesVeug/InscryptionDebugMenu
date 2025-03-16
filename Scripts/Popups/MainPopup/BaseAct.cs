@@ -21,10 +21,13 @@ public abstract class BaseAct
     protected BaseCardBattleSequence m_cardBattleSequence;
     protected BaseMapSequence m_mapSequence;
 
+    private string TypeName;
+
     public BaseAct(DebugWindow window)
     {
         Window = window;
         Logger = Plugin.Log;
+        TypeName = GetType().Name;
     }
 
     public virtual void Update() { }
@@ -54,9 +57,9 @@ public abstract class BaseAct
         MenuController.LoadGameFromMenu(newGameGBC: false);
     }
 
-    public void Log(string log) => Logger.LogInfo($"[{GetType().Name}] {log}");
-    public void Warning(string log) => Logger.LogWarning($"[{GetType().Name}] {log}");
-    public void Error(string log) => Logger.LogError($"[{GetType().Name}] {log}");
+    public void Log(string log) => Logger.LogInfo($"[{TypeName}] {log}");
+    public void Warning(string log) => Logger.LogWarning($"[{TypeName}] {log}");
+    public void Error(string log) => Logger.LogError($"[{TypeName}] {log}");
 
     public virtual void DrawItemsGUI()
     {
