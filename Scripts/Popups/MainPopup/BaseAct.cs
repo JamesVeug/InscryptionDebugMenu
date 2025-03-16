@@ -5,6 +5,7 @@ using DebugMenu.Scripts.Sequences;
 using DebugMenu.Scripts.Utils;
 using DiskCardGame;
 using System.Collections;
+using System.Reflection;
 using UnityEngine;
 
 namespace DebugMenu.Scripts.Acts;
@@ -80,25 +81,21 @@ public abstract class BaseAct
     public static void OnChoseButtonCallback(int chosenIndex, string chosenValue, List<string> inventoryIndex)
     {
         List<string> currentItems = GetConsumables();
-        foreach (string s in inventoryIndex)
+        for (int i = 0; i < inventoryIndex.Count; i++)
         {
-            int index = int.Parse(s);
-            string selectedItem = index >= GetConsumables().Count ? null : GetConsumables()[index];
-
+            List<string> consumables = GetConsumables();
+            string selectedItem = i < consumables.Count ? consumables[i] : null;
             if (chosenValue == null)
             {
                 ItemsManager.Instance.RemoveItemFromSaveData(selectedItem);
             }
+            else if (i < currentItems.Count)
+            {
+                currentItems[i] = chosenValue;
+            }
             else
             {
-                if (index >= currentItems.Count)
-                {
-                    currentItems.Add(chosenValue);
-                }
-                else
-                {
-                    currentItems[index] = chosenValue;
-                }
+                currentItems.Add(chosenValue);
             }
         }
 
