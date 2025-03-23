@@ -20,7 +20,6 @@ public class ActMagnificus : BaseAct
     public override void OnGUI()
     {
         Window.LabelHeader("Magnificus' Act");
-        
         DrawCurrencyGUI();
 
         Window.StartNewColumn();
@@ -71,6 +70,11 @@ public class ActMagnificus : BaseAct
         if (nodeDataName == "CustomNode14 (Enchant)")
         {
             MagnificusModHelper.HandleEnchantNode(this.Window);
+            return true;
+        }
+        if (nodeDataName == "CustomNodeDeck")
+        {
+            GameFlowManager.Instance.CurrentGameState = GameState.Map;
             return true;
         }
         return false;

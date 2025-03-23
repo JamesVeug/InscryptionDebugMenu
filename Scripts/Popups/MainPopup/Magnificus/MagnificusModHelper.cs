@@ -1,5 +1,4 @@
 ﻿using DiskCardGame;
-using MagnificusMod;
 
 namespace DebugMenu.Scripts.Magnificus;
 
