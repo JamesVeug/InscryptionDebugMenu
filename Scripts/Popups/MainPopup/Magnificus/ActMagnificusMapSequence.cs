@@ -7,8 +7,6 @@ namespace DebugMenu.Scripts.Magnificus;
 
 public class ActMagnificusMapSequence : BaseMapSequence
 {
-    public static bool RegionOverride = false;
-
     private readonly ActMagnificus Act = null;
     private readonly DebugWindow Window = null;
 

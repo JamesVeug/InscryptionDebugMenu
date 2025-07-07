@@ -1,5 +1,16 @@
 # Changelog
 
+## 1.5.2
+### General
+- Fixed item overridding affecting the wrong slot
+### Act 1
+- Clarified what 'Toggle Map Override' actually does
+- Added 'Override Current Region' button
+
+## 1.5.1
+### General
+- Fixed Skip Next Node not working
+
 ## 1.5.0
 ### General
 - Fixed consumable menu being broken

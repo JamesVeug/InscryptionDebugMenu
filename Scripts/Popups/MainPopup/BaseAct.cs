@@ -74,7 +74,7 @@ public abstract class BaseAct
                 string consumable = i < items.Count ? items[i] : null;
                 string itemRulebookName = Helpers.GetConsumableByName(consumable);
                 string itemName = itemRulebookName ?? (consumable ?? "None");
-                ButtonListPopup.OnGUI<ButtonListPopup>(Window, itemName, "Change Item " + (i + 1), GetListsOfAllItems,
+                ButtonListPopup.OnGUI<ButtonListPopup>(Window, itemName, "Change Item", GetListsOfAllItems,
                     OnChoseButtonCallback, i.ToString());
             }
         }
@@ -84,10 +84,14 @@ public abstract class BaseAct
     public static void OnChoseButtonCallback(int chosenIndex, string chosenValue, List<string> inventoryIndex)
     {
         List<string> currentItems = GetConsumables();
-        for (int i = 0; i < inventoryIndex.Count; i++)
+        for (int i = 0; i < currentItems.Count; i++)
         {
+            if (int.TryParse(inventoryIndex[0], out int e) && i != e) {
+                continue;
+            }
             List<string> consumables = GetConsumables();
             string selectedItem = i < consumables.Count ? consumables[i] : null;
+            //Plugin.Log.LogInfo($"{selectedItem} Val: {chosenValue}");
             if (chosenValue == null)
             {
                 ItemsManager.Instance.RemoveItemFromSaveData(selectedItem);

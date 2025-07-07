@@ -7,6 +7,7 @@ using DebugMenu.Scripts.Utils;
 using DiskCardGame;
 using GBC;
 using HarmonyLib;
+using InscryptionAPI;
 using InscryptionAPI.Card;
 using InscryptionAPI.Regions;
 using System.Collections;
@@ -68,16 +69,12 @@ internal class SaveCardList
             Act1.lastUsedStarterDeck = starterDeck;
 
         Plugin.Log.LogInfo("New starter deck with " + starterDeck.Count + " cards!");
+        Configs.CurrentRegionOverride = string.Empty;
         return true;
-    }
-
-    [HarmonyPostfix]
-    private static void SaveCardListPostfix()
-    {
     }
 }
 
-/*[HarmonyPatch(typeof(MapNodeManager), "DoMoveToNewNode")]
+[HarmonyPatch(typeof(MapNodeManager), "DoMoveToNewNode")]
 internal class MoveToNode_Debug
 {
     [HarmonyPrefix]
@@ -86,6 +83,10 @@ internal class MoveToNode_Debug
     [HarmonyPostfix]
     private static IEnumerator MoveToNodePostfix(IEnumerator previous, MapNodeManager __instance, int ___transitioningGridY, MapNode newNode)
     {
+        if (MagnificusModHelper.Enabled && SaveManager.SaveFile.IsMagnificus)
+        {
+            yield break;
+        }
         __instance.MovingNodes = true;
         __instance.SetAllNodesInteractable(nodesInteractable: false);
         ___transitioningGridY = newNode.Data.gridY;
@@ -106,7 +107,7 @@ internal class MoveToNode_Debug
             RunState.Run.currentNodeId = newNode.nodeId;
         });
     }
-}*/
+}
 
 [HarmonyPatch(typeof(MapNode), nameof(MapNode.SetActive), new Type[] { typeof(bool) })]
 internal class MapNode_SetActive
@@ -164,6 +165,7 @@ internal class InputButtons_Axis
     }
 }
 
+
 [HarmonyPatch(typeof(RegionManager), "GetAllRegionsForMapGeneration")]
 internal class RegionManager_GetRandomRegionFromTier
 {
@@ -173,17 +175,37 @@ internal class RegionManager_GetRandomRegionFromTier
         if (Act1MapSequence.RegionOverride)
         {
             RegionData data = RegionManager.AllRegionsCopy.Find((a) => a.name == Act1MapSequence.RegionNameOverride);
-            if (data == null)
-            {
-                Plugin.Log.LogInfo("Could not override region. Not found using name '" + Act1MapSequence.RegionNameOverride + "'");
-            }
-            else
-            {
-                __result = new() { data };
+            if (data != null) {
+                __result.Clear();
+                __result.Add(data);
                 return false;
             }
+
+            Plugin.Log.LogWarning($"Could not override map, region [{Act1MapSequence.RegionNameOverride}] could not be found!");
         }
         return true;
+    }
+}
+
+[HarmonyPatch]
+[HarmonyAfter(InscryptionAPIPlugin.ModGUID)]
+internal class OtherRegionPatches {
+    [HarmonyPostfix, HarmonyPatch(typeof(RunState), nameof(RunState.CurrentMapRegion), MethodType.Getter)]
+    private static void FixRegionOverride(ref RegionData __result) {
+        if (!string.IsNullOrEmpty(Configs.CurrentRegionOverride) && SaveManager.SaveFile.IsPart1) {
+            RegionData data = RegionManager.AllRegionsCopy.Find((a) => a.name == Act1MapSequence.RegionNameOverride);
+            if (data != null) {
+                __result = data;
+            }
+            else {
+                Configs.CurrentRegionOverride = string.Empty;
+            }
+        }
+    }
+
+    [HarmonyPostfix, HarmonyPatch(typeof(RunState), nameof(RunState.NextRegion))]
+    private static void ResetCurrentRegionOverride() {
+        Configs.CurrentRegionOverride = string.Empty;
     }
 }
 
