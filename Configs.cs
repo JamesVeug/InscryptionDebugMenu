@@ -110,6 +110,14 @@ public static class Configs
         }
     }
 
+    public static string CurrentRegionOverride {
+        get => m_currentOverride.Value;
+        set {
+            m_currentOverride.Value = value;
+            Plugin.Instance.Config.Save();
+        }
+    }
+
     public static ConfigEntry<bool> m_disableDialogue = Bind("General", "Disable Dialogue", false, "Should all dialogue be disabled?");
     public static ConfigEntry<bool> m_disablePlayerDamage = Bind("General", "Disable Player Damage", false, "Should the player be immune to direct damage?");
     public static ConfigEntry<bool> m_disableOpponentDamage = Bind("General", "Disable Opponent Damage", false, "Should the opponent be immune to direct damage?");
@@ -132,6 +140,7 @@ public static class Configs
 
     public static ConfigEntry<bool> m_hideGuids = Bind("General.Sequences", "Hide Mod GUIDs", false, "Should Mod GUIDs be hidden in the Trigger Sequence menu?");
     public static ConfigEntry<bool> m_showAllSeqs = Bind("General.Sequences", "Show All Sequences", true, "Should all sequences be shown in the Trigger Sequence menu?");
+    public static ConfigEntry<string> m_currentOverride = Bind("General.Region", "Current Override Region", "", "Name of the current override region. Used to ");
 
     private static ConfigEntry<T> Bind<T>(string section, string key, T defaultValue, string description)
     {
