@@ -1,7 +1,9 @@
-﻿using DiskCardGame;
+﻿using BepInEx;
+using DiskCardGame;
+using GBC;
+using GracesGames.Common.Scripts;
 using InscryptionAPI.Card;
 using UnityEngine;
-using BepInEx;
 
 namespace DebugMenu.Scripts.Utils;
 
@@ -12,15 +14,15 @@ public static class DrawCardInfo // used for the deck editors
         return cardInfo.HasModFromCardMerge() || (playableCard != null && playableCard.TemporaryMods.Exists(x => x.fromCardMerge));
     }
 
-	public static Result OnGUI(CardInfo cardInfo, PlayableCard playableCard = null, DeckInfo deckInfo = null)
-	{
-		if (cardInfo == null)
-			return Result.None;
+    public static Result OnGUI(CardInfo cardInfo, PlayableCard playableCard = null, DeckInfo deckInfo = null)
+    {
+        if (cardInfo == null)
+            return Result.None;
 
         bool boardEditor = playableCard != null;
 
-		GUILayout.BeginHorizontal();
-		GUILayout.Label("Card Editor", Helpers.HeaderLabelStyle());
+        GUILayout.BeginHorizontal();
+        GUILayout.Label("Card Editor", Helpers.HeaderLabelStyle());
         GUILayout.Label(cardInfo.DisplayedNameLocalized + " (" + cardInfo.name + ")", Helpers.HeaderLabelStyle());
         GUILayout.EndHorizontal();
 
@@ -28,6 +30,40 @@ public static class DrawCardInfo // used for the deck editors
         {
             return Result.Altered;
         }
+
+        GUILayout.BeginHorizontal();
+        if (deckInfo != null)
+        {
+            if (GUILayout.Button("Duplicate Selected Card"))
+            {
+                // remove the selected card
+                CardInfo cardInfo2 = cardInfo.Clone() as CardInfo;
+                deckInfo.AddCard(cardInfo2);
+                if (SaveManager.SaveFile.IsPart2)
+                    SaveManager.SaveFile.CollectGBCCard(cardInfo2);
+
+                SaveManager.SaveToFile(false);
+                return Result.Altered;
+            }
+            if (deckInfo.Cards?.Count > 2)
+            {
+                if (GUILayout.Button("Remove Selected Card"))
+                {
+                    // remove the selected card
+                    deckInfo.RemoveCard(cardInfo);
+                    if (SaveManager.SaveFile.IsPart2)
+                        SaveData.Data.collection.RemoveCardByName(cardInfo.name);
+
+                    SaveManager.SaveToFile(false);
+                    return Result.Removed;
+                }
+            }
+            else
+            {
+                GUILayout.Label("Deck too small! Needs at least 2 cards.", Helpers.DisabledButtonStyle());
+            }
+        }
+        GUILayout.EndHorizontal();
 
         GUILayout.BeginHorizontal();
         if (HasModFromCardMerge(cardInfo, playableCard)) // clear card merge data (remove patches)
@@ -43,30 +79,29 @@ public static class DrawCardInfo // used for the deck editors
 
                 return Result.Altered;
             }
-		}
+        }
         else
         {
             GUILayout.Label("Clear Merge Data", Helpers.DisabledButtonStyle());
         }
-
-		if (SaveManager.SaveFile.IsPart2)
-		{
-            GUILayout.Label("No emissions in Act 2!", Helpers.DisabledButtonStyle());
+        if (!SaveManager.SaveFile.IsPart1)
+        {
+            GUILayout.Label("No Emissions", Helpers.DisabledButtonStyle());
         }
-		else
-		{
+        else
+        {
             CardModificationInfo emissionMod = cardInfo.Mods.Find(a => a.singletonId == EmissionMod);
             if (emissionMod != null)
             {
                 if (GUILayout.Button("Unforce Emission"))
                 {
                     cardInfo.Mods.Remove(emissionMod);
-					if (deckInfo != null)
-					{
-						deckInfo?.UpdateModDictionary();
-						SaveManager.SaveToFile(false);
-					}
-					return Result.Altered;
+                    if (deckInfo != null)
+                    {
+                        deckInfo?.UpdateModDictionary();
+                        SaveManager.SaveToFile(false);
+                    }
+                    return Result.Altered;
                 }
             }
             else if (GUILayout.Button("Force Emission"))
@@ -84,23 +119,6 @@ public static class DrawCardInfo // used for the deck editors
                 return Result.Altered;
             }
         }
-        if (deckInfo != null)
-        {
-            if (deckInfo.Cards.Count > 2)
-            {
-                if (GUILayout.Button("Remove Selected Card"))
-                {
-                    // remove the selected card
-                    deckInfo.RemoveCard(cardInfo);
-                    SaveManager.SaveToFile(false);
-                    return Result.Removed;
-                }
-            }
-            else
-            {
-                GUILayout.Label("Cannot remove; deck too small!", Helpers.DisabledButtonStyle());
-            }
-        }
         GUILayout.EndHorizontal();
 
         GUILayout.BeginHorizontal();
@@ -111,19 +129,19 @@ public static class DrawCardInfo // used for the deck editors
 
         // cost modifications
         if (HandleCost(cardInfo, playableCard, deckInfo))
-			return Result.Altered;
+            return Result.Altered;
 
         // shows the default and alternate portraits (none of the API portraits)
         GUILayout.BeginHorizontal();
-		DisplayPortraits(cardInfo);
-		GUILayout.EndHorizontal();
+        DisplayPortraits(cardInfo);
+        GUILayout.EndHorizontal();
 
         if (HandleTribes(cardInfo, playableCard, deckInfo))
             return Result.Altered;
 
         // stat modifications
         if (HandleStats(cardInfo, playableCard, deckInfo, boardEditor))
-			return Result.Altered;
+            return Result.Altered;
 
         int correctTab;
         if (boardEditor) // Specials/Abilities
@@ -158,6 +176,9 @@ public static class DrawCardInfo // used for the deck editors
                     asCardMerge = asTotem = asLatch = false;
             }
 
+            GUILayout.EndHorizontal();
+
+            GUILayout.BeginHorizontal();
             // do toggles
             GUILayoutOption toggleOption = GUILayout.Width(toggleWidth);
             if (boardEditor)
@@ -192,9 +213,7 @@ public static class DrawCardInfo // used for the deck editors
                 asTotem = GUILayout.Toggle(asTotem, "FromTotem", toggleOption);
                 asLatch = GUILayout.Toggle(asLatch, "FromLatch", toggleOption);
             }
-
             GUILayout.EndHorizontal();
-
             if (ManageAbilities(cardInfo, playableCard, deckInfo, boardEditor, managerIndex))
                 return Result.Altered;
         }
@@ -210,7 +229,7 @@ public static class DrawCardInfo // used for the deck editors
         }
 
         return Result.None;
-	}
+    }
 
     private static bool HandleNameReplacement(ref string nameReplacementFieldRef, CardInfo cardInfo, DeckInfo deckInfo = null)
     {
@@ -253,7 +272,7 @@ public static class DrawCardInfo // used for the deck editors
 
         if (hasForcedPortrait) // if we have a portrait mod
         {
-            if (GUILayout.Button("Reset Portrait"))
+            if (GUILayout.Button("Reset Portrait", Helpers.EnabledButtonStyle()))
             {
                 cardInfo.Mods.RemoveAll(
                     x => x.singletonId == PortraitMod ||
@@ -278,97 +297,121 @@ public static class DrawCardInfo // used for the deck editors
         bool hasShieldPortrait = SaveManager.SaveFile.IsPart2 ? cardInfo.HasPixelBrokenShieldPortrait() : cardInfo.HasBrokenShieldPortrait();
         bool hasSacrificePortrait = SaveManager.SaveFile.IsPart2 ? cardInfo.HasPixelSacrificablePortrait() : cardInfo.HasSacrificablePortrait();
         bool hasTrapPortrait = SaveManager.SaveFile.IsPart2 ? cardInfo.HasPixelSteelTrapPortrait() : cardInfo.HasSteelTrapPortrait();
-        if (hasAltPortrait && GUILayout.Button("Force Alt"))
+        if (hasAltPortrait)
         {
-            cardInfo.Mods.RemoveAll(
-                x => x.singletonId == PortraitMod ||
-                x.singletonId == ShieldPortraitMod ||
-                x.singletonId == SacrificePortraitMod ||
-                x.singletonId == TrapPortraitMod);
+            if (cardInfo.Mods.Exists(x => x.singletonId == PortraitMod))
+            {
+                GUILayout.Label("Force Alt Portrait", Helpers.DisabledButtonStyle());
+            }
+            else if (GUILayout.Button("Force Alt Portrait", Helpers.EnabledButtonStyle()))
+            {
+                cardInfo.Mods.RemoveAll(
+                    x => x.singletonId == ShieldPortraitMod ||
+                    x.singletonId == SacrificePortraitMod ||
+                    x.singletonId == TrapPortraitMod);
 
-            CardModificationInfo portrait = new() { singletonId = PortraitMod };
-            if (deckInfo != null)
-            {
-                deckInfo.ModifyCard(cardInfo, portrait);
-                SaveManager.SaveToFile(false);
+                CardModificationInfo portrait = new() { singletonId = PortraitMod };
+                if (deckInfo != null)
+                {
+                    deckInfo.ModifyCard(cardInfo, portrait);
+                    SaveManager.SaveToFile(false);
+                }
+                else
+                {
+                    cardInfo.Mods.Add(portrait);
+                }
+                return true;
             }
-            else
-            {
-                cardInfo.Mods.Add(portrait);
-            }
-            return true;
         }
         else
         {
             GUILayout.Label("No Alt Portrait", Helpers.DisabledButtonStyle());
         }
-        if (hasShieldPortrait && GUILayout.Button("Force Shield"))
+        if (hasShieldPortrait)
         {
-            cardInfo.Mods.RemoveAll(
-                x => x.singletonId == PortraitMod ||
-                x.singletonId == ShieldPortraitMod ||
-                x.singletonId == SacrificePortraitMod ||
-                x.singletonId == TrapPortraitMod);
+            if (cardInfo.Mods.Exists(x => x.singletonId == ShieldPortraitMod))
+            {
+                GUILayout.Label("Force Shield Portrait", Helpers.DisabledButtonStyle());
+            }
+            else if (GUILayout.Button("Force Shield Portrait", Helpers.EnabledButtonStyle()))
+            {
+                cardInfo.Mods.RemoveAll(
+                    x => x.singletonId == PortraitMod ||
+                    x.singletonId == SacrificePortraitMod ||
+                    x.singletonId == TrapPortraitMod);
 
-            CardModificationInfo portrait = new() { singletonId = ShieldPortraitMod };
-            if (deckInfo != null)
-            {
-                deckInfo.ModifyCard(cardInfo, portrait);
-                SaveManager.SaveToFile(false);
+                CardModificationInfo portrait = new() { singletonId = ShieldPortraitMod };
+                if (deckInfo != null)
+                {
+                    deckInfo.ModifyCard(cardInfo, portrait);
+                    SaveManager.SaveToFile(false);
+                }
+                else
+                {
+                    cardInfo.Mods.Add(portrait);
+                }
+                return true;
             }
-            else
-            {
-                cardInfo.Mods.Add(portrait);
-            }
-            return true;
         }
         else
         {
             GUILayout.Label("No Shield Portrait", Helpers.DisabledButtonStyle());
         }
-        if (hasSacrificePortrait && GUILayout.Button("Force Sacrifice"))
+        if (hasSacrificePortrait)
         {
-            cardInfo.Mods.RemoveAll(
-                x => x.singletonId == PortraitMod ||
-                x.singletonId == ShieldPortraitMod ||
-                x.singletonId == SacrificePortraitMod ||
-                x.singletonId == TrapPortraitMod);
+            if (cardInfo.Mods.Exists(x => x.singletonId == SacrificePortraitMod))
+            {
+                GUILayout.Label("Force Sacrifice Portrait", Helpers.DisabledButtonStyle());
+            }
+            else if (GUILayout.Button("Force Sacrifice Portrait", Helpers.EnabledButtonStyle()))
+            {
+                cardInfo.Mods.RemoveAll(
+                    x => x.singletonId == PortraitMod ||
+                    x.singletonId == ShieldPortraitMod ||
+                    x.singletonId == TrapPortraitMod);
 
-            CardModificationInfo portrait = new() { singletonId = SacrificePortraitMod };
-            if (deckInfo != null)
-            {
-                deckInfo.ModifyCard(cardInfo, portrait);
-                SaveManager.SaveToFile(false);
+                CardModificationInfo portrait = new() { singletonId = SacrificePortraitMod };
+                if (deckInfo != null)
+                {
+                    deckInfo.ModifyCard(cardInfo, portrait);
+                    SaveManager.SaveToFile(false);
+                }
+                else
+                {
+                    cardInfo.Mods.Add(portrait);
+                }
+                return true;
             }
-            else
-            {
-                cardInfo.Mods.Add(portrait);
-            }
-            return true;
         }
         else
         {
             GUILayout.Label("No Sacrifice Portrait", Helpers.DisabledButtonStyle());
         }
-        if (hasTrapPortrait && GUILayout.Button("Force Trap"))
+        if (hasTrapPortrait)
         {
-            cardInfo.Mods.RemoveAll(
-                x => x.singletonId == PortraitMod ||
-                x.singletonId == ShieldPortraitMod ||
-                x.singletonId == SacrificePortraitMod ||
-                x.singletonId == TrapPortraitMod);
+            if (cardInfo.Mods.Exists(x => x.singletonId == TrapPortraitMod))
+            {
+                GUILayout.Label("Force Trap Portrait", Helpers.DisabledButtonStyle());
+            }
+            else if (GUILayout.Button("Force Trap Portrait", Helpers.EnabledButtonStyle()))
+            {
+                cardInfo.Mods.RemoveAll(
+                    x => x.singletonId == PortraitMod ||
+                    x.singletonId == ShieldPortraitMod ||
+                    x.singletonId == SacrificePortraitMod);
 
-            CardModificationInfo portrait = new() { singletonId = TrapPortraitMod };
-            if (deckInfo != null)
-            {
-                deckInfo.ModifyCard(cardInfo, portrait);
-                SaveManager.SaveToFile(false);
+                CardModificationInfo portrait = new() { singletonId = TrapPortraitMod };
+                if (deckInfo != null)
+                {
+                    deckInfo.ModifyCard(cardInfo, portrait);
+                    SaveManager.SaveToFile(false);
+                }
+                else
+                {
+                    cardInfo.Mods.Add(portrait);
+                }
+                return true;
             }
-            else
-            {
-                cardInfo.Mods.Add(portrait);
-            }
-            return true;
         }
         else
         {
@@ -377,13 +420,13 @@ public static class DrawCardInfo // used for the deck editors
         return false;
     }
     private static bool HandleTribes(CardInfo cardInfo, PlayableCard playableCard, DeckInfo deckInfo)
-	{
-		GUILayout.BeginHorizontal();
-		GUILayout.Label("<b>Tribes:</b> " + string.Join(",", cardInfo.tribes.Select(Helpers.GetTribeName)));
-		GUILayout.EndHorizontal();
-		return false;
-	}
-    
+    {
+        GUILayout.BeginHorizontal();
+        GUILayout.Label("<b>Tribes:</b> " + string.Join(",", cardInfo.tribes.Select(Helpers.GetTribeName)));
+        GUILayout.EndHorizontal();
+        return false;
+    }
+
     private static bool DisplayPixelPortraits(CardInfo cardInfo, GUILayoutOption[] options)
     {
         bool hasPortrait = false;
@@ -447,18 +490,18 @@ public static class DrawCardInfo // used for the deck editors
     }
 
     private static void DisplayPortraits(CardInfo cardInfo)
-	{
+    {
         bool showingPixel, showingNormal;
-		bool isAct2 = Helpers.GetCurrentSavedAct() == Helpers.Acts.Act2;
-		GUILayoutOption[] options = new GUILayoutOption[] { GUILayout.Width(114), GUILayout.Height(94)};
+        bool isAct2 = Helpers.GetCurrentSavedAct() == Helpers.Acts.Act2;
+        GUILayoutOption[] options = new GUILayoutOption[] { GUILayout.Width(114), GUILayout.Height(94) };
 
         if (isAct2) // display pixel portraits first if it's Act 2
         {
             showingPixel = DisplayPixelPortraits(cardInfo, options);
             showingNormal = DisplayPortraits(cardInfo, options);
-		}
-		else
-		{
+        }
+        else
+        {
             showingNormal = DisplayPortraits(cardInfo, options);
             showingPixel = DisplayPixelPortraits(cardInfo, options);
         }
@@ -466,16 +509,16 @@ public static class DrawCardInfo // used for the deck editors
             GUILayout.Label("No portraits", options);
     }
 
-	private static bool NewCardMod(DeckInfo deckInfo, CardInfo cardInfo, PlayableCard playableCard = null,
+    private static bool NewCardMod(DeckInfo deckInfo, CardInfo cardInfo, PlayableCard playableCard = null,
         int attackAdjustment = 0, int healthAdjustment = 0,
-		Ability ability = 0, Ability negateAbility = 0,
-		int bloodCostAdjustment = 0, int boneCostAdjustment = 0, int energyCostAdjustment = 0,
-		SpecialTriggeredAbility specialAbility = 0, SpecialTriggeredAbility removeSpecialAbility = 0,
-		List<GemType> addGemCost = null, List<GemType> removeGemCost = null, string singletonId = null,
-        bool ? gemified = null, bool? nullifyGems = null,
+        Ability ability = 0, Ability negateAbility = 0,
+        int bloodCostAdjustment = 0, int boneCostAdjustment = 0, int energyCostAdjustment = 0,
+        SpecialTriggeredAbility specialAbility = 0, SpecialTriggeredAbility removeSpecialAbility = 0,
+        List<GemType> addGemCost = null, List<GemType> removeGemCost = null, string singletonId = null,
+        bool? gemified = null, bool? nullifyGems = null,
         bool asMerge = false, bool asTotem = false, bool asLatch = false)
-	{
-		CardModificationInfo val = new()
+    {
+        CardModificationInfo val = new()
         {
             attackAdjustment = attackAdjustment,
             healthAdjustment = healthAdjustment,
@@ -537,52 +580,94 @@ public static class DrawCardInfo // used for the deck editors
             return false;
         }
         else if (deckInfo != null)
-		{
+        {
             deckInfo.ModifyCard(cardInfo, val);
-			SaveManager.SaveToFile(false);
-		}
-		return true;
-	}
-    
+            SaveManager.SaveToFile(false);
+        }
+        return true;
+    }
+
     private static bool HandleCost(CardInfo currentCardInfo, PlayableCard currentCard, DeckInfo deckInfo)
-	{
-		GUILayout.BeginHorizontal();
+    {
+        GUILayout.BeginHorizontal();
 
         int blood = currentCard != null ? currentCard.BloodCost() : currentCardInfo.BloodCost;
         int bones = currentCard != null ? currentCard.BonesCost() : currentCardInfo.BonesCost;
         int energy = currentCard != null ? currentCard.EnergyCost : currentCardInfo.EnergyCost;
-        List<GemType> gems = currentCard != null ? currentCard.GemsCost() : currentCardInfo.GemsCost;
 
-        GUILayout.Label("<b>Blood:</b> " + blood);
-		if (GUILayout.Button("-"))
-			return NewCardMod(deckInfo, currentCardInfo, currentCard, 0, 0, 0, 0, (blood > 0) ? (-1) : 0);
+        GUILayout.Label("<b>Blood: </b> " + blood);
+        if (GUILayout.Button("-"))
+            return NewCardMod(deckInfo, currentCardInfo, currentCard, 0, 0, 0, 0, (blood > 0) ? (-1) : 0);
 
-		if (GUILayout.Button("+"))
+        if (GUILayout.Button("+"))
             return NewCardMod(deckInfo, currentCardInfo, currentCard, 0, 0, 0, 0, 1);
-		
-		// Bone
-		GUILayout.Label("<b>Bones:</b> " + bones);
-		if (GUILayout.Button("-"))
-			return NewCardMod(deckInfo, currentCardInfo, currentCard, 0, 0, 0, 0, 0, (bones > 0) ? (-1) : 0);
 
-		if (GUILayout.Button("+"))
-			return NewCardMod(deckInfo, currentCardInfo, currentCard, 0, 0, 0, 0, 0, 1);
-		
-		// Energy
-		GUILayout.Label("<b>Energy:</b> " + energy);
-		if (GUILayout.Button("-"))
-			return NewCardMod(deckInfo, currentCardInfo, currentCard, 0, 0, 0, 0, 0, 0, (energy > 0) ? (-1) : 0);
+        // Bone
+        GUILayout.Label("<b>Bones: </b> " + bones);
+        if (GUILayout.Button("-"))
+            return NewCardMod(deckInfo, currentCardInfo, currentCard, 0, 0, 0, 0, 0, (bones > 0) ? (-1) : 0);
 
-		if (GUILayout.Button("+"))
-			return NewCardMod(deckInfo, currentCardInfo, currentCard, 0, 0, 0, 0, 0, 0, 1);
+        if (GUILayout.Button("+"))
+            return NewCardMod(deckInfo, currentCardInfo, currentCard, 0, 0, 0, 0, 0, 1);
 
-        GUILayout.Label("<b>Mox:</b> " + string.Join(",", gems));
-        CardModificationInfo gemifiedMod = currentCardInfo.Mods.Find((a) => a.gemify);
-        if (gemifiedMod != null)
+        // Energy
+        GUILayout.Label("<b>Energy: </b> " + energy);
+        if (GUILayout.Button("-"))
+            return NewCardMod(deckInfo, currentCardInfo, currentCard, 0, 0, 0, 0, 0, 0, (energy > 0) ? (-1) : 0);
+
+        if (GUILayout.Button("+"))
+            return NewCardMod(deckInfo, currentCardInfo, currentCard, 0, 0, 0, 0, 0, 0, 1);
+
+        GUILayout.EndHorizontal();
+
+        // Gems
+        GUILayout.BeginHorizontal();
+
+        List<GemType> gems = currentCard != null ? currentCard.GemsCost() : currentCardInfo.GemsCost;
+        List<CardModificationInfo> addGemMods = currentCardInfo.Mods.FindAll(a => a.addGemCost != null);
+        List<CardModificationInfo> removeGemMods = currentCardInfo.Mods.FindAll(a => a.HasRemovedAnyGemCost());
+        foreach (GemType gemType in Enum.GetValues(typeof(GemType)))
         {
-            if (GUILayout.Button("Ungemify"))
+            GUILayout.Label($"<b>{gemType} Mox: </b> {gems.Count(x => x == gemType)}");
+
+            if (GUILayout.Button("+"))
             {
-                currentCardInfo.Mods.Remove(gemifiedMod);
+                // if the gemType we're trying to add is negated, un-negate it
+                CardModificationInfo removeMod = removeGemMods.Find(x => x.HasRemovedGemCost(gemType));
+                if (removeMod != null)
+                {
+                    currentCardInfo.Mods.Remove(removeMod);
+                    gems = currentCard != null ? currentCard.GemsCost() : currentCardInfo.GemsCost;
+                    if (gems.Contains(gemType))
+                    {
+                        if (deckInfo != null)
+                        {
+                            deckInfo.UpdateModDictionary();
+                            SaveManager.SaveToFile(false);
+                        }
+                        return true;
+                    }
+                    // if the card doesn't have the gem even after un-negating it, add it as a mod
+                }
+                return NewCardMod(deckInfo, currentCardInfo, currentCard, addGemCost: new List<GemType>() { gemType });
+            }
+            if (!gems.Contains(gemType))
+            {
+                GUILayout.Label("-", Helpers.DisabledButtonStyle());
+            }
+            else if (GUILayout.Button("-"))
+            {
+                CardModificationInfo gemMod = addGemMods.Find(a => a.addGemCost.Contains(gemType));
+                if (gemMod != null) // if the gemType was obtained via a mod, remove the mod
+                {
+                    currentCardInfo.Mods.Remove(gemMod);
+                    gems = currentCard != null ? currentCard.GemsCost() : currentCardInfo.GemsCost;
+                }
+                else // if the gemType is innate, negate it
+                {
+                    return NewCardMod(deckInfo, currentCardInfo, currentCard, removeGemCost: new() { gemType });
+                }
+
                 if (deckInfo != null)
                 {
                     deckInfo.UpdateModDictionary();
@@ -591,73 +676,6 @@ public static class DrawCardInfo // used for the deck editors
                 return true;
             }
         }
-        else if (GUILayout.Button("Gemify"))
-        {
-            return NewCardMod(deckInfo, currentCardInfo, currentCard, gemified: true);
-        }
-        GUILayout.EndHorizontal();
-		
-		// Gems
-		GUILayout.BeginHorizontal();
-		List<CardModificationInfo> addGemMods = currentCardInfo.Mods.FindAll(a => a.addGemCost != null);
-        List<CardModificationInfo> removeGemMods = currentCardInfo.Mods.FindAll(a => a.HasRemovedAnyGemCost());
-        foreach (GemType gemType in Enum.GetValues(typeof(GemType)))
-		{
-			GUILayout.Label(gemType.ToString());
-
-            // if the current card possesses this gem type, check if it was obtained via a card mod
-            if (gems.Contains(gemType))
-            {
-                GUILayout.Label("+", Helpers.DisabledButtonStyle());
-                if (GUILayout.Button("-"))
-                {
-                    CardModificationInfo gemMod = addGemMods.Find(a => a.addGemCost.Contains(gemType));
-                    if (gemMod != null)
-                    {
-                        // if the gemType was obtained via a mod, remove the mod
-                        currentCardInfo.Mods.Remove(gemMod);
-                    }
-                    else
-                    {
-                        // if the gemType is innate, negate it
-                        return NewCardMod(deckInfo, currentCardInfo, currentCard, removeGemCost: new() { gemType });
-                    }
-
-                    if (deckInfo != null)
-                    {
-                        deckInfo.UpdateModDictionary();
-                        SaveManager.SaveToFile(false);
-                    }
-                    return true;
-                }
-
-            }
-            else
-            {
-                if (GUILayout.Button("+"))
-                {
-                    // if the gemType we're trying to add is negated, un-negate it
-                    CardModificationInfo removeMod = removeGemMods.Find(x => x.HasRemovedGemCost(gemType));
-                    if (removeMod != null)
-                    {
-                        currentCardInfo.Mods.Remove(removeMod);
-                        if (currentCardInfo.GemsCost.Contains(gemType))
-                        {
-                            if (deckInfo != null)
-                            {
-                                deckInfo.UpdateModDictionary();
-                                SaveManager.SaveToFile(false);
-                            }
-                            return true;
-                        }
-                        // if the card doesn't have the gem even after un-negating it, add it as a mod
-                    }
-                    return NewCardMod(deckInfo, currentCardInfo, currentCard, addGemCost: new List<GemType>() { gemType });
-                }
-
-                GUILayout.Label("-", Helpers.DisabledButtonStyle());
-            }
-		}
 
         CardModificationInfo nullifyGems = currentCardInfo.Mods.Find((a) => a.nullifyGemsCost);
         if (nullifyGems != null)
@@ -678,6 +696,24 @@ public static class DrawCardInfo // used for the deck editors
             return NewCardMod(deckInfo, currentCardInfo, currentCard, nullifyGems: true);
         }
 
+        CardModificationInfo gemifiedMod = currentCardInfo.Mods.Find((a) => a.gemify);
+        if (gemifiedMod != null)
+        {
+            if (GUILayout.Button("Ungemify"))
+            {
+                currentCardInfo.Mods.Remove(gemifiedMod);
+                if (deckInfo != null)
+                {
+                    deckInfo.UpdateModDictionary();
+                    SaveManager.SaveToFile(false);
+                }
+                return true;
+            }
+        }
+        else if (GUILayout.Button("Gemify"))
+        {
+            return NewCardMod(deckInfo, currentCardInfo, currentCard, gemified: true);
+        }
         GUILayout.EndHorizontal();
 
         GUILayout.BeginHorizontal();
@@ -733,35 +769,47 @@ public static class DrawCardInfo // used for the deck editors
             }
         }
         GUILayout.EndHorizontal();
-		return false;
-	}
+        return false;
+    }
     private static bool HandleStats(CardInfo currentCardInfo, PlayableCard currentCard, DeckInfo deckInfo, bool boardEditor)
-	{
+    {
         int attack = currentCard != null ? currentCard.Attack : currentCardInfo.Attack;
         int health = currentCard != null ? currentCard.Health : currentCardInfo.Health;
 
         GUILayout.BeginHorizontal();
-		GUILayout.Label("<b>Atk:</b> " + attack);
-        if (GUILayout.Button("-"))
+        GUILayout.Label("<b>Atk: </b> " + attack);
+        if (GUILayout.Button("-1"))
             return NewCardMod(deckInfo, currentCardInfo, currentCard, (attack > 0) ? (-1) : 0);
 
-        if (GUILayout.Button("+"))
+        if (GUILayout.Button("+1"))
             return NewCardMod(deckInfo, currentCardInfo, currentCard, 1);
 
-        GUILayout.Label("<b>HP:</b> " + health);
-        if (GUILayout.Button("-"))
+        if (GUILayout.Button("-2"))
+            return NewCardMod(deckInfo, currentCardInfo, currentCard, (attack > 0) ? (-2) : 0);
+
+        if (GUILayout.Button("+2"))
+            return NewCardMod(deckInfo, currentCardInfo, currentCard, 2);
+
+        GUILayout.Label("<b>HP: </b> " + health);
+        if (GUILayout.Button("-1"))
             return NewCardMod(deckInfo, currentCardInfo, currentCard, 0, (health > 0) ? (-1) : 0);
 
-        if (GUILayout.Button("+"))
+        if (GUILayout.Button("+1"))
             return NewCardMod(deckInfo, currentCardInfo, currentCard, 0, 1);
 
-        GUILayout.EndHorizontal();		
-		return false;
-	}
+        if (GUILayout.Button("-2"))
+            return NewCardMod(deckInfo, currentCardInfo, currentCard, 0, (health > 0) ? (-2) : 0);
+
+        if (GUILayout.Button("+2"))
+            return NewCardMod(deckInfo, currentCardInfo, currentCard, 0, 2);
+
+        GUILayout.EndHorizontal();
+        return false;
+    }
 
     private static bool ManageAbilities(CardInfo currentCardInfo, PlayableCard currentCard, DeckInfo deckInfo,
         bool boardEditor, int managerIndex)
-	{
+    {
         if (currentCardInfo == null)
         {
             GUILayout.Label("No card selected!", Helpers.HeaderLabelStyle());
@@ -776,7 +824,7 @@ public static class DrawCardInfo // used for the deck editors
             return EditAbilities(currentCardInfo, currentCard, deckInfo, boardEditor, rightMerge, rightTotem, rightLatch, boardEditor ? boardNegateSigil : negateSigil);
         else
             return AddAbilities(currentCardInfo, currentCard, deckInfo, boardEditor, rightMerge, rightTotem, rightLatch);
-	}
+    }
     private static bool AddAbilities(CardInfo currentCardInfo, PlayableCard currentCard, DeckInfo deckInfo,
         bool boardEditor, bool cardMerge, bool totem, bool latch)
     {
@@ -822,43 +870,70 @@ public static class DrawCardInfo // used for the deck editors
     }
     private static bool EditAbilities(CardInfo currentCardInfo, PlayableCard currentCard, DeckInfo deckInfo,
         bool boardEditor, bool cardMerge, bool totem, bool latch, bool negateAbility)
-	{
-        List<AbilityManager.FullAbility> abilities = new(AbilityManager.AllAbilities);
-        if (boardEditor)
-            abilities.RemoveAll(x => !currentCard.AllAbilities(true).Contains(x.Id));
+    {
+        
+        List<AbilityManager.FullAbility> allAbilities;
+        if (boardEditor && currentCard != null)
+            allAbilities = currentCard.AllAbilities(true).Select(AbilityManager.AllAbilities.AbilityByID).ToList();
         else
-            abilities.RemoveAll(x => !currentCardInfo.Abilities.Contains(x.Id));
+            allAbilities = currentCardInfo.Abilities.Select(AbilityManager.AllAbilities.AbilityByID).ToList();
 
-        List<AbilityManager.FullAbility> cardAbilityList = GetAbilitiesThatContain(abilities, boardEditor);
-		if (cardAbilityList.Count <= 0)
-		{
-			GUILayout.Label("No Sigils");
-			return false;
-		}
-		
-		bool endRow = false;
+        // logic for only showing multiples of stacking sigils
+        // currently, it shows multiples of all sigils, even if they don't stack
+        /*if (boardEditor && currentCard != null)
+        {
+            List<Ability> all = currentCard.AllAbilities(true);
+            foreach (Ability ability in all.Distinct())
+            {
+                AbilityManager.FullAbility full = AbilityManager.AllAbilities.AbilityByID(ability);
+                abilitiesOnCard.Add(new(full, full.Info.canStack ? all.Count(x => x == ability) : 1));
+            }
+        }
+        else
+        {
+            List<Ability> all = currentCardInfo.Abilities;
+            foreach (Ability ability in all.Distinct())
+            {
+                AbilityManager.FullAbility full = AbilityManager.AllAbilities.AbilityByID(ability);
+                abilitiesOnCard.Add(new(full, full.Info.canStack ? all.Count(x => x == ability) : 1));
+            }
+        }
+        foreach (Tuple<AbilityManager.FullAbility, int> tuple in abilitiesOnCard)
+        {
+            for (int i = 0; i < tuple.Item2; i++)
+                abilities.Add(tuple.Item1);
+        }*/
+
+        List<AbilityManager.FullAbility> cardAbilityList = GetAbilitiesThatContain(allAbilities, boardEditor);
+        if (cardAbilityList.Count == 0)
+        {
+            GUILayout.Label("No Sigils");
+            return false;
+        }
+
+        bool endRow = false;
         if (boardEditor)
             NewPager(ref boardCurrentPageEdit, (cardAbilityList.Count - 1) / sigilsPerPage);
         else
             NewPager(ref currentPageEdit, (cardAbilityList.Count - 1) / sigilsPerPage);
-        
+
         int numAdded = 0;
         int currentIndex = (boardEditor ? boardCurrentPageEdit : currentPageEdit) * sigilsPerPage;
-		while (currentIndex < (boardEditor ? boardCurrentPageEdit : currentPageEdit) * sigilsPerPage + sigilsPerPage && currentIndex < cardAbilityList.Count)
-		{
-			AbilityManager.FullAbility abilityOnCard = cardAbilityList[currentIndex];
-			if (numAdded == 0)
-			{
-				GUILayout.BeginHorizontal();
+        while (currentIndex < (boardEditor ? boardCurrentPageEdit : currentPageEdit) * sigilsPerPage + sigilsPerPage && currentIndex < cardAbilityList.Count)
+        {
+            AbilityManager.FullAbility abilityOnCard = cardAbilityList[currentIndex];
+            if (numAdded == 0)
+            {
+                GUILayout.BeginHorizontal();
                 endRow = true;
-			}
+            }
 
             List<CardModificationInfo> allMods = currentCardInfo.Mods;
             if (boardEditor)
                 allMods = allMods.Concat(currentCard.TemporaryMods).ToList();
 
             CardModificationInfo fromMod = allMods.Find(x => x.abilities != null && x.abilities.Contains(abilityOnCard.Id));
-            
+
             Texture val = AbilitiesUtil.LoadAbilityIcon(abilityOnCard.Id.ToString());
             string text = "  " + abilityOnCard.Info.rulebookName;
 
@@ -969,11 +1044,11 @@ public static class DrawCardInfo // used for the deck editors
                 numAdded = 0;
             }
         }
-		if (endRow)
-			GUILayout.EndHorizontal();
+        if (endRow)
+            GUILayout.EndHorizontal();
 
-		return false;
-	}
+        return false;
+    }
 
     private static void ManageSpecialAbilities(CardInfo currentCardInfo, PlayableCard currentCard, DeckInfo deckInfo, bool boardEditor, int managerIndex)
     {
@@ -996,7 +1071,7 @@ public static class DrawCardInfo // used for the deck editors
             boardSpecialAbilityListVector = GUILayout.BeginScrollView(boardSpecialAbilityListVector);
         else
             specialAbilityListVector = GUILayout.BeginScrollView(specialAbilityListVector);
-        
+
         foreach (SpecialTriggeredAbilityManager.FullSpecialTriggeredAbility allSpecialAbility in result)
         {
             if (GUILayout.Button(allSpecialAbility.AbilityName))
@@ -1053,51 +1128,54 @@ public static class DrawCardInfo // used for the deck editors
     }
 
     private static bool Filter(ref string nameString, ref string guidString)
-	{
-		using (new GUILayout.HorizontalScope())
-		{
-			GUILayout.Label("Filter Name", GUILayout.Width(80));
-			nameString = GUILayout.TextField(nameString);
+    {
+        using (new GUILayout.HorizontalScope())
+        {
+            GUILayout.Label("Filter Name", GUILayout.Width(80));
+            nameString = GUILayout.TextField(nameString);
 
-			GUILayout.Label("Filter GUID", GUILayout.Width(80));
-			guidString = GUILayout.TextField(guidString);
-		}
+            GUILayout.Label("Filter GUID", GUILayout.Width(80));
+            guidString = GUILayout.TextField(guidString);
+        }
 
-		if (string.IsNullOrEmpty(nameString) && string.IsNullOrEmpty(guidString))
-			return false;
+        if (string.IsNullOrEmpty(nameString) && string.IsNullOrEmpty(guidString))
+            return false;
 
-		return true;
-	}
-	private static List<AbilityManager.FullAbility> GetAbilitiesThatContain(List<AbilityManager.FullAbility> searchingList, bool boardEditor)
-	{
+        return true;
+    }
+    private static List<AbilityManager.FullAbility> GetAbilitiesThatContain(List<AbilityManager.FullAbility> searchingList, bool boardEditor)
+    {
         // modify search strings here
-		if (!(boardEditor ? Filter(ref boardAbilitySearch, ref boardAbilityGUIDSearch) : Filter(ref abilitySearch, ref abilityGUIDSearch)))
-			return searchingList;
+        if (!(boardEditor ? Filter(ref boardAbilitySearch, ref boardAbilityGUIDSearch) : Filter(ref abilitySearch, ref abilityGUIDSearch)))
+            return searchingList;
 
         // grab the latest search strings here for reference
         string search = boardEditor ? boardAbilitySearch : abilitySearch;
         string searchGUID = boardEditor ? boardAbilityGUIDSearch : abilityGUIDSearch;
 
-		List<AbilityManager.FullAbility> results = new();
-		foreach (AbilityManager.FullAbility searching in searchingList)
-		{
+        List<AbilityManager.FullAbility> results = new();
+        foreach (AbilityManager.FullAbility searching in searchingList)
+        {
             if (searchGUID != "" && (searching.ModGUID == null || !searching.ModGUID.Contains(searchGUID)))
                 continue;
 
-			if (search != "")
-			{
+            if (search != "")
+            {
                 if (searching.Info == null)
                     continue;
+                search = search.ToLowerInvariant();
 
-				string rulebookName = searching.Info.rulebookName.ToLowerInvariant();
-                string abilityName = searching.Info.ability.ToString();
-				if (!rulebookName.Contains(search.ToLowerInvariant()) && !abilityName.Contains(search.ToLowerInvariant()))
-					continue;
-			}
-			results.Add(searching);
-		}
-		return results;
-	}
+                string abilityName = searching.Id.ToString();
+                if (int.TryParse(abilityName, out _) && searching.AbilityBehavior != null)
+                    abilityName = searching.AbilityBehavior.Name;
+
+                if (!searching.Info.rulebookName.ToLowerInvariant().Contains(search) && !abilityName.ToLowerInvariant().Contains(search))
+                    continue;
+            }
+            results.Add(searching);
+        }
+        return results;
+    }
     private static List<SpecialTriggeredAbilityManager.FullSpecialTriggeredAbility> GetSpecialAbilitiesThatContain(List<SpecialTriggeredAbilityManager.FullSpecialTriggeredAbility> searchingList, bool board)
     {
         // modify search strings here
@@ -1143,21 +1221,21 @@ public static class DrawCardInfo // used for the deck editors
             else
                 num = min;
         }
-		
-		GUILayout.EndHorizontal();
-		page = num;
-	}
+
+        GUILayout.EndHorizontal();
+        page = num;
+    }
 
     private static readonly string[] managementMenuHeaders = new string[2] { "Sigils", "Special Abilities" };
-    private static readonly string[] abilityManagementTabs = new string[2] { "Edit", "Add" };
-    private static readonly string[] specialManagementTabs = new string[2] { "Remove", "Add" };
+    private static readonly string[] abilityManagementTabs = new string[2] { "Edit Abilities", "Add Abilities" };
+    private static readonly string[] specialManagementTabs = new string[2] { "Remove From Card", "Add To Card" };
 
     private const float toggleWidth = 100f;
-    
+
     private const float abilityButtonWidth = 190f;
     private const float abilityButtonHeight = 40f;
     private const int sigilsPerRow = 3;
-    private const int sigilsPerPage = 9;
+    private const int sigilsPerPage = 6;
 
     private static string nameReplacementField = "";
     private static int selectedTab = 0;

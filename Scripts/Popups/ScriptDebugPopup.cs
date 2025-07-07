@@ -1,13 +1,4 @@
-﻿using DebugMenu.Scripts.Utils;
-using DiskCardGame;
-using GBC;
-using InscryptionAPI.Card;
-using InscryptionAPI.Dialogue;
-using System.Collections;
-using System.Text;
-using UnityEngine;
-using static DialogueDataUtil;
-using static InscryptionAPI.Dialogue.DialogueManager;
+﻿using UnityEngine;
 
 namespace DebugMenu.Scripts.Popups;
 

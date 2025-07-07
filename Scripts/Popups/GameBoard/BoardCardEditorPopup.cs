@@ -1,9 +1,5 @@
-﻿using DebugMenu.Scripts.Acts;
-using DebugMenu.Scripts.Utils;
+﻿using DebugMenu.Scripts.Utils;
 using DiskCardGame;
-using GBC;
-using InscryptionAPI.Card;
-using InscryptionAPI.Helpers.Extensions;
 using UnityEngine;
 
 namespace DebugMenu.Scripts.Popups.DeckEditorPopup;
@@ -13,11 +9,19 @@ public class BoardCardEditorPopup : BaseWindow
     public override string PopupName => "Board Card Editor";
     public override Vector2 Size => new(600f, 768f);
 
-    public PlayableCard currentSelection = null;
+    private PlayableCard currentSelection = null;
 
+    private GameBoardPopup gameBoardPopup = null;
     public override void OnGUI()
     {
         base.OnGUI();
+        if (GameFlowManager.m_Instance.CurrentGameState != GameState.CardBattle)
+        {
+            IsActive = false;
+            return;
+        }
+        gameBoardPopup ??= Plugin.Instance.GetWindow<GameBoardPopup>();
+        currentSelection = gameBoardPopup.currentSelection.Item1;
         if (currentSelection == null)
         {
             GUILayout.Label("No card selected!", Helpers.HeaderLabelStyle());

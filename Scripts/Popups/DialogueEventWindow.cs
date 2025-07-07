@@ -1,7 +1,5 @@
-﻿using DebugMenu.Scripts.Utils;
-using DiskCardGame;
+﻿using DiskCardGame;
 using GBC;
-using InscryptionAPI.Dialogue;
 using System.Collections;
 using UnityEngine;
 using static DialogueDataUtil;
@@ -9,43 +7,12 @@ using static InscryptionAPI.Dialogue.DialogueManager;
 
 namespace DebugMenu.Scripts.Popups;
 
-public class DialogueEventPopup : BaseWindow
+public class DialogueEventPopup : PaginatedWindow
 {
-    private static bool FilterByGuid = false;
-
     private static bool FilterByGroup = false;
 
-    private static bool ShowAll = true;
-
-    private static bool ShowVanilla = true;
-
-    private static bool ShowModded = true;
-
-    private static bool FilterByAct1 = false;
-
-    private static bool FilterByAct2 = false;
-
-    private static bool FilterByAct3 = false;
-
-    private static bool FilterByFinale = false;
-
-    private static bool FilterByAscension = false;
-
     private static bool PlayDialogue = false;
-
     private static bool PlayingDialogue = false;
-
-    private const int numElements = 60;
-
-    public static int pageNum = 0;
-
-    public static int startIndex = 0;
-
-    public static int endIndex = numElements;
-
-    private string filterText;
-
-    private string currentGuid;
 
     private string currentGroup;
 
@@ -64,181 +31,160 @@ public class DialogueEventPopup : BaseWindow
         ColumnWidth = 200f;
     }
 
+    public override void PrintAllInfoToLog()
+    {
+        foreach (DialogueEvent allEvent in AllEvents)
+        {
+            Plugin.Log.LogMessage($"Group: {allEvent.groupId,-30} | ID: {allEvent.id}");
+        }
+        Plugin.Log.LogInfo($"Total All: {AllEvents.Count}");
+    }
+    public override void PrintVanillaInfoToLog()
+    {
+        foreach (DialogueEvent vanillaEvent in VanillaEvents)
+        {
+            Plugin.Log.LogMessage($"Group: {vanillaEvent.groupId,-30} | ID: {vanillaEvent.id}");
+        }
+        Plugin.Log.LogInfo($"Total Vanilla: {VanillaEvents.Count}");
+    }
+    public override void PrintModdedInfoToLog()
+    {
+        foreach (Dialogue item in CustomDialogue)
+        {
+            Plugin.Log.LogMessage($"GUID: {item.PluginGUID,-30} | ID: {item.DialogueEvent.id}");
+        }
+        Plugin.Log.LogInfo($"Total Modded: {ModdedEvents.Count}");
+    }
+    public override void PrintSelectedInfoToLog()
+    {
+        Dictionary<DialogueEvent, string> dictionary = new();
+        foreach (DialogueEvent e in AllEvents)
+        {
+            string text = CustomDialogue.Find((Dialogue x) => x.DialogueEvent == e)?.PluginGUID ?? "";
+            if (currentGuid == text && !dictionary.ContainsKey(e))
+            {
+                dictionary.Add(e, text);
+            }
+        }
+        PrintSelectedEventsToLog(dictionary, "GUID");
+    }
+    public override void HandleGuid()
+    {
+        base.HandleGuid();
+        Label("Selected Group: " + currentGroup);
+        Toggle("Play Dialogue When Selecting", ref PlayDialogue);
+    }
+    public override void HandleFilterText()
+    {
+        base.HandleFilterText();
+        Toggle("Filter by Group", ref FilterByGroup);
+    }
+    public override bool HandleToggles()
+    {
+        bool toggleChanged = base.HandleToggles();
+        toggleChanged = Toggle("Filter by Finale", ref FilterByGrimora) || toggleChanged;
+        return toggleChanged;
+    }
+
     public override void OnGUI()
     {
-        base.OnGUI();
-
         if (SceneLoader.ActiveSceneName == "Start" || SceneLoader.ActiveSceneName == "Loading")
+        {
             PlayingDialogue = false;
+        }
         else if (SaveManager.SaveFile.IsPart2)
-            PlayingDialogue = DialogueHandler.Instance?.Playing ?? false;
+        {
+            PlayingDialogue = DialogueHandler.m_Instance?.Playing ?? false;
+        }
         else
-            PlayingDialogue = TextDisplayer.Instance?.PlayingEvent ?? false;
+        {
+            PlayingDialogue = TextDisplayer.m_Instance?.PlayingEvent ?? false;
+        }
 
         AllEvents = new(Data.events);
         VanillaEvents ??= JsonUtility.FromJson<DialogueData>((Resources.Load("Data/Dialogue/dialogue_data") as TextAsset).text)?.events;
         ModdedEvents = CustomDialogue.Select(x => x.DialogueEvent).ToList();
 
-        if (AllEvents == null || AllEvents.Count == 0)
-        {
-            Label("No events");
-            return;
-        }
-        if (Button("Print All Event IDs"))
-        {
-            PrintAllEventsToLog();
-        }
-        if (Button("Print Vanilla Event IDs", null, null, () => new("Couldn't load vanilla data!")
-        {
-            Disabled = VanillaEvents == null || VanillaEvents.Count == 0
-        }))
-        {
-            PrintVanillaEventsToLog();
-        }
-        if (Button("Print Modded Event IDs", null, null, () => new("No events")
-        {
-            Disabled = ModdedEvents == null || ModdedEvents.Count == 0
-        }))
-        {
-            PrintModdedEventsToLog();
-        }
-        if (Button("Print Events by Selected GUID"))
-        {
-            Dictionary<DialogueEvent, string> dictionary = new();
-            foreach (DialogueEvent e in AllEvents)
-            {
-                string text = CustomDialogue.Find((Dialogue x) => x.DialogueEvent == e)?.PluginGUID ?? "";
-                if (currentGuid == text && !dictionary.ContainsKey(e))
-                {
-                    dictionary.Add(e, text);
-                }
-            }
-            PrintSelectedEventsToLog(dictionary, "GUID");
-        }
-        if (Button("Print Events by Selected Group"))
-        {
-            Dictionary<DialogueEvent, string> dictionary2 = new();
-            foreach (DialogueEvent allEvent in AllEvents)
-            {
-                string text2 = allEvent.groupId ?? "no group";
-                if (text2 == currentGroup && !dictionary2.ContainsKey(allEvent))
-                {
-                    dictionary2.Add(allEvent, text2);
-                }
-            }
-            PrintSelectedEventsToLog(dictionary2, "Group");
-        }
-        
-        Label("Selected GUID: " + currentGuid);
-        Label("Selected Group: " + currentGroup);
-        
-        Toggle("Play Dialogue When Selecting", ref PlayDialogue);
-        
-        Label("Search Filter", (Vector2?)new Vector2(0f, base.RowHeight / 2f));
-        filterText = TextField(filterText, (Vector2?)new Vector2(0f, base.RowHeight / 2f));
-        
-        Toggle("Filter by GUID", ref FilterByGuid);
-        Toggle("Filter by Group", ref FilterByGroup);
-        
-        if (!ShowVanilla || !ShowModded)
-            ShowAll = false;
+        HandleOnGUI("Events", AllEvents, VanillaEvents, ModdedEvents);
 
-        bool toggleChanged = Toggle("Show All Events", ref ShowAll);
-        if (toggleChanged)
-            ShowModded = ShowVanilla = ShowAll;
-            FilterByAct1 = FilterByAct2 = FilterByAct3 = FilterByAscension = FilterByFinale = false;
-
-        toggleChanged |= Toggle("Show Modded Events", ref ShowModded);
-        if (toggleChanged && ShowModded)
-            FilterByAct1 = FilterByAct2 = FilterByAct3 = FilterByAct3 = FilterByFinale = FilterByAscension = false;
-
-        toggleChanged |= Toggle("Show Vanilla Events", ref ShowVanilla);
-        if (toggleChanged && ShowVanilla)
-            FilterByAct1 = FilterByAct2 = FilterByAct3 = FilterByAct3 = FilterByFinale = FilterByAscension = false;
-
-        toggleChanged |= Toggle("Filter by Act 1", ref FilterByAct1);
-        toggleChanged |= Toggle("Filter by Act 2", ref FilterByAct2);
-        toggleChanged |= Toggle("Filter by Act 3", ref FilterByAct3);
-        toggleChanged |= Toggle("Filter by Finale", ref FilterByFinale);
-        toggleChanged |= Toggle("Filter by Ascension", ref FilterByAscension);
-
-        List<DialogueEvent> eventsToShow = new();
-        if (ShowAll || (ShowVanilla && ShowModded))
+        List<DialogueEvent> infoToShow = new();
+        if (ShowAll)
         {
-            eventsToShow = AllEvents;
+            infoToShow = AllEvents;
         }
         else if (ShowVanilla && !ShowModded)
         {
-            eventsToShow = VanillaEvents;
+            infoToShow = new(VanillaEvents);
         }
         else if (ShowModded)
         {
-            eventsToShow = ModdedEvents;
+            infoToShow = ModdedEvents;
         }
+
         if (!string.IsNullOrEmpty(filterText))
         {
+            filterText.ToLowerInvariant();
             if (FilterByGuid)
             {
-                eventsToShow = eventsToShow.FindAll((DialogueEvent x) => (CustomDialogue.Find((Dialogue y) => y.DialogueEvent == x)?.PluginGUID?.ContainsText(filterText, caseSensitive: false)).GetValueOrDefault());
+                infoToShow.RemoveAll(x => CustomDialogue.Find(y => y.DialogueEvent == x)?.PluginGUID?.ToLowerInvariant().Contains(filterText) != true);
             }
             else if (FilterByGroup)
             {
-                eventsToShow = eventsToShow.FindAll((DialogueEvent x) => x.groupId?.ContainsText(filterText, caseSensitive: false) ?? false);
+                infoToShow.RemoveAll(x => string.IsNullOrEmpty(x.groupId) || !x.groupId.ToLowerInvariant().Contains(filterText));
             }
             else
             {
-                eventsToShow = eventsToShow.FindAll((DialogueEvent x) => x.id?.ContainsText(filterText, caseSensitive: false) ?? false);
+                infoToShow.RemoveAll(x => string.IsNullOrEmpty(x.id) || !x.id.ToLowerInvariant().Contains(filterText));
             }
         }
-        eventsToShow = eventsToShow.FindAll((DialogueEvent x) => (!FilterByAct1 && !FilterByAct2 && !FilterByAct3 && !FilterByAscension && !FilterByFinale) || (FilterByAct1 && Part1Dialogue(x.groupId)) || (FilterByAct2 && Part2Dialogue(x.groupId)) || (FilterByAct3 && Part3Dialogue(x.groupId)) || (FilterByAscension && AscensionDialogue(x.groupId)) || (FilterByFinale && FinaleDialogue(x.groupId)));
-        if (Button("Next Page"))
-        {
-            IncreasePageIndexes(eventsToShow.Count);
-        }
-        if (Button("Previous Page"))
-        {
-            DecreasePageIndexes(eventsToShow.Count);
-        }
+
+        if (FilterByAct1)
+            infoToShow.RemoveAll(x => !Part1Dialogue(x.groupId));
+
+        if (FilterByAct2)
+            infoToShow.RemoveAll(x => !Part2Dialogue(x.groupId));
+
+        if (FilterByAct3)
+            infoToShow.RemoveAll(x => !Part3Dialogue(x.groupId));
+
+        if (FilterByAscension)
+            infoToShow.RemoveAll(x => !AscensionDialogue(x.groupId));
+
+        if (FilterByGrimora)
+            infoToShow.RemoveAll(x => !FinaleDialogue(x.groupId));
+
+        HandlePages(infoToShow.Count);
         StartNewColumn();
-        if (eventsToShow == null || eventsToShow.Count == 0)
+
+        if (infoToShow == null || infoToShow.Count == 0)
         {
-            Label("No events to show");
+            Label("No results");
             return;
         }
-        if (toggleChanged)
+
+        startIndex = pageNum * NumElements;
+        if (pageNum > infoToShow.Count / NumElements)
         {
-            if (pageNum > eventsToShow.Count / numElements)
-            {
-                pageNum = eventsToShow.Count / numElements;
-                endIndex = eventsToShow.Count;
-            }
-            else
-            {
-                endIndex = pageNum * numElements + numElements;
-            }
-            startIndex = pageNum * numElements;
+            pageNum = infoToShow.Count / NumElements;
+            endIndex = infoToShow.Count;
         }
-        if (endIndex > eventsToShow.Count)
+        else
         {
-            endIndex = eventsToShow.Count;
+            endIndex = Mathf.Min(infoToShow.Count, pageNum * NumElements + NumElements);
         }
-        if (startIndex < 0)
-        {
-            startIndex = 0;
-        }
+
         int row = 1;
         for (int i = startIndex; i < endIndex; i++)
         {
-            Dialogue customDialogue = CustomDialogue.Find(x => x.DialogueEvent == eventsToShow[i]);
-            string eventId = string.IsNullOrEmpty(eventsToShow[i].id) ? "no ID" : eventsToShow[i].id;
-            string group = string.IsNullOrEmpty(eventsToShow[i].groupId) ? "no group" : eventsToShow[i].groupId;
+            Dialogue customDialogue = CustomDialogue.Find(x => x.DialogueEvent == infoToShow[i]);
+            string eventId = string.IsNullOrEmpty(infoToShow[i].id) ? "no ID" : infoToShow[i].id;
+            string group = string.IsNullOrEmpty(infoToShow[i].groupId) ? "no group" : infoToShow[i].groupId;
             string pluginGuid = customDialogue?.PluginGUID ?? "";
 
             if (!ShowAll && ((!ShowModded && pluginGuid != "") || (!ShowVanilla && pluginGuid == "")))
                 continue;
 
-            string textToDisplay = eventsToShow[i].id + "\n" + group + "\n" + pluginGuid;
-
+            string textToDisplay = infoToShow[i].id + "\n" + group + "\n" + pluginGuid;
             if (Button(textToDisplay, new(0f, 60f), null, () => new("Playing dialogue")
             {
                 Disabled = PlayingDialogue
@@ -246,18 +192,31 @@ public class DialogueEventPopup : BaseWindow
             {
                 if (PlayDialogue)
                 {
-                    PlayDialogueEventSafe(eventId, eventsToShow[i]);
+                    PlayDialogueEventSafe(eventId, infoToShow[i]);
                 }
                 currentGuid = pluginGuid;
                 currentGroup = group;
             }
-            if (row >= numElements / 4)
+            if (row >= NumElements / 4)
             {
                 StartNewColumn();
                 row = 0;
             }
             row++;
         }
+    }
+
+
+
+    public void PrintSelectedEventsToLog(Dictionary<DialogueEvent, string> dialogueEventsWithVariableString, string stringName)
+    {
+        foreach (KeyValuePair<DialogueEvent, string> item in dialogueEventsWithVariableString)
+        {
+            Plugin.Log.LogMessage("ID: " + item.Key.id);
+        }
+        string arg = dialogueEventsWithVariableString.Values.FirstOrDefault() ?? ("No " + stringName);
+        Plugin.Log.LogInfo($"{stringName}: {arg,-30}");
+        Plugin.Log.LogInfo($"Total Selected: {dialogueEventsWithVariableString.Count}");
     }
 
     public static void PlayDialogueEventSafe(string eventId, DialogueEvent dialogueEvent)
@@ -278,7 +237,6 @@ public class DialogueEventPopup : BaseWindow
         }
         Plugin.Log.LogInfo($"Finished playing event [{eventId}]");
     }
-
     private static IEnumerator Dialogue3D(string eventId, DialogueEvent dialogueEvent)
     {
         TextDisplayer textDisplayer = TextDisplayer.Instance;
@@ -335,7 +293,6 @@ public class DialogueEventPopup : BaseWindow
         textDisplayer.endOfDialogueLines?.Invoke();
         textDisplayer.PlayingEvent = PlayingDialogue = false;
     }
-
     private static IEnumerator Dialogue2D(string eventId, DialogueEvent dialogueEvent)
     {
         DialogueHandler dialogueHandler = DialogueHandler.Instance;
@@ -390,99 +347,22 @@ public class DialogueEventPopup : BaseWindow
         dialogueHandler.Playing = PlayingDialogue = false;
     }
 
-    public void PrintAllEventsToLog()
-    {
-        foreach (DialogueEvent allEvent in AllEvents)
-        {
-            Plugin.Log.LogMessage($"Group: {allEvent.groupId,-30} | ID: {allEvent.id}");
-        }
-        Plugin.Log.LogInfo($"Total All: {AllEvents.Count}");
-    }
-
-    public void PrintVanillaEventsToLog()
-    {
-        foreach (DialogueEvent vanillaEvent in VanillaEvents)
-        {
-            Plugin.Log.LogMessage($"Group: {vanillaEvent.groupId,-30} | ID: {vanillaEvent.id}");
-        }
-        Plugin.Log.LogInfo($"Total Vanilla: {VanillaEvents.Count}");
-    }
-
-    public void PrintModdedEventsToLog()
-    {
-        foreach (Dialogue item in CustomDialogue)
-        {
-            Plugin.Log.LogMessage($"GUID: {item.PluginGUID,-30} | ID: {item.DialogueEvent.id}");
-        }
-        Plugin.Log.LogInfo($"Total Modded: {ModdedEvents.Count}");
-    }
-
-    public void PrintSelectedEventsToLog(Dictionary<DialogueEvent, string> dialogueEventsWithVariableString, string stringName)
-    {
-        foreach (KeyValuePair<DialogueEvent, string> item in dialogueEventsWithVariableString)
-        {
-            Plugin.Log.LogMessage("ID: " + item.Key.id);
-        }
-        string arg = dialogueEventsWithVariableString.Values.FirstOrDefault() ?? ("No " + stringName);
-        Plugin.Log.LogInfo($"{stringName}: {arg,-30}");
-        Plugin.Log.LogInfo($"Total Selected: {dialogueEventsWithVariableString.Count}");
-    }
-
-    private void IncreasePageIndexes(int maxCount)
-    {
-        pageNum++;
-        if (endIndex == maxCount)
-        {
-            startIndex = pageNum = 0;
-            endIndex = Mathf.Min(numElements, maxCount);
-            return;
-        }
-        startIndex = pageNum * numElements;
-        endIndex = pageNum * numElements + numElements;
-        if (endIndex > maxCount)
-        {
-            endIndex = maxCount;
-        }
-    }
-
-    private void DecreasePageIndexes(int maxCount)
-    {
-        pageNum--;
-        if (startIndex == 0)
-        {
-            pageNum = maxCount / numElements;
-            startIndex = pageNum * numElements;
-            endIndex = maxCount;
-            return;
-        }
-        startIndex = pageNum * numElements;
-        endIndex = pageNum * numElements + numElements;
-        if (startIndex < 0)
-        {
-            startIndex = 0;
-        }
-    }
-
     public bool Part1Dialogue(string groupId)
     {
         return groupId != null && !Part2Dialogue(groupId) && !Part3Dialogue(groupId) && !AscensionDialogue(groupId) && !FinaleDialogue(groupId);
     }
-
     public bool Part2Dialogue(string groupId)
     {
         return groupId?.StartsWith("GBC") ?? false;
     }
-
     public bool Part3Dialogue(string groupId)
     {
         return groupId != null && (groupId.StartsWith("Part 3") || groupId.StartsWith("Talking Angler") || groupId.StartsWith("Talking Blue Mage"));
     }
-
     public bool FinaleDialogue(string groupId)
     {
         return groupId?.StartsWith("Finale") ?? false;
     }
-
     public bool AscensionDialogue(string groupId)
     {
         return groupId?.StartsWith("Ascension") ?? false;

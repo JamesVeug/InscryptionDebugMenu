@@ -1,18 +1,42 @@
-﻿using System.Collections;
-using System.Reflection;
-using System.Reflection.Emit;
-using DebugMenu.Scripts.Act1;
+﻿using DebugMenu.Scripts.Act1;
+using DebugMenu.Scripts.Act3;
 using DebugMenu.Scripts.All;
-using DebugMenu.Scripts.Popups.DeckEditorPopup;
+using DebugMenu.Scripts.Grimora;
+using DebugMenu.Scripts.Magnificus;
 using DebugMenu.Scripts.Utils;
 using DiskCardGame;
 using GBC;
 using HarmonyLib;
 using InscryptionAPI.Card;
 using InscryptionAPI.Regions;
+using System.Collections;
+using System.Reflection;
 using UnityEngine;
 
 namespace DebugMenu;
+
+[HarmonyPatch]
+internal class TransitionFromGameState
+{
+    [HarmonyPostfix, HarmonyPatch(typeof(GameFlowManager), nameof(GameFlowManager.TransitionFrom))]
+    private static IEnumerator PassOverBreaks(IEnumerator result, GameState gameState)
+    {
+        if (MagnificusModHelper.Enabled && SaveManager.SaveFile.IsMagnificus)
+        {
+            yield break;
+        }
+        yield return result;
+    }
+}
+[HarmonyPatch(typeof(SpecialNodeHandler), nameof(SpecialNodeHandler.StartSpecialNodeSequence), new Type[] { typeof(SpecialNodeData) })]
+internal class SpecialNodeHandler_StartSpecialNodeSequence
+{
+    private static bool Prefix(SpecialNodeData nodeData)
+    {
+        Helpers.LastSpecialNodeData = nodeData;
+        return true;
+    }
+}
 
 [HarmonyPatch(typeof(DisclaimerScreen), "BetaScreensSequence")]
 internal class Skip_Disclaimer
@@ -34,8 +58,16 @@ internal class SaveCardList
     [HarmonyPrefix]
     private static bool SaveCardListPrefix(List<CardInfo> starterDeck)
     {
-        Act1.lastUsedStarterDeck = starterDeck;
-        Plugin.Log.LogInfo("New Starter Deck with " + Act1.lastUsedStarterDeck.Count + " Cards!");
+        if (P03ModHelper.Enabled && P03ModHelper.IsP03Run)
+            Act3.lastUsedStarterDeck = starterDeck;
+
+        else if (GrimoraModHelper.Enabled && SaveFile.IsAscension)
+            ActGrimora.lastUsedStarterDeck = starterDeck;
+
+        else
+            Act1.lastUsedStarterDeck = starterDeck;
+
+        Plugin.Log.LogInfo("New starter deck with " + starterDeck.Count + " cards!");
         return true;
     }
 
@@ -45,7 +77,7 @@ internal class SaveCardList
     }
 }
 
-[HarmonyPatch(typeof(MapNodeManager), "DoMoveToNewNode")]
+/*[HarmonyPatch(typeof(MapNodeManager), "DoMoveToNewNode")]
 internal class MoveToNode_Debug
 {
     [HarmonyPrefix]
@@ -74,7 +106,7 @@ internal class MoveToNode_Debug
             RunState.Run.currentNodeId = newNode.nodeId;
         });
     }
-}
+}*/
 
 [HarmonyPatch(typeof(MapNode), nameof(MapNode.SetActive), new Type[] { typeof(bool) })]
 internal class MapNode_SetActive
@@ -183,7 +215,7 @@ internal class DisableDialogue_IEnumerator_Patch
 
     private static IEnumerator Postfix(IEnumerator enumerator)
     {
-        if (Configs.DisableAllInput)
+        if (Configs.DisableDialogue)
         {
             Singleton<InteractionCursor>.Instance.InteractionDisabled = false;
             yield break;
@@ -214,10 +246,14 @@ internal class DisablePlayerDamagePatch
     private static IEnumerator PlayersReceiveNoDamageMagnificus(IEnumerator enumerator, bool player)
     {
         if (Configs.DisablePlayerDamage && player)
+        {
             yield break;
+        }
 
         if (Configs.DisableOpponentDamage && !player)
+        {
             yield break;
+        }
 
         yield return enumerator;
     }
@@ -231,7 +267,7 @@ internal class DisableDialogue_Patch
         yield return AccessTools.Method(typeof(TextDisplayer), nameof(TextDisplayer.ShowMessage));
     }
 
-    private static bool Prefix() => !Configs.DisableAllInput;
+    private static bool Prefix() => !Configs.DisableDialogue;
 }
 
 [HarmonyPatch]
@@ -244,8 +280,8 @@ internal class EmissionAndPortraitPatches
             __result = true;
     }
 
-    [HarmonyPostfix, HarmonyPatch(typeof(CardDisplayer3D), nameof(CardDisplayer3D.DisplayInfo))]
-    private static void ForceAlternatePortrait(CardDisplayer3D __instance, CardRenderInfo renderInfo)
+    [HarmonyPostfix, HarmonyPatch(typeof(CardDisplayer), nameof(CardDisplayer.DisplayInfo))]
+    private static void ForceAlternatePortrait(CardDisplayer __instance, CardRenderInfo renderInfo)
     {
         if (__instance == null || renderInfo?.baseInfo == null)
             return;
@@ -253,19 +289,19 @@ internal class EmissionAndPortraitPatches
         List<CardModificationInfo> mods = renderInfo.baseInfo.Mods;
         if (mods.Exists(x => x.singletonId == DrawCardInfo.PortraitMod))
         {
-            __instance.SetPortrait(renderInfo.baseInfo.alternatePortrait);
+            __instance.SetPortrait(SaveManager.SaveFile.IsPart2 ? renderInfo.baseInfo.PixelAlternatePortrait() : renderInfo.baseInfo.alternatePortrait);
         }
         else if (mods.Exists(x => x.singletonId == DrawCardInfo.ShieldPortraitMod))
         {
-            __instance.SetPortrait(renderInfo.baseInfo.BrokenShieldPortrait());
+            __instance.SetPortrait(SaveManager.SaveFile.IsPart2 ? renderInfo.baseInfo.PixelBrokenShieldPortrait() : renderInfo.baseInfo.BrokenShieldPortrait());
         }
         else if (mods.Exists(x => x.singletonId == DrawCardInfo.SacrificePortraitMod))
         {
-            __instance.SetPortrait(renderInfo.baseInfo.SacrificablePortrait());
+            __instance.SetPortrait(SaveManager.SaveFile.IsPart2 ? renderInfo.baseInfo.PixelSacrificablePortrait() : renderInfo.baseInfo.SacrificablePortrait());
         }
         else if (mods.Exists(x => x.singletonId == DrawCardInfo.TrapPortraitMod))
         {
-            __instance.SetPortrait(renderInfo.baseInfo.SteelTrapPortrait());
+            __instance.SetPortrait(SaveManager.SaveFile.IsPart2 ? renderInfo.baseInfo.PixelSteelTrapPortrait() : renderInfo.baseInfo.SteelTrapPortrait());
         }
     }
     [HarmonyPostfix, HarmonyPatch(typeof(PixelCardDisplayer), nameof(PixelCardDisplayer.DisplayInfo))]

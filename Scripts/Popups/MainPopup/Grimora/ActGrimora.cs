@@ -1,6 +1,4 @@
-﻿using BepInEx.Logging;
-using DebugMenu.Scripts.Acts;
-using DebugMenu.Scripts.Utils;
+﻿using DebugMenu.Scripts.Acts;
 using DiskCardGame;
 using UnityEngine;
 
@@ -8,102 +6,79 @@ namespace DebugMenu.Scripts.Grimora;
 
 public class ActGrimora : BaseAct
 {
-	public ActGrimora(DebugWindow window) : base(window)
-	{
-		m_mapSequence = new GrimoraMapSequence(this);
-		m_cardBattleSequence = new GrimoraCardBattleSequence(window);
-	}
+    public static List<CardInfo> lastUsedStarterDeck = null;
 
-	public override void Update()
-	{
-		
-	}
+    public ActGrimora(DebugWindow window) : base(window)
+    {
+        m_mapSequence = new GrimoraMapSequence(this);
+        m_cardBattleSequence = new GrimoraCardBattleSequence(window);
+    }
 
-	public override void OnGUI()
-	{
-		Window.LabelHeader("Grimora Act");
+    public override void OnGUI()
+    {
+        Window.LabelHeader("Grimora Act");
+        if (RunState.Run.currentNodeId > 0 && Singleton<MapNodeManager>.m_Instance != null)
+        {
+            MapNode nodeWithId = Singleton<MapNodeManager>.Instance.GetNodeWithId(RunState.Run.currentNodeId);
+            Window.Label("Current Node ID: " + RunState.Run.currentNodeId + "\nCurrent Node: " + nodeWithId?.name, new(0, 80f));
+        }
 
-		if (RunState.Run.currentNodeId > 0 && Singleton<MapNodeManager>.m_Instance != null)
-		{
-			MapNode nodeWithId = Singleton<MapNodeManager>.Instance.GetNodeWithId(RunState.Run.currentNodeId);
-			Window.Label("Current Node: " + RunState.Run.currentNodeId + " = " + nodeWithId, new(0, 120));
-		}
-		
-		DrawItemsGUI();
-		
-		Window.StartNewColumn();
-		OnGUICurrentNode();
-	}
+        if (GrimoraModHelper.Enabled)
+        {
+            DrawCurrencyGUI();
+            DrawItemsGUI();
+        }
 
-	public override void OnGUIMinimal()
-	{
-		OnGUICurrentNode();
-	}
+        Window.StartNewColumn();
+        OnGUICurrentNode();
+    }
 
-	private void OnGUICurrentNode()
-	{
-		GameFlowManager gameFlowManager = Singleton<GameFlowManager>.m_Instance;
-		if (gameFlowManager == null)
-			return;
+    public override bool OnSpecialCardSequence(string nodeDataName)
+    {
+        if (GrimoraModHelper.Enabled)
+        {
+            switch (nodeDataName)
+            {
+                case "BoneyardBurial":
+                    GrimoraModHelper.OnGUIBoneyardBurial(this.Window);
+                    return true;
+                case "CardMerge":
+                    return true;
+                case "ElectricChair":
+                    GrimoraModHelper.OnGUIElectricChairNodeSequence(this.Window);
+                    return true;
+                case "GoatEye":
+                    GrimoraModHelper.OnGUIGoatEye(this.Window);
+                    return true;
+                case "GravebardCamp":
+                    GrimoraModHelper.OnGUIGravebardCamp(this.Window);
+                    return true;
+            }
+        }
+        return false;
+    }
 
-		Window.LabelHeader(gameFlowManager.CurrentGameState.ToString());
-		switch (gameFlowManager.CurrentGameState)
-		{
-			case GameState.CardBattle:
-				m_cardBattleSequence.OnGUI();
-				break;
-			case GameState.Map:
-				// Show map related buttons
-				m_mapSequence.OnGUI();
-				break;
-			case GameState.FirstPerson3D:
-				break;
-			case GameState.SpecialCardSequence:
-				SpecialNodeData nodeWithId = Helpers.LastSpecialNodeData;
-				Type nodeType = nodeWithId.GetType();
-				if (nodeType == typeof(CardChoicesNodeData))
-				{
-					OnGUICardChoiceNodeSequence();
-				}
-				else if (nodeType.ToString().ToLower().Contains("electricchair"))
-				{
-					OnGUIElectricChairNodeSequence();
-				}
-				else
-				{
-					Window.Label("Unhandled node type:");
-					Window.Label(nodeType.ToString());
-				}
-				break;
-			default:
-				Window.Label("Unhandled GameFlowState:");
-				Window.Label(gameFlowManager.CurrentGameState.ToString());
-				break;
-		}
-	}
+    public override void Restart()
+    {
+        SceneLoader.Load("finale_grimora");
+    }
 
-	private void OnGUICardChoiceNodeSequence()
-	{
-		CardSingleChoicesSequencer sequencer = Singleton<SpecialNodeHandler>.Instance.cardChoiceSequencer;
-		Window.Label("Sequencer: " + sequencer, new(0, 80));
-		if (Window.Button("Reroll choices"))
-		{
-			sequencer.OnRerollChoices();
-		}
-	}
+    private void DrawCurrencyGUI()
+    {
+        Window.LabelHeader("Currency: " + RunState.Run.currency);
+        using (Window.HorizontalScope(4))
+        {
+            if (Window.Button("+1"))
+                RunState.Run.currency++;
 
-	private void OnGUIElectricChairNodeSequence()
-	{
-		Window.Label("TODO:");
-	}
+            if (Window.Button("-1"))
+                RunState.Run.currency = Mathf.Max(0, RunState.Run.currency - 1);
 
-	public override void Restart()
-	{
-		// TODO:
-	}
+            if (Window.Button("+5"))
+                RunState.Run.currency += 5;
 
-	public override void Reload()
-	{
-		// TODO:
-	}
+            if (Window.Button("-5"))
+                RunState.Run.currency = Mathf.Max(0, RunState.Run.currency - 5);
+        }
+    }
 }

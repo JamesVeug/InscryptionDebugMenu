@@ -1,78 +1,87 @@
-﻿using BepInEx.Logging;
-using DebugMenu.Scripts.Acts;
-using DebugMenu.Scripts.Utils;
+﻿using DebugMenu.Scripts.Acts;
 using DiskCardGame;
+using UnityEngine;
 
 namespace DebugMenu.Scripts.Magnificus;
 
 public class ActMagnificus : BaseAct
 {
-	public ActMagnificus(DebugWindow window) : base(window)
-	{
-		m_cardBattleSequence = new MagnificusCardBattleSequence(window);
-	}
+    public static bool SkipNextNode = false;
+    public ActMagnificus(DebugWindow window) : base(window)
+    {
+        m_mapSequence = new ActMagnificusMapSequence(this);
+        m_cardBattleSequence = new MagnificusCardBattleSequence(window);
+    }
 
-	public override void Update()
-	{
-		
-	}
-	
-	public override void OnGUI()
-	{
-		Window.LabelHeader("Magnificus Act");
-		OnGUICurrentNode();
-	}
+    public override void Update()
+    {
+    }
 
-	public override void OnGUIMinimal()
-	{
-		OnGUICurrentNode();
-	}
-	
-	private void OnGUICurrentNode()
-	{
-		MagnificusGameFlowManager gameFlowManager = Singleton<MagnificusGameFlowManager>.m_Instance;
-		if (gameFlowManager == null)
-		{
-			return;
-		}
+    public override void OnGUI()
+    {
+        Window.LabelHeader("Magnificus' Act");
+        DrawCurrencyGUI();
 
-		Window.LabelHeader(gameFlowManager.CurrentGameState.ToString());
-		switch (gameFlowManager.CurrentGameState)
-		{
-			case GameState.CardBattle:
-				m_cardBattleSequence.OnGUI();
-				break;
-			case GameState.Map:
-				// Show map related buttons
-				OnGUIMap();
-				break;
-			case GameState.FirstPerson3D:
-				break;
-			case GameState.SpecialCardSequence:
-				SpecialNodeData nodeWithId = Helpers.LastSpecialNodeData;
-				Type nodeType = nodeWithId.GetType();
-				Window.Label("Unhandled node type");
-				Window.Label(nodeType.FullName);
-				break;
-			default:
-				Window.Label("Unhandled GameFlowState:");
-				Window.Label(gameFlowManager.CurrentGameState.ToString());
-				break;
-		}
-	}
+        Window.StartNewColumn();
+        OnGUICurrentNode();
+    }
 
-	private void OnGUIMap()
-	{
-		Window.Label("Support not started");
-	}
+    private void DrawCurrencyGUI()
+    {
+        Window.LabelHeader("Currency: " + RunState.Run.currency);
+        using (Window.HorizontalScope(4))
+        {
+            if (Window.Button("+1"))
+                RunState.Run.currency++;
 
-	public override void Restart()
-	{
-		// TODO:
-	}
+            if (Window.Button("-1"))
+                RunState.Run.currency = Mathf.Max(0, RunState.Run.currency - 1);
 
-	public override void Reload()
-	{
-		// TODO:
-	}
+            if (Window.Button("+5"))
+                RunState.Run.currency += 5;
+
+            if (Window.Button("-5"))
+                RunState.Run.currency = Mathf.Max(0, RunState.Run.currency - 5);
+        }
+    }
+
+    public override string GetSpecialNodeName(string nodeDataName)
+    {
+        return nodeDataName switch
+        {
+            "CustomNode1" => nodeDataName + " (ChangeCost)",
+            "CustomNode2" => nodeDataName + " (Shop)",
+            "CustomNode3" => nodeDataName + " (Bleach)",
+            "CustomNode14" => nodeDataName + " (Enchant)",
+            _ => base.GetSpecialNodeName(nodeDataName),
+        };
+    }
+
+    public override bool OnSpecialCardSequence(string nodeDataName)
+    {
+        if (nodeDataName == "SpellCardChoice")
+        {
+            if (Window.Button("Reroll choices", disabled: () => new(() => MagnificusModHelper.rerolling)))
+            {
+                Plugin.Instance.StartCoroutine(MagnificusModHelper.RerollSpellChoices());
+            }
+            return true;
+        }
+        if (nodeDataName == "CustomNode14 (Enchant)")
+        {
+            MagnificusModHelper.HandleEnchantNode(this.Window);
+            return true;
+        }
+        if (nodeDataName == "CustomNodeDeck")
+        {
+            GameFlowManager.Instance.CurrentGameState = GameState.Map;
+            return true;
+        }
+        return false;
+    }
+
+    public override void Restart()
+    {
+        SceneLoader.Load("finale_magnificus");
+    }
 }

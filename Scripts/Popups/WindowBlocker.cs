@@ -1,6 +1,4 @@
-﻿using System;
-using DebugMenu;
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.EventSystems;
 
 public class WindowBlocker : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
@@ -15,10 +13,10 @@ public class WindowBlocker : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
 
     private void OnDisable()
     {
-        if(isHovered)
+        if (isHovered)
             OnPointerExit(null);
     }
-    
+
     public void OnPointerEnter(PointerEventData eventData)
     {
         //Plugin.Log.LogInfo(gameObject.name + " Entered");

@@ -1,60 +1,61 @@
 ﻿using DebugMenu.Scripts.Acts;
 using DebugMenu.Scripts.Popups;
 using DebugMenu.Scripts.Popups.DeckEditorPopup;
+using DebugMenu.Scripts.Utils;
 using UnityEngine;
 
 namespace DebugMenu.Scripts.All;
 
 public class AllActs : BaseAct
 {
-	private static bool blockAllInput = false;
+    private static bool blockAllInput = false;
 
-	public static bool IsInputBlocked()
-	{
-		if(blockAllInput)
-			return true;
+    public static bool IsInputBlocked()
+    {
+        if (blockAllInput)
+            return true;
 
-		return Plugin.Instance.IsInputBlocked();
-	}
-	
-	public AllActs(DebugWindow window) : base(window)
-	{
-	}
+        return Plugin.Instance.IsInputBlocked();
+    }
 
-	public override void Update()
-	{
-		
-	}
-	
-	public override void OnGUI()
-	{
-		Window.Toggle("Block All Input", ref blockAllInput);
-		Window.Toggle("Disable Player Damage", ref Configs.m_disablePlayerDamage);
+    public AllActs(DebugWindow window) : base(window)
+    {
+    }
+
+    public override void Update()
+    {
+
+    }
+
+    public override void OnGUI()
+    {
+        Window.Toggle("Block All Input", ref blockAllInput);
+        Window.Toggle("Disable Player Damage", ref Configs.m_disablePlayerDamage);
         Window.Toggle("Disable Opponent Damage", ref Configs.m_disableOpponentDamage);
         Window.Toggle("Disable All Dialogue", ref Configs.m_disableDialogue);
 
-		using (Window.HorizontalScope(4))
-		{
-			Window.Label("<b>Time Scale:</b>");
-			
-			if (Window.Button("0.1x"))
-			{
-				Log("Minimum Time Scale");
-				SetTimeScale(0.1f);
-			}
+        using (Window.HorizontalScope(4))
+        {
+            Window.Label("<b>Time Scale:</b>");
 
-			if (Window.Button("1x"))
-			{
-				Log("Minimum Time Scale");
-				SetTimeScale(1f);
-			}
+            if (Window.Button("0.1x"))
+            {
+                Log("Minimum Time Scale");
+                SetTimeScale(0.1f);
+            }
 
-			if (Window.Button("5x"))
-			{
-				Log("Minimum Time Scale");
-				SetTimeScale(5f);
-			}
-		}
+            if (Window.Button("1x"))
+            {
+                Log("Minimum Time Scale");
+                SetTimeScale(1f);
+            }
+
+            if (Window.Button("5x"))
+            {
+                Log("Minimum Time Scale");
+                SetTimeScale(5f);
+            }
+        }
 
         if (Window.Button("Deck Editor"))
         {
@@ -62,52 +63,62 @@ public class AllActs : BaseAct
         }
 
         if (Window.Button("Show Game Info"))
-		{
-			Plugin.Instance.ToggleWindow<GameInfoPopup>();
-		}
-		
-		if (Window.Button("Change Hotkeys"))
-		{
-			Plugin.Instance.ToggleWindow<HotkeysPopup>();
-		}
+        {
+            Plugin.Instance.ToggleWindow<GameInfoPopup>();
+        }
 
-		using (Window.HorizontalScope(4))
-		{
-			Window.Label("<b>Menu Scale:</b>");
-			Window.Label($"{DrawableGUI.GetDisplayScalar()}");
+        if (Window.Button("Change Hotkeys"))
+        {
+            Plugin.Instance.ToggleWindow<HotkeysPopup>();
+        }
 
-			int sizeAsInt = (int)Configs.WindowSize;
+        using (Window.HorizontalScope(4))
+        {
+            Window.Label("<b>Menu Scale:</b>");
+            Window.Label($"\n{DrawableGUI.GetDisplayScalar()}");
+
+            int sizeAsInt = (int)Configs.WindowSize;
             if (Window.Button("-", disabled: () => new() { Disabled = sizeAsInt <= 0 }))
             {
                 sizeAsInt--;
                 Configs.WindowSize = (Configs.WindowSizes)sizeAsInt;
             }
             if (Window.Button("+", disabled: () => new() { Disabled = sizeAsInt > 6 }))
-			{
-				sizeAsInt++;
-				Configs.WindowSize = (Configs.WindowSizes)sizeAsInt;
-			}
-		}
-	}
+            {
+                sizeAsInt++;
+                Configs.WindowSize = (Configs.WindowSizes)sizeAsInt;
+            }
+        }
 
-	public override void OnGUIMinimal()
-	{
-		
-	}
+        Window.Padding();
+        if (Helpers.GetCurrentSavedAct() != Helpers.Acts.GrimoraAct)
+        {
+            if (Window.Button("Reload Act"))
+                Reload();
 
-	public void SetTimeScale(float speed)
-	{
-		Time.timeScale = speed;
-		Time.fixedDeltaTime = Plugin.StartingFixedDeltaTime * Time.timeScale;
-	}
+            if (Window.Button("Restart Act"))
+                Restart();
+        }
+    }
 
-	public override void Restart()
-	{
-		// Nothing
-	}
+    public override void OnGUIMinimal()
+    {
 
-	public override void Reload()
-	{
-		// Nothing
-	}
+    }
+
+    public void SetTimeScale(float speed)
+    {
+        Time.timeScale = speed;
+        Time.fixedDeltaTime = Plugin.StartingFixedDeltaTime * Time.timeScale;
+    }
+
+    public override void Restart()
+    {
+        Window.CurrentAct.Restart();
+    }
+
+    public override void Reload()
+    {
+        Window.CurrentAct.Reload();
+    }
 }
