@@ -84,7 +84,7 @@ public abstract class BaseAct
     public static void OnChoseButtonCallback(int chosenIndex, string chosenValue, List<string> inventoryIndex)
     {
         List<string> currentItems = GetConsumables();
-        for (int i = 0; i < currentItems.Count; i++)
+        for (int i = 0; i < (SaveManager.SaveFile.IsPart3 ? 3 : RunState.Run.MaxConsumables); i++)
         {
             if (int.TryParse(inventoryIndex[0], out int e) && i != e) {
                 continue;
