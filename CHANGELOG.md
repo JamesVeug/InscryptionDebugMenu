@@ -1,5 +1,9 @@
 # Changelog
 ## 1.5.3
+### General
+- Fixed being unable to add items (TVFLabs)
+### Act 1
+- Added Totem selector (TVFLabs)
 ### Act 2
 - Fixed Draw Card buttons now working during battles
 

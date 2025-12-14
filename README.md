@@ -43,6 +43,7 @@ Create an issue on the GitHub page or mention it on the Inscryption modding disc
 - JamesGames
 - WhistleWind
 - JustinBustin5
+- TVFLabs
 
 ## Thanks To:
 - Peaiece for Speed Tweaks and Deck Editor (this mod recycles some code from both of those mods)

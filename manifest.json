@@ -1,6 +1,6 @@
 {
     "name": "DebugMenu",
-    "version_number": "1.5.2",
+    "version_number": "1.5.3",
     "website_url": "https://github.com/JamesVeug/InscryptionDebugMenu",
     "description": "Adds an in-game menu to help you with all your debugging needs!",
     "dependencies": [
