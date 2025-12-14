@@ -1,4 +1,5 @@
-﻿using DebugMenu.Scripts.Utils;
+﻿using DebugMenu.Scripts.Acts;
+using DebugMenu.Scripts.Utils;
 using DiskCardGame;
 using InscryptionAPI.Card;
 using System.Collections;
@@ -17,7 +18,13 @@ public class DrawCustomCardPopup : BaseWindow
 
     public override void OnGUI()
     {
-        if (GameFlowManager.m_Instance?.CurrentGameState != GameState.CardBattle)
+        if (SaveManager.SaveFile.IsPart2) {
+            if (!BaseCardBattleSequence.IsGBCBattle()) {
+                IsActive = false;
+                return;
+            }
+        }
+        else if (GameFlowManager.m_Instance?.CurrentGameState != GameState.CardBattle)
         {
             IsActive = false;
             return;
