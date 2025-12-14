@@ -1,8 +1,11 @@
 # Changelog
+## 1.5.3
+### Act 2
+- Fixed Draw Card buttons now working during battles
 
 ## 1.5.2
 ### General
-- Fixed item overridding affecting the wrong slot
+- Fixed item overriding affecting the wrong slot
 ### Act 1
 - Clarified what 'Toggle Map Override' actually does
 - Added 'Override Current Region' button

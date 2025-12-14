@@ -11,7 +11,7 @@ namespace DebugMenu.Scripts.Acts;
 
 public abstract class BaseCardBattleSequence
 {
-    public bool IsGBCBattle() => SceneLoader.ActiveSceneName == "GBC_CardBattle";
+    public static bool IsGBCBattle() => SceneLoader.ActiveSceneName == "GBC_CardBattle";
 
     public abstract int PlayerBones { get; }
     public abstract int ScalesBalance { get; }
@@ -34,7 +34,10 @@ public abstract class BaseCardBattleSequence
 
     private bool DisableCardDraw()
     {
-        return (CardDrawPiles?.Deck?.CardsInDeck).GetValueOrDefault() == 0 | (SaveManager.SaveFile.IsPart2 && !IsGBCBattle());
+        if (SaveManager.SaveFile.IsPart2) {
+            return !IsGBCBattle() || CardDrawPiles?.Deck?.CardsInDeck == 0;
+        }
+        return (CardDrawPiles?.Deck?.CardsInDeck).GetValueOrDefault() == 0;
     }
     private ButtonDisabledData DisableSideDraw() => new()
     {
@@ -200,7 +203,7 @@ public abstract class BaseCardBattleSequence
     {
         if (CardDrawPiles != null)
         {
-            if (CardDrawPiles.Deck.CardsInDeck > 0)
+            if (CardDrawPiles.Deck.CardsInDeck > 0 && !drawingTutorCard)
                 Plugin.Instance.StartCoroutine(DrawFromMainDeck());
         }
         else
@@ -227,7 +230,7 @@ public abstract class BaseCardBattleSequence
     {
         if (CardDrawPiles != null)
         {
-            if (CardDrawPiles.Deck.CardsInDeck > 0)
+            if (CardDrawPiles.Deck.CardsInDeck > 0 && !drawingTutorCard)
                 Plugin.Instance.StartCoroutine(DrawTutor());
         }
         else
